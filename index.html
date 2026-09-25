@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Valence Supply Chain — Freight Brokerage</title>
+<meta name="description" content="Valence is a freight brokerage built on one standard: every load picked up on schedule, tracked in real time and delivered as promised, with a live person answering 24/7.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23111315'/%3E%3Crect x='32' y='32' width='36' height='36' fill='%23C9BFAE' transform='rotate(45 50 50)'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#111315;--bone:#EEEDE8;--sand:#C9BFAE;--mute:#6F6656;--body:#45484D;--pad:clamp(20px,7vw,120px)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bone);color:var(--ink);font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+input,textarea,button{font:inherit}
+input::placeholder,textarea::placeholder{color:rgba(238,237,232,.45)}
+.disp{font-family:'Archivo',sans-serif;font-stretch:88%;text-transform:uppercase}
+.mono{font-family:'IBM Plex Mono',monospace}
+.wrap{max-width:1500px;margin:0 auto}
+.eyebrow{display:flex;align-items:center;gap:12px;font:500 12px/1 'IBM Plex Mono',monospace;letter-spacing:.22em;color:var(--mute);margin-bottom:20px}
+.eyebrow::before{content:"";width:34px;height:2px;background:var(--sand)}
+.eyebrow.light{color:var(--sand)}
+.bgvid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+@keyframes vpulse{0%{box-shadow:0 0 0 0 rgba(201,191,174,.7)}100%{box-shadow:0 0 0 10px rgba(201,191,174,0)}}
+@keyframes vmarq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--sand);animation:vpulse 1.6s infinite;flex:none}
+
+/* header */
+header{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:stretch;height:76px;border-bottom:1px solid rgba(238,237,232,.18);transition:background .35s}
+header.scrolled{background:rgba(17,19,21,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.brand{display:flex;align-items:center;gap:12px;padding:0 clamp(18px,3vw,40px);color:var(--bone)}
+.brand i{width:14px;height:14px;background:var(--sand);transform:rotate(45deg)}
+.brand b{display:block;font:800 26px/1 'Archivo',sans-serif;font-stretch:88%;letter-spacing:.14em}
+.brand small{display:block;font:500 9px/1 'IBM Plex Mono',monospace;letter-spacing:.28em;opacity:.7;margin-top:4px}
+header nav{flex:3;display:flex;align-items:center;justify-content:center;gap:clamp(18px,2.6vw,40px);font:600 15px/1 'Archivo',sans-serif;font-stretch:88%;letter-spacing:.12em;text-transform:uppercase;color:var(--bone)}
+header nav a:hover{color:var(--sand)}
+.pill{display:flex;align-items:center;gap:10px;padding:0 22px;white-space:nowrap;border-left:1px solid rgba(238,237,232,.18);color:var(--bone);font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.14em}
+.hq{white-space:nowrap;display:flex;align-items:center;gap:10px;padding:0 clamp(20px,2.6vw,36px);background:var(--sand);color:var(--ink);font:700 16px/1 'Archivo',sans-serif;font-stretch:88%;letter-spacing:.12em;text-transform:uppercase;transition:background .25s}
+.hq:hover{background:var(--bone)}
+.spacer{flex:1}
+@media (max-width:1179px){.pill{display:none}}
+@media (max-width:999px){header nav{display:none}}
+@media (max-width:480px){.hq{font-size:14px;padding:0 16px}.brand b{font-size:22px}}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:14px;padding:19px 30px;font:700 17px/1 'Archivo',sans-serif;font-stretch:88%;letter-spacing:.12em;text-transform:uppercase;transition:background .25s,color .25s;border:0;cursor:pointer}
+.btn-sand{background:var(--sand);color:var(--ink);clip-path:polygon(0 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%)}
+.btn-sand:hover{background:var(--bone)}
+.btn-ghost{padding:18px 30px;border:1px solid rgba(238,237,232,.55);color:var(--bone)}
+.btn-ghost:hover{background:rgba(238,237,232,.12)}
+.btn-ink{background:var(--ink);color:var(--bone)}
+.btn-ink:hover{background:var(--sand);color:var(--ink)}
+
+/* hero */
+.hero{position:relative;min-height:100vh;min-height:100svh;overflow:hidden;background:var(--ink);color:var(--bone);display:flex;flex-direction:column}
+.hero .bgvid{transform:scale(1.06);will-change:transform}
+.shade-x{position:absolute;inset:0;background:linear-gradient(90deg,rgba(10,11,13,.86) 0%,rgba(10,11,13,.55) 45%,rgba(10,11,13,.15) 100%)}
+.shade-y{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,11,13,.55) 0%,rgba(10,11,13,0) 25%,rgba(10,11,13,0) 60%,rgba(10,11,13,.9) 100%)}
+.hero-text{position:relative;flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:140px var(--pad) 100px;max-width:1500px;width:100%;margin:0 auto}
+.hero-text .eyebrow{color:var(--sand);margin-bottom:26px}
+.hero h1{margin:0;font:800 clamp(26px,3vw,48px)/1 'Archivo',sans-serif;font-stretch:88%;text-transform:uppercase;letter-spacing:-.005em;text-wrap:balance}
+.hero h1 span{color:var(--sand)}
+.lead{margin:30px 0 0;max-width:580px;font:400 clamp(17px,1.4vw,21px)/1.5 'IBM Plex Sans',sans-serif;color:rgba(238,237,232,.88);text-wrap:pretty}
+.ctas{display:flex;flex-wrap:wrap;gap:14px;margin-top:40px}
+
+/* ticker */
+.ticker{background:var(--sand);color:var(--ink);overflow:hidden;border-bottom:1px solid var(--ink)}
+.ticker-track{display:flex;width:max-content;animation:vmarq 38s linear infinite}
+.ticker-track div{display:flex;align-items:center;gap:28px;padding:18px 14px;font:800 22px/1 'Archivo',sans-serif;font-stretch:88%;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.ticker-track div::after{content:"";width:8px;height:8px;background:var(--ink);transform:rotate(45deg)}
+
+/* shared section */
+.sec{padding:clamp(80px,10vw,150px) var(--pad)}
+.h2{margin:0;font:800 clamp(48px,6.4vw,104px)/.9 'Archivo',sans-serif;font-stretch:88%;text-transform:uppercase;text-wrap:balance}
+.intro{margin:0;max-width:520px;font:400 19px/1.55 'IBM Plex Sans',sans-serif;color:var(--body);text-wrap:pretty}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:24px 80px;align-items:end;margin-bottom:60px}
+
+/* services */
+.svc-list{border-top:2px solid var(--ink)}
+.svc{display:grid;grid-template-columns:minmax(60px,110px) minmax(0,1.1fr) minmax(0,1.4fr) 48px;gap:14px 24px;align-items:center;padding:34px 24px;border-bottom:1px solid rgba(17,19,21,.18);transition:background .3s,color .3s,padding .3s}
+.svc:hover{background:var(--ink);color:var(--bone);padding-left:40px}
+.svc .n{font:500 13px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:var(--mute)}
+.svc .t{font:700 clamp(28px,3vw,44px)/1 'Archivo',sans-serif;font-stretch:88%;text-transform:uppercase}
+.svc .d{font:400 17px/1.5 'IBM Plex Sans',sans-serif;opacity:.75}
+.svc .a{font:600 26px/1 'IBM Plex Sans',sans-serif;color:var(--sand);justify-self:end}
+@media (max-width:699px){.svc{grid-template-columns:minmax(0,1fr) 32px;padding:26px 12px}.svc .n,.svc .d{grid-column:1/-1}.svc .n{order:-1}}
+
+/* industry cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:20px}
+.card{display:flex;flex-direction:column;background:#F7F6F2;border:1px solid rgba(17,19,21,.12);clip-path:polygon(0 0,calc(100% - 36px) 0,100% 36px,100% 100%,0 100%);transition:background .35s,color .35s}
+.card:hover{background:var(--ink);color:var(--bone)}
+.card .img{position:relative;aspect-ratio:16/9;overflow:hidden;background:var(--ink)}
+.card .img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .8s}
+.card:hover .img img{transform:scale(1.05)}
+.card .tag{position:absolute;left:16px;top:16px;padding:7px 10px;background:var(--ink);color:var(--bone);font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.14em}
+.card .body{display:flex;flex-direction:column;gap:14px;padding:28px 28px 30px;flex:1}
+.card h3{margin:0;font:800 34px/1 'Archivo',sans-serif;font-stretch:88%;text-transform:uppercase}
+.card p{margin:0;font:400 16px/1.55 'IBM Plex Sans',sans-serif;opacity:.78;flex:1}
+.card .line{font:500 11px/1.4 'IBM Plex Mono',monospace;letter-spacing:.14em;text-transform:uppercase;opacity:.6}
+.card .go{display:flex;align-items:center;gap:10px;padding-top:16px;border-top:1px solid rgba(128,128,128,.3);font:700 15px/1 'Archivo',sans-serif;font-stretch:88%;letter-spacing:.12em;text-transform:uppercase}
+
+/* statement */
+.stmt{background:var(--ink);color:var(--bone);padding:clamp(100px,14vw,200px) var(--pad)}
+.stmt .words{margin:0;display:flex;flex-wrap:wrap;gap:0 .26em;font:800 clamp(46px,7vw,120px)/.98 'Archivo',sans-serif;font-stretch:88%;text-transform:uppercase}
+.stmt .words span{opacity:.14;transition:opacity .25s}
+.stmt .words span.on{opacity:1}
+.stmt .words span.accent{color:var(--sand)}
+
+/* sticky industries */
+.ind-wrap{display:flex;flex-wrap:wrap;gap:clamp(32px,5vw,80px);align-items:flex-start}
+.ind-media{flex:1 1 420px;position:sticky;top:110px;aspect-ratio:4/5;max-height:calc(100vh - 150px);background:var(--ink);overflow:hidden;clip-path:polygon(0 0,calc(100% - 72px) 0,100% 72px,100% 100%,0 100%)}
+.ind-media video{opacity:0;transform:scale(1.08);transition:opacity .8s,transform 1.4s}
+.ind-media video.on{opacity:1;transform:scale(1)}
+.ind-media .cap{position:absolute;left:28px;right:28px;bottom:26px;display:flex;justify-content:space-between;align-items:flex-end;color:var(--bone)}
+.ind-media .cap b{font:800 clamp(40px,4.6vw,72px)/.9 'Archivo',sans-serif;font-stretch:88%}
+.ind-media .cap span{font:500 13px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:var(--sand)}
+.ind-list{flex:1 1 420px;min-width:0}
+.ind{min-height:52vh;display:flex;flex-direction:column;justify-content:center;gap:16px;border-top:1px solid rgba(17,19,21,.18);padding:32px 0;opacity:.35;transition:opacity .5s}
+.ind.on{opacity:1}
+.ind .bar{display:flex;align-items:center;gap:16px;font:500 13px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:var(--mute)}
+.ind .bar i{width:20px;height:3px;background:var(--sand);transition:width .5s}
+.ind.on .bar i{width:56px}
+.ind h3{margin:0;font:800 clamp(40px,4.4vw,68px)/.92 'Archivo',sans-serif;font-stretch:88%;text-transform:uppercase}
+.ind p{margin:0;max-width:520px;font:400 18px/1.55 'IBM Plex Sans',sans-serif;color:var(--body)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips span{padding:8px 12px;border:1px solid rgba(17,19,21,.3);font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase}
+@media (max-width:899px){.ind-media{position:relative;top:0;aspect-ratio:16/10;flex-basis:100%}.ind{min-height:auto}}
+
+/* process */
+.track{position:relative;height:3px;background:rgba(17,19,21,.14);margin-bottom:44px}
+.track .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--sand)}
+.track .marker{position:absolute;top:-9px;left:0;width:21px;height:21px;background:var(--ink);transform:translateX(-50%) rotate(45deg);border:3px solid var(--sand)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:40px}
+.steps div{display:flex;flex-direction:column;gap:14px}
+.steps b{font:800 64px/1 'Archivo',sans-serif;font-stretch:88%;color:var(--sand)}
+.steps h3{margin:0;font:700 30px/1 'Archivo',sans-serif;font-stretch:88%;text-transform:uppercase}
+.steps p{margin:0;font:400 17px/1.55 'IBM Plex Sans',sans-serif;color:var(--body)}
+
+/* standard */
+.std{background:var(--ink);color:var(--bone);display:flex;flex-wrap:wrap}
+.std-media{flex:1 1 480px;min-height:560px;position:relative;overflow:hidden;clip-path:polygon(0 0,100% 0,100% 100%,72px 100%,0 calc(100% - 72px))}
+.std-copy{flex:1 1 480px;padding:clamp(60px,8vw,120px) clamp(20px,6vw,100px)}
+.std-row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:18px;padding:22px 0;border-top:1px solid rgba(238,237,232,.16)}
+.std-row i{width:12px;height:16px;margin-top:6px;background:var(--sand);clip-path:polygon(0 0,40% 0,100% 50%,40% 100%,0 100%,60% 50%)}
+.std-row b{display:block;font:700 24px/1.1 'Archivo',sans-serif;font-stretch:88%;text-transform:uppercase;margin-bottom:6px}
+.std-row span{font:400 16px/1.5 'IBM Plex Sans',sans-serif;color:rgba(238,237,232,.7)}
+
+/* quote */
+.quote{position:relative;overflow:hidden;background:var(--ink);color:var(--bone);padding:clamp(90px,11vw,160px) var(--pad)}
+.quote .bgvid{opacity:.35}
+.quote-grid{position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:clamp(48px,7vw,120px)}
+.contact{display:flex;flex-direction:column;gap:22px;border-left:2px solid var(--sand);padding-left:22px}
+.contact div{display:flex;flex-direction:column;gap:6px}
+.contact small{font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.18em;color:var(--sand)}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:30px 32px;align-content:start}
+form label{display:flex;flex-direction:column;gap:10px}
+form label>span{font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.18em;color:rgba(238,237,232,.65)}
+form input,form textarea{background:transparent;border:0;border-bottom:1px solid rgba(238,237,232,.4);padding:10px 0 12px;color:var(--bone);font-size:18px;outline:none;border-radius:0}
+form input:focus,form textarea:focus{border-bottom-color:var(--sand)}
+.full{grid-column:1/-1}
+.eq{display:flex;flex-wrap:wrap;gap:8px}
+.eq button{padding:11px 16px;border:1px solid rgba(238,237,232,.4);background:transparent;color:var(--bone);font:700 14px/1 'Archivo',sans-serif;font-stretch:88%;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+.eq button.on{background:var(--sand);border-color:var(--sand);color:var(--ink)}
+
+/* detail page */
+.dhero{position:relative;min-height:82vh;overflow:hidden;background:var(--ink);color:var(--bone);display:flex;align-items:flex-end}
+.dhero .inner{position:relative;width:100%;max-width:1500px;margin:0 auto;padding:150px var(--pad) 90px}
+.crumb{display:flex;flex-wrap:wrap;align-items:center;gap:14px;font:500 12px/1 'IBM Plex Mono',monospace;letter-spacing:.2em;margin-bottom:30px}
+.dhero h1{margin:0;max-width:1100px;font:800 clamp(40px,6vw,104px)/.92 'Archivo',sans-serif;font-stretch:88%;text-transform:uppercase;text-wrap:balance}
+.moves{border-top:2px solid var(--ink)}
+.moves div{display:flex;align-items:center;gap:18px;padding:20px 0;border-bottom:1px solid rgba(17,19,21,.16);font:700 24px/1.1 'Archivo',sans-serif;font-stretch:88%;text-transform:uppercase}
+.moves div::before{content:"";width:10px;height:10px;background:var(--ink);transform:rotate(45deg);flex:none}
+.points{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.points div{display:flex;flex-direction:column;gap:14px;padding:32px 32px 32px 0;border-top:1px solid rgba(238,237,232,.2)}
+.points b{font:800 54px/1 'Archivo',sans-serif;font-stretch:88%;color:var(--sand)}
+.points h3{margin:0;font:700 26px/1.05 'Archivo',sans-serif;font-stretch:88%;text-transform:uppercase}
+.points p{margin:0;font:400 16px/1.55 'IBM Plex Sans',sans-serif;color:rgba(238,237,232,.72)}
+.others{border-top:2px solid var(--ink)}
+.others a{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:24px 16px;border-bottom:1px solid rgba(17,19,21,.16);transition:background .3s,color .3s,padding .3s}
+.others a:hover{background:var(--ink);color:var(--bone);padding-left:32px}
+
+/* footer */
+footer{background:#0A0B0D;color:rgba(238,237,232,.75);padding:64px var(--pad) 36px}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:40px;padding-bottom:48px;border-bottom:1px solid rgba(238,237,232,.12)}
+.fgrid>div{display:flex;flex-direction:column;gap:12px;font:500 15px/1.45 'IBM Plex Sans',sans-serif}
+.fgrid small{font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.18em;color:var(--sand);margin-bottom:4px}
+.fgrid a:hover{color:var(--sand)}
+.fbot{padding-top:26px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;font:500 12px/1.4 'IBM Plex Mono',monospace;letter-spacing:.08em;color:rgba(238,237,232,.5)}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(34px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none}.ticker-track{animation:none}.dot{animation:none}html{scroll-behavior:auto}}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<header id="hdr">
+  <a class="brand" href="#top"><i></i><span><b>VALENCE</b><small>SUPPLY CHAIN</small></span></a>
+  <div class="spacer"></div>
+  <nav><a href="#services">Services</a><a href="#industries">Industries</a><a href="#process">Process</a><a href="#standard">Our Standard</a></nav>
+  <div class="pill"><span class="dot"></span>24/7 LIVE SUPPORT</div>
+  <a class="hq" href="#quote">Get a Quote <span>→</span></a>
+</header>
+
+<main id="home">
+  <section id="top" class="hero">
+    <video class="bgvid" id="heroVid" autoplay muted loop playsinline preload="auto" poster="https://assets.mixkit.co/videos/26005/26005-thumb-360-0.jpg">
+      <source src="videos/26005.mp4" type="video/mp4">
+      <source src="https://assets.mixkit.co/videos/26005/26005-720.mp4" type="video/mp4">
+      <source src="https://assets.mixkit.co/videos/26005/26005-360.mp4" type="video/mp4">
+    </video>
+    <div class="shade-x"></div><div class="shade-y"></div>
+    <div class="hero-text" id="heroText">
+      <div class="eyebrow rv">FREIGHT BROKERAGE · NATIONWIDE</div>
+      <h1 class="rv">Valence.<br><span>Every load, bonded.</span></h1>
+      <p class="lead rv">Valence is a freight brokerage built on one standard: every load picked up on schedule, tracked in real time and delivered as promised — with a live person answering 24/7.</p>
+      <div class="ctas rv">
+        <a class="btn btn-sand" href="#quote">Request a Quote <span>→</span></a>
+        <a class="btn btn-ghost" href="#services">Our Services</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="ticker"><div class="ticker-track" id="ticker"></div></div>
+
+  <section id="services" class="sec wrap">
+    <div class="split">
+      <div><div class="eyebrow rv">01 — BROKERAGE SERVICES</div><h2 class="h2 rv">Capacity for every load you ship.</h2></div>
+      <p class="intro rv">We match your freight with vetted carriers from a nationwide network, then manage it from tender to proof of delivery. You get one point of contact and a load that shows up when it's supposed to.</p>
+    </div>
+    <div class="svc-list" id="services-list"></div>
+  </section>
+
+  <section id="industries" class="sec" style="border-top:1px solid rgba(17,19,21,.12)">
+    <div class="wrap">
+      <div class="eyebrow rv">INDUSTRIES WE SERVE</div>
+      <div class="split">
+        <h2 class="h2 rv" style="font-size:clamp(44px,5.8vw,96px)">Built for freight that can't be late.</h2>
+        <p class="intro rv">Every industry has its own rules — appointment windows, temperature ranges, line-side schedules. We learn yours and run every load to them.</p>
+      </div>
+      <div class="cards" id="cards"></div>
+    </div>
+  </section>
+
+  <section class="stmt" id="stmt">
+    <div style="max-width:1300px;margin:0 auto">
+      <div class="eyebrow light" style="margin-bottom:36px">02 — ROUND-THE-CLOCK</div>
+      <p class="words" id="words"></p>
+      <p style="margin:48px 0 0;max-width:640px;font:400 20px/1.55 'IBM Plex Sans',sans-serif;color:rgba(238,237,232,.72)">A breakdown at 2 a.m. or a dock change on Sunday gets a person on the phone, a recovery plan and an update to you before you have to ask.</p>
+    </div>
+  </section>
+
+  <section id="sectors" class="sec" style="padding-bottom:40px">
+    <div class="wrap">
+      <div class="eyebrow rv">03 — INDUSTRIES WE SERVE</div>
+      <h2 class="h2 rv" style="margin-bottom:64px;max-width:1000px">Every industry. Every requirement.</h2>
+      <div class="ind-wrap">
+        <div class="ind-media" id="indMedia">
+          <div class="shade-y" style="background:linear-gradient(180deg,rgba(10,11,13,0) 50%,rgba(10,11,13,.85) 100%);z-index:1"></div>
+          <div class="cap" style="z-index:2"><b class="disp" id="indName">CPG</b><span id="indCount">01 / 06</span></div>
+        </div>
+        <div class="ind-list">
+          <div id="indList"></div>
+          <div class="rv" style="border-top:2px solid var(--ink);padding:36px 0 0;display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between">
+            <p style="margin:0;max-width:460px;font:600 21px/1.4 'IBM Plex Sans',sans-serif">Don't see your industry? If it ships on a truck, we move it.</p>
+            <a class="btn btn-ink" href="#quote" style="padding:16px 26px;font-size:16px">Talk to a Broker →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="process" class="sec" style="background:var(--bone)">
+    <div class="wrap">
+      <div class="eyebrow rv">04 — HOW A LOAD MOVES</div>
+      <h2 class="h2 rv" style="margin-bottom:72px;max-width:1000px">Tender to POD. No surprises.</h2>
+      <div class="track"><div class="fill" id="procFill"></div><div class="marker" id="procMark"></div></div>
+      <div class="steps" id="steps"></div>
+    </div>
+  </section>
+
+  <section id="standard" class="std">
+    <div class="std-media">
+      <video class="bgvid" autoplay muted loop playsinline preload="metadata" poster="https://assets.mixkit.co/videos/23852/23852-thumb-360-0.jpg">
+      <source src="videos/23852.mp4" type="video/mp4">
+      <source src="https://assets.mixkit.co/videos/23852/23852-720.mp4" type="video/mp4">
+      <source src="https://assets.mixkit.co/videos/23852/23852-360.mp4" type="video/mp4">
+    </video>
+      <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(17,19,21,0) 60%,rgba(17,19,21,.6) 100%)"></div>
+    </div>
+    <div class="std-copy">
+      <div class="eyebrow light rv">05 — OUR STANDARD</div>
+      <h2 class="h2 rv" style="margin-bottom:44px;font-size:clamp(44px,5.4vw,88px)">Professional on every load.</h2>
+      <div id="standards"></div>
+    </div>
+  </section>
+</main>
+
+<main id="detail" hidden></main>
+
+<section id="quote" class="quote">
+  <video class="bgvid" autoplay muted loop playsinline preload="metadata" poster="https://assets.mixkit.co/videos/41361/41361-thumb-360-0.jpg">
+      <source src="videos/41361.mp4" type="video/mp4">
+      <source src="https://assets.mixkit.co/videos/41361/41361-720.mp4" type="video/mp4">
+      <source src="https://assets.mixkit.co/videos/41361/41361-360.mp4" type="video/mp4">
+    </video>
+  <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(17,19,21,.96) 0%,rgba(17,19,21,.8) 55%,rgba(17,19,21,.6) 100%)"></div>
+  <div class="quote-grid wrap">
+    <div>
+      <div class="eyebrow light rv">06 — REQUEST A QUOTE</div>
+      <h2 class="h2 rv" style="font-size:clamp(52px,7vw,120px);line-height:.88">Your load.<br><span style="color:var(--sand)">Covered.</span></h2>
+      <p class="rv" style="margin:28px 0 44px;max-width:460px;font:400 19px/1.55 'IBM Plex Sans',sans-serif;color:rgba(238,237,232,.8)">Send the lane and the details. A broker responds with capacity and a rate — any hour, any day.</p>
+      <div class="contact rv" id="contact"></div>
+    </div>
+    <form id="qform" class="rv">
+      <label><span>FULL NAME</span><input name="name" placeholder="Jane Smith" required></label>
+      <label><span>COMPANY</span><input name="company" placeholder="Company name" required></label>
+      <label><span>EMAIL</span><input name="email" type="email" placeholder="you@company.com" required></label>
+      <label><span>PHONE</span><input name="phone" type="tel" placeholder="(555) 000-0000"></label>
+      <label><span>ORIGIN</span><input name="origin" placeholder="City, ST" required></label>
+      <label><span>DESTINATION</span><input name="destination" placeholder="City, ST" required></label>
+      <div class="full" style="display:flex;flex-direction:column;gap:10px"><span style="font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.18em;color:rgba(238,237,232,.65)">EQUIPMENT</span><div class="eq" id="eq"></div></div>
+      <label class="full"><span>LOAD DETAILS</span><textarea name="details" rows="3" placeholder="Commodity, weight, pickup date, special requirements" style="resize:vertical"></textarea></label>
+      <div class="full" style="display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between;margin-top:8px">
+        <span id="formNote" style="font:500 14px/1.4 'IBM Plex Sans',sans-serif;color:rgba(238,237,232,.6)">A broker responds 24/7. No obligation.</span>
+        <button type="submit" class="btn btn-sand">Send Request →</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap fgrid">
+    <div>
+      <a href="#top" style="display:flex;align-items:center;gap:12px;color:var(--bone)"><span style="width:12px;height:12px;background:var(--sand);transform:rotate(45deg)"></span><span style="font:800 24px/1 'Archivo',sans-serif;font-stretch:88%;letter-spacing:.14em">VALENCE</span></a>
+      <span style="max-width:260px">Freight brokerage for shippers who can't afford a late load.</span>
+    </div>
+    <div><small>COMPANY</small><a href="#services">Services</a><a href="#industries">Industries</a><a href="#standard">Our Standard</a><a href="#quote">Request a Quote</a></div>
+    <div><small>MAILING ADDRESS</small><span>Valence Supply Chain LLC<br>21008 N St #317790<br>Sacramento, CA 95816<br>USA</span></div>
+    <div id="fcontact"><small>CONTACT</small></div>
+  </div>
+  <div class="wrap fbot"><span>© <span id="yr">2026</span> VALENCE SUPPLY CHAIN LLC. ALL RIGHTS RESERVED.</span><span>VALENCESUPPLYCHAIN.COM</span></div>
+</footer>
+
+<script>
+(function () {
+  // ---- Settings you may want to change ----
+  var EMAIL = 'info@valencesupplychain.com';
+  var PHONE = ''; // e.g. '(916) 555-0100' — leave empty to hide
+
+  var mp4 = function (id, q) { return 'https://assets.mixkit.co/videos/' + id + '/' + id + '-' + q + '.mp4'; };
+  var thumb = function (id) { return 'https://assets.mixkit.co/videos/' + id + '/' + id + '-thumb-360-0.jpg'; };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+
+  function setVideo(v, id, hi) {
+    v.poster = thumb(id);
+    // Self-hosted copy first (videos/ID.mp4), then Mixkit 720p, then Mixkit 360p.
+    v.innerHTML = '<source src="videos/' + id + '.mp4" type="video/mp4">' +
+      (hi ? '<source src="' + mp4(id, 720) + '" type="video/mp4">' : '') +
+      '<source src="' + mp4(id, 360) + '" type="video/mp4">';
+    v.muted = true;
+    v.load();
+    var p = v.play(); if (p && p.catch) p.catch(function () {});
+  }
+
+  var INDUSTRIES = [
+    { slug: 'cpg', code: 'CPG', short: 'Consumer Packaged Goods', t: 'CPG & Food / Beverage', v: 23011,
+      sd: 'Retailer appointment windows, MABD compliance and high-volume replenishment lanes, handled without chargebacks.', stags: ['Dry van', 'Retail DCs', 'OTIF'],
+      d: 'Retailer appointment windows, MABD compliance and high-volume replenishment — delivered without chargebacks.', tagline: 'Shelf · DCs · Big-box retail', tags: ['Dry van', 'Reefer', 'LTL'],
+      lead: 'Big-box retailers measure you on-time, in-full. We run your freight to the same standard, so product reaches the shelf on schedule and chargebacks stay off your books.',
+      cTitle: 'A missed window costs more than the freight.', cBody: 'Retail DCs run tight appointment schedules and fine late or incomplete deliveries. A single missed window can mean a rejected load, a rescheduled dock slot days out and an empty shelf in between.',
+      moves: ['Packaged food & beverage', 'Household & personal care', 'Retail replenishment', 'Promotional & seasonal volume', 'Temperature-sensitive goods'],
+      aTitle: 'Built around MABD and OTIF.',
+      points: [['Appointments set before dispatch', 'Every DC appointment is booked and confirmed before a carrier is assigned.'], ['Compliance-ready paperwork', "BOLs, labeling and routing guides followed to each retailer's spec."], ['Proactive exception alerts', 'If a truck slips, you and the receiver hear about it first, with a recovery plan.']],
+      cta: 'Keep product on the shelf.' },
+    { slug: 'automotive', code: 'AUTO', short: 'Automotive', t: 'Automotive', v: 52428,
+      sd: 'Just-in-time parts to assembly plants, where a late truck stops a line. Expedited backup is on standby for every critical load.', stags: ['JIT', 'Expedited', 'Tier 1 / 2'],
+      d: 'Just-in-time parts to assembly plants, where a late truck stops a line. Expedited backup on every critical load.', tagline: 'Just-in-time · Inbound parts', tags: ['Dry van', 'Expedited', 'Flatbed'],
+      lead: 'Line-side schedules leave no room for guesswork. We move inbound parts and components on time, with backup capacity ready before you need it.',
+      cTitle: 'A late truck can stop the line.', cBody: 'Just-in-time plants carry hours of inventory, not days. When a supplier slips or a truck breaks down, the cost is idle labor and missed production — so the recovery has to start immediately.',
+      moves: ['Tier 1 & Tier 2 components', 'Inbound production parts', 'Aftermarket & service parts', 'Tooling & fixtures', 'Racks & returnable containers'],
+      aTitle: 'Planned for zero line-downs.',
+      points: [['Expedited standby', 'Team and hot-shot capacity is identified for critical loads before pickup.'], ['Tracked to the dock door', 'Real-time location with check calls at every milestone.'], ['24/7 escalation', 'A live broker handles exceptions at any hour, including weekends and holidays.']],
+      cta: 'Keep your line running.' },
+    { slug: 'pharma', code: 'PHARMA', short: 'Pharma & Healthcare', t: 'Pharma & Healthcare', v: 1919,
+      sd: 'Temperature-controlled capacity with continuous reefer monitoring, chain-of-custody documentation and vetted, secure carriers.', stags: ['Reefer', 'Temp logs', 'High-value'],
+      d: 'Temperature-controlled capacity, monitored in transit, with chain-of-custody documentation and vetted carriers.', tagline: 'Temperature-sensitive loads', tags: ['Reefer', 'Dry van', 'Expedited'],
+      lead: 'Temperature-sensitive and high-value freight handled with documentation, monitoring and carriers vetted for security and compliance.',
+      cTitle: 'No room for a temperature excursion.', cBody: 'Pharmaceutical and healthcare freight has to arrive within spec, with a record to prove it. A single excursion or gap in custody can mean a rejected shipment and a costly write-off.',
+      moves: ['Temperature-controlled pharmaceuticals', 'Medical devices & supplies', 'Nutraceuticals', 'Lab & diagnostic products', 'High-value healthcare goods'],
+      aTitle: 'Monitored from pickup to delivery.',
+      points: [['Pre-cooled, verified equipment', 'Reefer set points confirmed and documented before loading.'], ['Continuous monitoring', 'Temperatures watched in transit, with alerts raised the moment anything drifts.'], ['Secure, vetted carriers', 'Authority, insurance and security practices checked on every load.']],
+      cta: 'Ship within spec, every time.' },
+    { slug: 'retail', code: 'RETAIL', short: 'Retail', t: 'Retail', v: 52447,
+      sd: 'Store replenishment, seasonal surges and promotional freight, scheduled around your calendar and your customers.', stags: ['Seasonal', 'Multi-stop', 'Pool'],
+      d: 'Store replenishment, seasonal surges and promotional freight, scheduled around your calendar and your customers.', tagline: 'Seasonal · Multi-stop · Pool', tags: ['Dry van', 'LTL', 'Multi-stop'],
+      lead: 'From peak season to everyday replenishment, we scale capacity with your calendar so stores stay stocked and launches land on time.',
+      cTitle: 'Peak season does not wait for capacity.', cBody: 'Retail volume swings hard around holidays and promotions. When the market tightens, shippers without committed capacity pay spot rates or miss launch dates.',
+      moves: ['Store replenishment', 'Seasonal & holiday inventory', 'Promotional displays', 'E-commerce fulfillment freight', 'Multi-stop store deliveries'],
+      aTitle: 'Capacity planned ahead of the peak.',
+      points: [['Seasonal capacity planning', 'We map your peak volumes and secure carriers before the market tightens.'], ['Multi-stop routing', 'Store deliveries sequenced for efficiency and on-time arrival.'], ['One point of contact', 'A dedicated rep who knows your stores, docks and deadlines.']],
+      cta: 'Stay stocked through every season.' },
+    { slug: 'distribution', code: 'DIST', short: 'Distribution', t: 'Distribution & Wholesale', v: 41361,
+      sd: 'DC-to-DC transfers, cross-dock moves and consistent lane coverage that keeps inventory flowing across your network.', stags: ['Cross-dock', 'Dedicated', 'LTL'],
+      d: 'DC-to-DC transfers, cross-dock moves and consistent lane coverage that keeps inventory flowing across your network.', tagline: 'Multi-node · High SKU count', tags: ['Dry van', 'LTL', 'Dedicated'],
+      lead: 'Multi-node networks need consistent, repeatable capacity. We cover your recurring lanes so inventory moves between facilities on schedule.',
+      cTitle: 'One late transfer ripples through the network.', cBody: 'In a multi-node network, a delayed DC transfer shows up days later as stockouts downstream. Consistency on recurring lanes matters as much as rate.',
+      moves: ['DC-to-DC transfers', 'Cross-dock freight', 'Wholesale distribution', 'Inbound to warehouse', 'Recurring contract lanes'],
+      aTitle: 'Consistent lanes, predictable arrivals.',
+      points: [['Dedicated lane coverage', 'Committed carriers on your recurring lanes for consistent service.'], ['Quarterly lane reviews', 'Performance and rates reviewed with you every quarter.'], ['Network visibility', 'Status on every load across every facility, in one place.']],
+      cta: 'Keep your network moving.' },
+    { slug: 'manufacturing', code: 'MFG', short: 'Manufacturing', t: 'Manufacturing & Industrial', v: 2741,
+      sd: 'Raw materials in and finished goods out, including oversized and heavy-haul loads on flatbed and step-deck equipment.', stags: ['Flatbed', 'Heavy haul', 'Step-deck'],
+      d: 'Raw materials in and finished goods out, including oversized and heavy-haul loads on flatbed and step-deck.', tagline: 'Flatbed · Heavy haul · Step-deck', tags: ['Flatbed', 'Step-deck', 'Heavy haul'],
+      lead: 'Raw materials, machinery and finished goods moved on the right equipment, with permits, securement and scheduling handled for you.',
+      cTitle: 'The wrong truck is a missed pickup.', cBody: 'Industrial freight often needs specialized equipment, permits and securement. Getting any of it wrong means a truck turned away at the dock and a production schedule pushed back.',
+      moves: ['Raw materials & steel', 'Machinery & equipment', 'Building materials', 'Oversized & overweight loads', 'Finished industrial goods'],
+      aTitle: 'The right equipment, the first time.',
+      points: [['Equipment matched to the load', 'Flatbed, step-deck, RGN or dry van — specified before booking.'], ['Permits & securement handled', 'Oversize permits and securement requirements coordinated up front.'], ['Scheduled to production', 'Pickups and deliveries planned around your plant schedule.']],
+      cta: 'Move heavy freight with confidence.' }
+  ];
+  var SERVICES = [
+    ['01', 'Full Truckload', "Dedicated 53' capacity for time-sensitive freight, booked with vetted carriers and confirmed appointments."],
+    ['02', 'LTL', 'Partial and less-than-truckload shipments consolidated for cost, without giving up the delivery date.'],
+    ['03', 'Temperature-Controlled', 'Reefer capacity for food, beverage and pharma, with temperature monitored from pickup to delivery.'],
+    ['04', 'Flatbed & Specialized', 'Flatbed, step-deck and oversized loads for machinery, building materials and heavy freight.'],
+    ['05', 'Expedited', 'Team drivers and hot-shot capacity when it has to be there today — dispatched at any hour.'],
+    ['06', 'Dedicated & Contract Lanes', 'Committed capacity and consistent rates on your recurring lanes, reviewed with you every quarter.']
+  ];
+  var STEPS = [
+    ['01', 'Quote & Tender', 'Share the lane and requirements. You get a clear, all-in rate and a confirmed plan.'],
+    ['02', 'Vetted & Booked', 'We check every carrier for authority, insurance and safety record before they touch your freight.'],
+    ['03', 'Tracked Live', 'Real-time location and check calls, with proactive alerts the moment anything changes.'],
+    ['04', 'Delivered & Closed', 'On-time delivery, signed POD sent the same day, one clean invoice.']
+  ];
+  var STANDARDS = [
+    ['Every appointment confirmed', 'Pickup and delivery windows are locked in with shipper and receiver before the truck is dispatched.'],
+    ['A dedicated rep, not a call queue', 'One person who knows your freight, your docks and your customers.'],
+    ['Vetted carriers only', 'Authority, insurance and safety records checked on every carrier, every load.'],
+    ['Updates before you ask', 'Proactive status at pickup, in transit and at delivery. No chasing.'],
+    ['A backup plan on every load', 'Contingency capacity is lined up so a breakdown never becomes a missed delivery.']
+  ];
+  var TICK = ['CPG', 'Automotive', 'Pharma', 'Retail', 'Distribution', 'Manufacturing', 'Full Truckload', 'LTL', 'Reefer', 'Flatbed', 'Expedited', '24/7 Support'];
+  var num = function (i) { return String(i + 1).padStart(2, '0') + ' / 06'; };
+  var $ = function (id) { return document.getElementById(id); };
+
+  // ---- Static renders ----
+  $('yr').textContent = new Date().getFullYear();
+  $('ticker').innerHTML = TICK.concat(TICK).map(function (t) { return '<div>' + esc(t) + '</div>'; }).join('');
+  $('services-list').innerHTML = SERVICES.map(function (s) {
+    return '<a class="svc rv" href="#quote"><span class="n">' + s[0] + '</span><span class="t">' + esc(s[1]) + '</span><span class="d">' + esc(s[2]) + '</span><span class="a">→</span></a>';
+  }).join('');
+  $('cards').innerHTML = INDUSTRIES.map(function (x, i) {
+    return '<a class="card rv" href="#industry-' + x.slug + '"><div class="img"><img loading="lazy" src="' + thumb(x.v) + '" alt="' + esc(x.t) + '"><span class="tag">' + num(i) + '</span></div>' +
+      '<div class="body"><h3>' + esc(x.t) + '</h3><p>' + esc(x.d) + '</p><span class="line">' + esc(x.tagline) + '</span><span class="go">Explore industry <span>→</span></span></div></a>';
+  }).join('');
+  var stmt = "Freight doesn't keep business hours. Neither do we.".split(' ');
+  $('words').innerHTML = stmt.map(function (w, i) { return '<span' + (i >= 5 ? ' class="accent"' : '') + '>' + esc(w) + '</span>'; }).join('');
+  $('indList').innerHTML = INDUSTRIES.map(function (x, i) {
+    return '<div class="ind' + (i === 0 ? ' on' : '') + '" data-ind="' + i + '"><div class="bar"><i></i>' + String(i + 1).padStart(2, '0') + ' / ' + x.code + '</div>' +
+      '<h3>' + esc(x.short) + '</h3><p>' + esc(x.sd) + '</p><div class="chips">' + x.stags.map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') + '</div></div>';
+  }).join('');
+  var media = $('indMedia');
+  INDUSTRIES.forEach(function (x, i) {
+    var v = document.createElement('video');
+    v.className = 'bgvid' + (i === 0 ? ' on' : '');
+    v.muted = true; v.loop = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.preload = i === 0 ? 'auto' : 'none';
+    v.poster = thumb(x.v);
+    v.dataset.clip = x.v;
+    media.insertBefore(v, media.firstChild);
+  });
+  $('steps').innerHTML = STEPS.map(function (s) { return '<div class="rv"><b>' + s[0] + '</b><h3>' + esc(s[1]) + '</h3><p>' + esc(s[2]) + '</p></div>'; }).join('');
+  $('standards').innerHTML = STANDARDS.map(function (s) { return '<div class="std-row rv"><i></i><div><b>' + esc(s[0]) + '</b><span>' + esc(s[1]) + '</span></div></div>'; }).join('');
+
+  var contact = '<div><small>EMAIL</small><a href="mailto:' + EMAIL + '" style="font:600 20px/1.2 \'IBM Plex Sans\',sans-serif">' + EMAIL + '</a></div>';
+  if (PHONE) contact += '<div><small>24/7 DISPATCH</small><a href="tel:' + PHONE.replace(/[^\d+]/g, '') + '" style="font:600 20px/1.2 \'IBM Plex Sans\',sans-serif">' + esc(PHONE) + '</a></div>';
+  contact += '<div><small>MAILING ADDRESS</small><span style="font:500 17px/1.45 \'IBM Plex Sans\',sans-serif;color:rgba(238,237,232,.85)">Valence Supply Chain LLC<br>21008 N St #317790<br>Sacramento, CA 95816, USA</span></div>';
+  $('contact').innerHTML = contact;
+  $('fcontact').insertAdjacentHTML('beforeend', '<a href="mailto:' + EMAIL + '">' + EMAIL + '</a><span style="display:flex;align-items:center;gap:8px"><span class="dot" style="width:7px;height:7px"></span>Support open 24/7</span>');
+
+  // ---- Videos ----
+  // Safari/iOS can ignore the autoplay attribute, so force muted playback.
+  function kick() { document.querySelectorAll('video[autoplay]').forEach(function (v) { v.muted = true; if (v.paused) { var p = v.play(); if (p && p.catch) p.catch(function () {}); } }); }
+  kick();
+  window.addEventListener('load', kick);
+  ['touchstart', 'click'].forEach(function (ev) { window.addEventListener(ev, kick, { once: true, passive: true }); });
+
+  var indVids = [].slice.call(media.querySelectorAll('video')).reverse();
+  function showInd(i) {
+    indVids.forEach(function (v, k) {
+      if (k === i) {
+        if (!v.currentSrc) setVideo(v, +v.dataset.clip, false);
+        v.classList.add('on'); var p = v.play(); if (p && p.catch) p.catch(function () {});
+      } else { v.classList.remove('on'); v.pause(); }
+    });
+    $('indName').textContent = INDUSTRIES[i].code;
+    $('indCount').textContent = num(i);
+    document.querySelectorAll('[data-ind]').forEach(function (el) { el.classList.toggle('on', +el.dataset.ind === i); });
+  }
+  showInd(0);
+
+  // ---- Equipment + form ----
+  var EQUIP = ['Dry Van', 'Reefer', 'Flatbed', 'LTL', 'Expedited'], eqSel = 'Dry Van';
+  function renderEq() {
+    $('eq').innerHTML = EQUIP.map(function (t) { return '<button type="button" class="' + (t === eqSel ? 'on' : '') + '" data-eq="' + t + '">' + t + '</button>'; }).join('');
+  }
+  renderEq();
+  $('eq').addEventListener('click', function (e) { var b = e.target.closest('[data-eq]'); if (b) { eqSel = b.dataset.eq; renderEq(); } });
+  $('qform').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = new FormData(e.target), g = function (k) { return f.get(k) || ''; };
+    var body = 'Name: ' + g('name') + '\nCompany: ' + g('company') + '\nEmail: ' + g('email') + '\nPhone: ' + g('phone') +
+      '\nOrigin: ' + g('origin') + '\nDestination: ' + g('destination') + '\nEquipment: ' + eqSel + '\n\nDetails:\n' + g('details');
+    location.href = 'mailto:' + EMAIL + '?subject=' + encodeURIComponent('Quote request: ' + g('origin') + ' to ' + g('destination')) + '&body=' + encodeURIComponent(body);
+    $('formNote').textContent = 'Opening your email app with the request filled in.';
+  });
+
+  // ---- Reveal on scroll ----
+  var io = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }) : null;
+  function setupReveal(root) {
+    var groups = new Map();
+    (root || document).querySelectorAll('.rv:not(.in)').forEach(function (el) {
+      var p = el.parentElement, i = groups.get(p) || 0; groups.set(p, i + 1);
+      el.style.transitionDelay = Math.min(i, 6) * 90 + 'ms';
+      if (io) io.observe(el); else el.classList.add('in');
+    });
+  }
+
+  // ---- Industry detail pages (#industry-slug) ----
+  var detail = $('detail'), home = $('home');
+  function renderDetail(x, i) {
+    var others = INDUSTRIES.map(function (o, k) { return { o: o, k: k }; }).filter(function (p) { return p.o.slug !== x.slug; });
+    detail.innerHTML =
+      '<section class="dhero"><video class="bgvid" id="dVid" autoplay muted loop playsinline></video>' +
+      '<div class="shade-x"></div><div class="shade-y"></div><div class="inner">' +
+      '<div class="crumb"><a href="#industries">← ALL INDUSTRIES</a><span style="opacity:.4">/</span><span style="color:var(--sand)">' + num(i) + '</span></div>' +
+      '<h1>' + esc(x.t) + '</h1><p class="lead" style="max-width:640px">' + esc(x.lead) + '</p>' +
+      '<div class="ctas"><a class="btn btn-sand" href="#quote">Request a Quote <span>→</span></a></div></div></section>' +
+      '<section class="sec"><div class="wrap quote-grid" style="gap:clamp(40px,7vw,120px)"><div><div class="eyebrow">THE CHALLENGE</div>' +
+      '<h2 class="h2" style="font-size:clamp(40px,4.8vw,76px);margin-bottom:26px">' + esc(x.cTitle) + '</h2><p class="intro" style="max-width:560px">' + esc(x.cBody) + '</p></div>' +
+      '<div><div class="mono" style="font-size:12px;letter-spacing:.22em;color:var(--mute);margin-bottom:20px">WHAT WE MOVE</div><div class="moves">' +
+      x.moves.map(function (m) { return '<div>' + esc(m) + '</div>'; }).join('') + '</div></div></div></section>' +
+      '<section class="sec" style="background:var(--ink);color:var(--bone)"><div class="wrap"><div class="eyebrow light">HOW WE KEEP IT ON TIME</div>' +
+      '<h2 class="h2" style="font-size:clamp(40px,5vw,84px);margin-bottom:64px;max-width:1000px">' + esc(x.aTitle) + '</h2><div class="points">' +
+      x.points.map(function (p, k) { return '<div><b>0' + (k + 1) + '</b><h3>' + esc(p[0]) + '</h3><p>' + esc(p[1]) + '</p></div>'; }).join('') +
+      '</div><div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:56px"><span class="mono" style="font-size:11px;letter-spacing:.18em;color:rgba(238,237,232,.6);margin-right:8px">EQUIPMENT</span>' +
+      x.tags.map(function (t) { return '<span class="disp" style="padding:10px 14px;border:1px solid rgba(238,237,232,.35);font-weight:700;font-size:14px;letter-spacing:.12em">' + esc(t) + '</span>'; }).join('') +
+      '</div></div></section>' +
+      '<section style="background:var(--sand);padding:clamp(64px,8vw,110px) var(--pad)"><div class="wrap" style="display:flex;flex-wrap:wrap;gap:32px;align-items:center;justify-content:space-between">' +
+      '<h2 class="h2" style="font-size:clamp(38px,4.6vw,76px);max-width:900px">' + esc(x.cta) + '</h2><a class="btn btn-ink" href="#quote">Talk to a Broker →</a></div></section>' +
+      '<section style="padding:clamp(64px,8vw,110px) var(--pad)"><div class="wrap"><div class="mono" style="font-size:12px;letter-spacing:.22em;color:var(--mute);margin-bottom:24px">OTHER INDUSTRIES</div><div class="others">' +
+      others.map(function (p) { return '<a href="#industry-' + p.o.slug + '"><span style="display:flex;align-items:baseline;gap:22px"><span class="mono" style="font-size:12px;letter-spacing:.14em;opacity:.6">' + num(p.k) + '</span><span class="disp" style="font-weight:800;font-size:clamp(26px,3vw,40px)">' + esc(p.o.t) + '</span></span><span style="font:600 24px/1 \'IBM Plex Sans\',sans-serif">→</span></a>'; }).join('') +
+      '</div></div></section>';
+    setVideo($('dVid'), x.v, true);
+  }
+  var currentPage = null;
+  function route() {
+    var m = location.hash.match(/^#industry-([a-z]+)/);
+    var slug = m ? m[1] : null;
+    var idx = slug ? INDUSTRIES.findIndex(function (x) { return x.slug === slug; }) : -1;
+    var page = idx >= 0 ? slug : null;
+    if (page !== currentPage) {
+      currentPage = page;
+      if (page) {
+        home.hidden = true; detail.hidden = false;
+        $('heroVid').pause();
+        renderDetail(INDUSTRIES[idx], idx);
+        window.scrollTo(0, 0);
+      } else {
+        detail.hidden = true; detail.innerHTML = ''; home.hidden = false;
+        var p = $('heroVid').play(); if (p && p.catch) p.catch(function () {});
+      }
+    }
+    if (!page && location.hash && location.hash.length > 1) {
+      var el = document.getElementById(location.hash.slice(1));
+      if (el) requestAnimationFrame(function () { window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 76); });
+    }
+    setupReveal();
+    tick();
+  }
+
+  // ---- Scroll effects ----
+  var hdr = $('hdr'), heroText = $('heroText'), heroVid = $('heroVid'), activeInd = 0, raf = null;
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function tick() {
+    var vh = window.innerHeight, y = window.scrollY;
+    hdr.classList.toggle('scrolled', y > 40 || currentPage !== null);
+    if (currentPage) return;
+    if (!reduce && y < vh * 1.2) {
+      heroText.style.transform = 'translateY(' + y * 0.28 + 'px)';
+      heroText.style.opacity = Math.max(0, 1 - y / (vh * 0.8));
+      heroVid.style.transform = 'scale(' + (1.06 + y / vh * 0.08) + ') translateY(' + y * 0.12 + 'px)';
+    }
+    var st = $('stmt').getBoundingClientRect();
+    var p1 = Math.min(1, Math.max(0, (vh * 0.8 - st.top) / (st.height * 0.75)));
+    var ws = $('words').children;
+    for (var i = 0; i < ws.length; i++) ws[i].classList.toggle('on', (i + 0.5) / ws.length < p1);
+    var pr = $('process').getBoundingClientRect();
+    var p2 = Math.min(1, Math.max(0, (vh * 0.75 - pr.top) / (pr.height * 0.7)));
+    $('procFill').style.width = p2 * 100 + '%';
+    $('procMark').style.left = p2 * 100 + '%';
+    var best = activeInd, bd = Infinity;
+    document.querySelectorAll('[data-ind]').forEach(function (el) {
+      var r = el.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - vh / 2);
+      if (d < bd) { bd = d; best = +el.dataset.ind; }
+    });
+    if (best !== activeInd) { activeInd = best; showInd(best); }
+  }
+  function onScroll() { if (!raf) raf = requestAnimationFrame(function () { raf = null; tick(); }); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>
+</body>
+</html>
