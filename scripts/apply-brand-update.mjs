@@ -332,7 +332,15 @@ tpl = swapAll(tpl,
   const H1_FONT_NEW = `clamp(27px,3.52vw,54px)/.95`; // 80% of the old clamp (27.2 / 3.52 / 54.4)
   const H1_REST = ` 'Archivo',sans-serif;font-stretch:88%;text-transform:uppercase;letter-spacing:.005em">Valence.<br><span style="color:var(--acc)">Bonded to your deadline.</span></h1>`;
   const HERO_BUTTON = `      <a data-reveal="1" href="#quote" style="display:flex;align-items:center;gap:12px;padding:15px 24px;border:1px solid rgba(238,237,232,.6);color:#EEEDE8;font:700 14px/1 'Archivo',sans-serif;font-stretch:88%;letter-spacing:.14em;text-transform:uppercase;backdrop-filter:blur(6px)" style-hover="background:var(--acc);border-color:var(--acc);color:#111315">Request a Quote <span>→</span></a>\n`;
-  const HERO_MARK = `<picture data-reveal="1" style="display:block;grid-row:1;grid-column:1"><source srcset="/valence-mark-white-animated.svg" media="(prefers-reduced-motion: no-preference)"><img src="/valence-mark-white.svg" alt="" style="display:block;width:{{ heroMarkPx }};height:{{ heroMarkPx }}"></picture>`;
+  // Hero-specific mark files: same geometry as valence-mark-white*.svg, ring
+  // #98AE9C (accent) and dot #EEEDE8 instead of ring #5F7263 / dot #98AE9C,
+  // because the dark ring was nearly invisible over the forest clips. The
+  // header and footer keep the white files. The drop shadow holds the mark
+  // up over bright frames.
+  const HERO_MARK_IMG = (still, animated) => `<source srcset="${animated}" media="(prefers-reduced-motion: no-preference)"><img src="${still}" alt="" style="display:block;width:{{ heroMarkPx }};height:{{ heroMarkPx }}"></picture>`;
+  const HERO_MARK_V1 = `<picture data-reveal="1" style="display:block;grid-row:1;grid-column:1">` + HERO_MARK_IMG('/valence-mark-white.svg', '/valence-mark-white-animated.svg');
+  const HERO_MARK = `<picture data-reveal="1" style="display:block;grid-row:1;grid-column:1;filter:drop-shadow(0 2px 10px rgba(0,0,0,.45))">` + HERO_MARK_IMG('/valence-mark-hero.svg', '/valence-mark-hero-animated.svg');
+  for (const f of ['valence-mark-hero.svg', 'valence-mark-hero-animated.svg']) assert(existsSync(join(ROOT, f)), `${f} missing`);
 
   const from =
 `      <div style="display:flex;flex-direction:column;gap:18px">
@@ -349,13 +357,19 @@ ${HERO_BUTTON}`;
 `;
   const quoteLinksBefore = tpl.split('href="#quote"').length - 1;
   const hadButton = tpl.includes(HERO_BUTTON);
+  // An index.html built by the first version of this step has the white
+  // mark in the hero; bring it to the current markup before the main swap.
+  if (tpl.includes(HERO_MARK_V1)) tpl = swapAll(tpl, HERO_MARK_V1, HERO_MARK, 'hero mark: white files → hero files + drop shadow', 1);
   tpl = swapAll(tpl, from, to, 'hero: mark + 80% heading in a grid, "Request a Quote" button removed', 1);
   const quoteLinksAfter = tpl.split('href="#quote"').length - 1;
   assert(quoteLinksAfter === quoteLinksBefore - (hadButton ? 1 : 0), 'hero: wrong number of #quote links removed');
   assert(quoteLinksAfter >= 4, 'hero: header / services / quote section / footer #quote links must remain');
   assert(!tpl.includes(HERO_BUTTON), 'hero button still present');
   assert(!tpl.includes(H1_FONT_OLD), 'old hero heading size still present');
-  assert(tpl.split('/valence-mark-white-animated.svg').length - 1 === 2, 'expected the animated mark in header + hero only');
+  assert(tpl.split('/valence-mark-white-animated.svg').length - 1 === 1, 'expected the white animated mark in the header only');
+  assert(tpl.split('/valence-mark-hero-animated.svg').length - 1 === 1, 'expected the hero animated mark once');
+  assert(tpl.split('/valence-mark-hero.svg').length - 1 === 1, 'expected the hero still mark once');
+  assert(tpl.split('/valence-mark-white.svg').length - 1 === 2, 'expected the white still mark in header + footer only');
 
   // Render values, computed from vw like `brand` above.
   const anchor = `      phoneHref: '+1' + String(phone).replace(/\\D/g, '')\n    };\n`;
