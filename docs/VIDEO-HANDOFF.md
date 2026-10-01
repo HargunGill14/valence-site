@@ -10,6 +10,11 @@ Every clip has direct MP4 URLs in this pattern:
 **Recommended:** download each 720p file and self-host it, e.g. `/videos/26005.mp4`.
 If the site just keeps the Mixkit links, the videos could break if Mixkit moves its files.
 
+**Self-hosted today:** 23852 ("Our Standard") and 41361 (Quote background) are served from this repo as
+`/videos/{ID}-720.mp4`, `/videos/{ID}-360.mp4` and `/videos/{ID}-poster.jpg` (H.264, yuv420p, no audio, faststart).
+They used to be inlined as base64 inside `index.html`, which pushed the page past Googlebot's 15 MB limit.
+`scripts/apply-brand-update.mjs` is what moved them out. The other six clips still stream from Mixkit.
+
 ## Exact clips and where each is used
 
 | ID | Clip | Used in |
@@ -19,9 +24,9 @@ If the site just keeps the Mixkit links, the videos could break if Mixkit moves 
 | 52428 | Flying over a busy highway serpentine by the mountains | Automotive industry |
 | 1919  | Trailers on a foggy road | Pharma industry, plus the 24/7 statement mood |
 | 52447 | Aerial view: several freightliners on black asphalt, sunny | Retail industry |
-| 41361 | Aerial view of cars and trucks traveling on a highway | Distribution industry, plus the **Quote/contact section** background (35% opacity) |
+| 41361 | Aerial view of cars and trucks traveling on a highway | Distribution industry (Mixkit), plus the **Quote/contact section** background (35% opacity, self-hosted `/videos/41361-*`) |
 | 2741  | Orange heavy cargo transport moving on the road | Manufacturing industry |
-| 23852 | Worker giving directions to a freight truck | **"Our Standard"** section (left half-screen video) |
+| 23852 | Worker giving directions to a freight truck | **"Our Standard"** section (left half-screen video, self-hosted `/videos/23852-*`) |
 
 Mixkit pages, for reference: `https://mixkit.co/free-stock-video/` + the slug, e.g.
 https://mixkit.co/free-stock-video/freight-trucks-heading-through-a-forest-26005/
@@ -63,6 +68,7 @@ document.querySelectorAll('video').forEach(v => { v.muted = true; v.play().catch
 ## Palette / fonts (for consistency)
 
 - Black `#111315`, deep black `#0A0B0D`, soft white bg `#F6F4EF`, eggshell `#EEEDE8`, **accent Estate Green `#98AE9C`**, darker green text `#3F5E48`, body grey `#45484D`. (The old stone accent was #C9BFAE / #6F6656.)
-- Phone: 516-710-5656 · Email: info@valencesupplychain.com
+- Phone: 628-218-8500 (`tel:+16282188500`) · Email: jesse@valencesupplychain.com
+- Mailing address: Valence Supply Chain LLC, 2108 N St #317790, Sacramento, CA 95816, USA
 - Headlines: **Archivo** 800, uppercase, `font-stretch:88%`. Body: **IBM Plex Sans**. Labels: **IBM Plex Mono**.
 - Google Fonts: `https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap`

@@ -1,0 +1,7 @@
+node_modules/
+.railway/
+.env
+.env.*
+credentials.json
+*.zip
+.DS_Store
