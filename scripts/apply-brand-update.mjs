@@ -321,6 +321,61 @@ tpl = swapAll(tpl,
   `<h3 style="margin:0;font:800 clamp(38px,4.4vw,68px)/.92 'Archivo',sans-serif;font-stretch:88%;text-transform:uppercase">`,
   'industry row heading: phone min size 40px → 38px', 1);
 
+// ───────────────────────── 9. hero: mark beside the heading, smaller heading, no hero button ─────────────────────────
+// Mark first, then the heading and paragraph. A 2-column grid (not a flex
+// row) so the mark is centred on the two heading lines only and the paragraph
+// sits under the heading. At <= 600px the mark stacks above the heading.
+{
+  const HERO_P = `<p data-reveal="1" style="margin:0;`;
+  const HERO_P_REST = `max-width:420px;font:400 clamp(15px,1.1vw,17px)/1.5 'IBM Plex Sans',sans-serif;color:rgba(238,237,232,.85);text-wrap:pretty">When your freight can't be late, we're the call you make. Vetted carriers, live tracking and a real person on the line 24/7.</p>`;
+  const H1_FONT_OLD = `clamp(34px,4.4vw,68px)/.95`;
+  const H1_FONT_NEW = `clamp(27px,3.52vw,54px)/.95`; // 80% of the old clamp (27.2 / 3.52 / 54.4)
+  const H1_REST = ` 'Archivo',sans-serif;font-stretch:88%;text-transform:uppercase;letter-spacing:.005em">Valence.<br><span style="color:var(--acc)">Bonded to your deadline.</span></h1>`;
+  const HERO_BUTTON = `      <a data-reveal="1" href="#quote" style="display:flex;align-items:center;gap:12px;padding:15px 24px;border:1px solid rgba(238,237,232,.6);color:#EEEDE8;font:700 14px/1 'Archivo',sans-serif;font-stretch:88%;letter-spacing:.14em;text-transform:uppercase;backdrop-filter:blur(6px)" style-hover="background:var(--acc);border-color:var(--acc);color:#111315">Request a Quote <span>→</span></a>\n`;
+  const HERO_MARK = `<picture data-reveal="1" style="display:block;grid-row:1;grid-column:1"><source srcset="/valence-mark-white-animated.svg" media="(prefers-reduced-motion: no-preference)"><img src="/valence-mark-white.svg" alt="" style="display:block;width:{{ heroMarkPx }};height:{{ heroMarkPx }}"></picture>`;
+
+  const from =
+`      <div style="display:flex;flex-direction:column;gap:18px">
+      <h1 data-reveal="1" style="margin:0;font:800 ${H1_FONT_OLD}${H1_REST}
+      ${HERO_P}${HERO_P_REST}
+      </div>
+${HERO_BUTTON}`;
+  const to =
+`      <div style="display:grid;grid-template-columns:{{ heroCols }};gap:18px 32px;align-items:center;justify-items:start;min-width:0;max-width:100%">
+      ${HERO_MARK}
+      <h1 data-reveal="1" style="margin:0;grid-row:{{ heroH1Row }};grid-column:{{ heroTextCol }};font:800 ${H1_FONT_NEW}${H1_REST}
+      ${HERO_P}grid-row:{{ heroPRow }};grid-column:{{ heroTextCol }};${HERO_P_REST}
+      </div>
+`;
+  const quoteLinksBefore = tpl.split('href="#quote"').length - 1;
+  const hadButton = tpl.includes(HERO_BUTTON);
+  tpl = swapAll(tpl, from, to, 'hero: mark + 80% heading in a grid, "Request a Quote" button removed', 1);
+  const quoteLinksAfter = tpl.split('href="#quote"').length - 1;
+  assert(quoteLinksAfter === quoteLinksBefore - (hadButton ? 1 : 0), 'hero: wrong number of #quote links removed');
+  assert(quoteLinksAfter >= 4, 'hero: header / services / quote section / footer #quote links must remain');
+  assert(!tpl.includes(HERO_BUTTON), 'hero button still present');
+  assert(!tpl.includes(H1_FONT_OLD), 'old hero heading size still present');
+  assert(tpl.split('/valence-mark-white-animated.svg').length - 1 === 2, 'expected the animated mark in header + hero only');
+
+  // Render values, computed from vw like `brand` above.
+  const anchor = `      phoneHref: '+1' + String(phone).replace(/\\D/g, '')\n    };\n`;
+  const block = anchor +
+`    const heroStack = vw <= 600;
+    const hero = {
+      heroCols: heroStack ? 'minmax(0,1fr)' : 'auto minmax(0,1fr)',
+      heroMarkPx: heroStack ? '64px' : 'clamp(88px,10.8vw,165px)',
+      heroTextCol: heroStack ? '1' : '2',
+      heroH1Row: heroStack ? '2' : '1',
+      heroPRow: heroStack ? '3' : '2'
+    };
+`;
+  if (!tpl.includes('const hero = {')) {
+    tpl = swapAll(tpl, anchor, block, 'renderVals: hero values', 1);
+    tpl = swapAll(tpl, `hasPhone: !!phone, ...brand,\n`, `hasPhone: !!phone, ...brand, ...hero,\n`, 'renderVals: spread hero values', 1);
+  }
+  assert(tpl.includes('...brand, ...hero,'), 'hero values not spread into render values');
+}
+
 // ───────────────────────── write ─────────────────────────
 writeIsland('template', '\n' + JSON.stringify(tpl).replace(/<\//g, '<\\u002F') + '\n  ');
 for (const bad of ['516-710-5656', 'info@valencesupplychain.com', '21008', 'id="__bundler_loading"', '>Unpacking...<', '__bundler_thumbnail']) {
