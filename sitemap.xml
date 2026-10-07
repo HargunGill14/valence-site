@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://www.valencesupplychain.com/</loc>
-    <lastmod>2026-10-01</lastmod>
-  </url>
+  <url><loc>https://www.valencesupplychain.com/</loc><lastmod>2026-10-07</lastmod></url>
+  <url><loc>https://www.valencesupplychain.com/about/</loc><lastmod>2026-10-07</lastmod></url>
+  <url><loc>https://www.valencesupplychain.com/case-studies/</loc><lastmod>2026-10-07</lastmod></url>
+  <url><loc>https://www.valencesupplychain.com/data-centers-and-construction/</loc><lastmod>2026-10-07</lastmod></url>
+  <url><loc>https://www.valencesupplychain.com/food-and-beverage/</loc><lastmod>2026-10-07</lastmod></url>
+  <url><loc>https://www.valencesupplychain.com/space/</loc><lastmod>2026-10-07</lastmod></url>
 </urlset>

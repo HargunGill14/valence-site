@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-100 -100 200 200">
-  <defs><clipPath id="vmh-front"><polygon points="-100,32.49 100,-32.49 100,100 -100,100"/></clipPath></defs>
-  <ellipse rx="88" ry="30" transform="rotate(-18)" fill="none" stroke="#98AE9C" stroke-width="5"/>
-  <polygon points="-66,-60 -30,-60 0,26 30,-60 66,-60 17,64 -17,64" fill="#EEEDE8"/>
-  <g clip-path="url(#vmh-front)"><ellipse rx="88" ry="30" transform="rotate(-18)" fill="none" stroke="#98AE9C" stroke-width="5"/></g>
-  <circle cx="83.69" cy="-27.19" r="7.5" fill="#EEEDE8"/>
-</svg>

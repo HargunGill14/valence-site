@@ -1,10 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-100 -100 200 200">
-  <rect x="-100" y="-100" width="200" height="200" rx="40" fill="#111315"/>
-  <g transform="scale(.86)">
-    <defs><clipPath id="vf-front"><polygon points="-100,32.49 100,-32.49 100,100 -100,100"/></clipPath></defs>
-    <ellipse rx="88" ry="30" transform="rotate(-18)" fill="none" stroke="#5F7263" stroke-width="5"/>
-    <polygon points="-66,-60 -30,-60 0,26 30,-60 66,-60 17,64 -17,64" fill="#EEEDE8"/>
-    <g clip-path="url(#vf-front)"><ellipse rx="88" ry="30" transform="rotate(-18)" fill="none" stroke="#5F7263" stroke-width="5"/></g>
-    <circle cx="83.69" cy="-27.19" r="7.5" fill="#98AE9C"/>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-100 -100 200 200"><rect x="-100" y="-100" width="200" height="200" rx="40" fill="#15140F"/><g transform="scale(.86)"><defs><clipPath id="fvb"><polygon points="-100,-100 100,-100 100,-32.49 -100,32.49"/></clipPath><clipPath id="fvf"><polygon points="-100,32.49 100,-32.49 100,100 -100,100"/></clipPath></defs><g clip-path="url(#fvb)"></g><ellipse rx="88" ry="30" transform="rotate(-18)" fill="none" stroke="#98AE9C" stroke-width="5"/><polygon points="-66,-60 -30,-60 0,26 30,-60 66,-60 17,64 -17,64" fill="#EEEDE8"/><g clip-path="url(#fvf)"><ellipse rx="88" ry="30" transform="rotate(-18)" fill="none" stroke="#98AE9C" stroke-width="5"/></g><circle cx="83.7" cy="-27.2" r="7.5" fill="#EEEDE8"/></g></svg>
