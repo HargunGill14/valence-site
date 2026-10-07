@@ -2,7 +2,8 @@
   "name": "valence-site",
   "private": true,
   "scripts": {
-    "start": "serve -s . -l tcp://0.0.0.0:${PORT:-3000}"
+    "start": "serve . -l tcp://0.0.0.0:${PORT:-3000}",
+    "build": "node scripts/build.mjs"
   },
   "dependencies": {
     "serve": "^14.2.4"
