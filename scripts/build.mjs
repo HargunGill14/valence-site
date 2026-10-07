@@ -8,8 +8,8 @@
 // and may use these directives anywhere in its body:
 //   <!-- @header -->                       sticky site header
 //   <!-- @footer -->                       site footer ("dark" or "light", from the page JSON)
-//   <!-- @cta label="Talk to us" -->       green closing section
-//   <!-- @mark variant="light" size="36" label="Valence" -->   the animated V mark
+//   <!-- @cta label="Book a 15-minute call" -->   green closing section
+//   <!-- @mark variant="light" size="36" label="Valence" -->   the V mark
 //   <!-- @img name="heroes/space" ratio="4/5" alt="…" label="photo: …" sizes="…" -->
 //   <!-- @proof -->                        the logo carousel
 // An @img renders a <picture> when assets/img/<name>-{800,1600}.{jpg,webp} exist,
@@ -32,7 +32,6 @@ const attrs = (s) => Object.fromEntries([...s.matchAll(/(\w+)="([^"]*)"/g)].map(
 
 // ───────────── logo mark ─────────────
 let markSeq = 0;
-const ORBIT = 'M 83.7,-27.2 A 88,30 -18 1 0 -83.7,27.2 A 88,30 -18 1 0 83.7,-27.2 Z';
 const MARK = {
   dark: { v: '#15140F', ring: '#5F7A64' },
   light: { v: '#EEEDE8', ring: '#98AE9C' },
@@ -41,7 +40,8 @@ function mark({ variant = 'dark', size = '30', label = '' } = {}) {
   const { v, ring } = MARK[variant];
   const id = `vm${++markSeq}`;
   const a11y = label ? `role="img" aria-label="${esc(label)}"` : 'aria-hidden="true" focusable="false"';
-  const dot = `<circle r="7.5" fill="${v}"><animateMotion dur="6s" repeatCount="indefinite" path="${ORBIT}"/></circle>`;
+  // The dot rests on the ring, where the old orbit animation started. The mark no longer moves.
+  const dot = `<circle cx="83.7" cy="-27.2" r="7.5" fill="${v}"/>`;
   const ellipse = `<ellipse rx="88" ry="30" transform="rotate(-18)" fill="none" stroke="${ring}" stroke-width="5"/>`;
   return `<svg class="mark" viewBox="-100 -100 200 200" width="${size}" height="${size}" ${a11y}>`
     + `<defs><clipPath id="${id}b"><polygon points="-100,-100 100,-100 100,-32.49 -100,32.49"/></clipPath>`
@@ -74,18 +74,18 @@ function header(page) {
           ${links}
         </nav>
         <a class="site-login" href="${LOGIN}">Customer login</a>
-        <a class="btn btn--dark" href="#contact">Talk to us</a>
+        <a class="btn btn--dark" href="#contact">Book a 15-minute call</a>
       </div>
     </div>
   </header>`;
 }
 
-function cta({ label = 'Talk to us' } = {}) {
+function cta({ label = 'Book a 15-minute call' } = {}) {
   return `<section id="contact" class="cta" aria-labelledby="cta-title">
     <div class="container cta__grid">
       <div>
         <h2 id="cta-title" class="cta__title">Tell us what's eating your week.</h2>
-        <p class="cta__lede">Fifteen minutes. No deck. We'll tell you what we'd take off your plate first.</p>
+        <p class="cta__lede">Fifteen minutes, no deck. We'll say what we'd take first.</p>
         <p class="cta__direct"><a href="${MAILTO}">${EMAIL}</a><span aria-hidden="true"> · </span><a href="tel:${PHONE_TEL}">${PHONE}</a></p>
       </div>
       <div class="cta__action"><a class="btn btn--paper" href="${MAILTO}">${esc(label)}</a></div>
