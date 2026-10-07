@@ -26,7 +26,7 @@
     doc.addEventListener('keydown', function (e) {
       if ((e.key === 'Escape' || e.key === 'Esc') && menu.classList.contains('is-open')) { setMenu(false); toggle.focus(); }
     });
-    window.addEventListener('resize', function () { if (window.innerWidth > 760) setMenu(false); });
+    window.addEventListener('resize', function () { if (window.innerWidth > 1023) setMenu(false); });
   }
 
   /* ── logo mark: freeze the orbiting dot for reduced motion ── */
