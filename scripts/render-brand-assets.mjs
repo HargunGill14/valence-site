@@ -58,7 +58,7 @@ await shot(img(svg('assets/valence-mark-dark-static.svg'), 512), 512, 512, 'vale
 await shot(`<div style="width:1200px;height:630px;box-sizing:border-box;padding:0 96px;display:flex;flex-direction:column;justify-content:center;color:${INK}">
   <div style="display:flex;align-items:center;gap:24px">${img(svg('assets/valence-mark-dark-static.svg'), 120)}
     <span style="font:400 104px/1 'Instrument Serif',serif;letter-spacing:-.02em">Valence</span></div>
-  <div style="margin-top:56px;font:400 56px/1.1 'Instrument Serif',serif;letter-spacing:-.01em">You keep the keys. <em style="color:#4F6B55">We do the driving.</em></div>
+  <div style="margin-top:56px;font:400 56px/1.1 'Instrument Serif',serif;letter-spacing:-.01em">Full view. Your call. <em style="color:#4F6B55">Our hands.</em></div>
   <div style="margin-top:28px;font:500 22px/1 'Instrument Sans',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#5F5B50">Boutique supply chain partner · Los Angeles</div>
 </div>`, 1200, 630, 'og-image.png', { bg: PAPER });
 
