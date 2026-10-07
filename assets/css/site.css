@@ -100,10 +100,10 @@ p, li, h1, h2, h3, span, div { text-wrap: pretty; }
 .wordmark:hover { color: var(--ink); }
 .wordmark .mark { width: 30px; height: auto; overflow: visible; }
 .site-menu { display: flex; align-items: center; gap: 28px; flex: 1; }
-.site-nav { display: flex; gap: 24px; font-size: 14px; margin-left: 24px; flex: 1; flex-wrap: wrap; }
+.site-nav { display: flex; gap: 24px; font-size: 14px; margin-left: 24px; flex: 1; white-space: nowrap; }
 .site-nav a { text-decoration: none; color: var(--ink); padding: 12px 0; }
 .site-nav a:hover, .site-nav a[aria-current="page"] { color: var(--green); }
-.site-login { font-size: 13px; color: var(--ink-3); text-decoration: none; padding: 12px 0; }
+.site-login { font-size: 13px; color: var(--ink-3); text-decoration: none; padding: 12px 0; white-space: nowrap; }
 .menu-toggle { display: none; }
 .mark { overflow: visible; }
 
@@ -373,21 +373,9 @@ p, li, h1, h2, h3, span, div { text-wrap: pretty; }
 .person p { font-size: 16px; line-height: 1.55; color: var(--ink-2); }
 
 /* ───────── responsive ───────── */
-@media (max-width: 1000px) {
-  .chips { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (max-width: 900px) {
-  .hero, .vhero, .feels, .cta__grid, .split-4-8, .cs-block { grid-template-columns: minmax(0, 1fr); }
-  .hero, .vhero { padding-top: 64px; padding-bottom: 56px; gap: 40px; }
-  .vhero .slot { max-width: 520px; }
-  .feels { gap: 40px; padding-top: 72px; padding-bottom: 72px; }
-  .split-4-8 { gap: 32px; }
-  .cs-block { gap: 20px; padding: 36px 0; }
-  .cta__grid { gap: 32px; padding-top: 80px; padding-bottom: 80px; }
-  .cta__action { justify-content: flex-start; }
-}
-@media (max-width: 760px) {
-  :root { --gutter: 20px; }
+/* Header: the full bar needs about 1,020px, so collapse to the menu button below that.
+   (Before this, links wrapped onto extra lines and spilled out of the 64px bar.) */
+@media (max-width: 1023px) {
   .site-header__bar { gap: 12px; justify-content: space-between; }
   .js .menu-toggle {
     display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 4px 0 12px;
@@ -418,6 +406,22 @@ p, li, h1, h2, h3, span, div { text-wrap: pretty; }
   html:not(.js) .site-menu { flex-basis: 100%; flex-wrap: wrap; gap: 4px 20px; }
   html:not(.js) .site-nav { margin-left: 0; flex-basis: 100%; gap: 4px 20px; }
   html:not(.js) .site-nav a, html:not(.js) .site-login { padding: 10px 0; }
+}
+@media (max-width: 1000px) {
+  .chips { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  .hero, .vhero, .feels, .cta__grid, .split-4-8, .cs-block { grid-template-columns: minmax(0, 1fr); }
+  .hero, .vhero { padding-top: 64px; padding-bottom: 56px; gap: 40px; }
+  .vhero .slot { max-width: 520px; }
+  .feels { gap: 40px; padding-top: 72px; padding-bottom: 72px; }
+  .split-4-8 { gap: 32px; }
+  .cs-block { gap: 20px; padding: 36px 0; }
+  .cta__grid { gap: 32px; padding-top: 80px; padding-bottom: 80px; }
+  .cta__action { justify-content: flex-start; }
+}
+@media (max-width: 760px) {
+  :root { --gutter: 20px; }
 
   .h2 { font-size: 34px; }
   .hero-card { height: 520px; }
