@@ -7,7 +7,7 @@ the phone menu.
 ## Layout
 
 - `src/pages/*.html` is the source for each page. Shared header, footer, closing section, logo
-  mark, image slots and the logo conveyor come from directives in `scripts/build.mjs`.
+  mark, image slots and the logo carousel come from directives in `scripts/build.mjs`.
 - `node scripts/build.mjs` writes `index.html`, `<page>/index.html`, `404.html` and `sitemap.xml`.
   The built files are committed, so the host serves the repo as is.
 - `assets/css/site.css` holds every design token from the design spec.

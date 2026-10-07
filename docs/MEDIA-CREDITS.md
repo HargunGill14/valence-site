@@ -27,10 +27,11 @@ Mixkit only serves these clips at 720p, so the 1600px files are upscaled (Lanczo
 Source: Mixkit (https://mixkit.co, Mixkit Free License, no attribution required). Self-host every
 file; never hotlink.
 
-## Logos (Proof conveyor)
+## Logos (Proof carousel)
 
 Drop `assets/logos/<slug>.svg` (single color, preferred) or `.png`, then run `node scripts/build.mjs`.
-SVGs are inlined in the tile's text color at 14% opacity behind the name. Slugs are the lowercase
+SVGs are inlined at full opacity in the carousel's one neutral color, 32px tall (24px on phones).
+A brand without a file shows its name as plain text at the same size. Slugs are the lowercase
 name with dashes, for example `anheuser-busch`, `treehouse-foods`, `f-x-matt-brewing`.
 
 | Brand | File | Source |
@@ -44,11 +45,10 @@ name with dashes, for example `anheuser-busch`, `treehouse-foods`, `f-x-matt-bre
 | Ferrara | `ferrara.svg` | Wikimedia Commons, https://commons.wikimedia.org/wiki/File:Ferrara_Candy_Company_logo.svg, public domain (PD-textlogo); the mark is Ferrara's trademark |
 
 The Commons files were flattened to one color (fills, clip paths, ids and editor metadata removed)
-so the build can draw them in the tile's text color.
+so the build can draw them in the carousel's text color.
 
 Still needed (not on Wikimedia Commons): Anheuser-Busch (Commons only has the Budweiser bowtie,
 a product logo), Labatt, TreeHouse Foods, Rich Products, Harvest Hill Beverage, FGF Brands,
 Premium Waters, LT Foods Americas, Canadian Canning, Johanna Foods, F.X. Matt Brewing,
 Sanders Candy, Astor Chocolate.
 
-Tile colors are approximations of each brand's color, set in `BRANDS` in `scripts/build.mjs`.
