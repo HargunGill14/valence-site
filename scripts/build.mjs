@@ -8,10 +8,10 @@
 // and may use these directives anywhere in its body:
 //   <!-- @header -->                       sticky site header
 //   <!-- @footer -->                       site footer ("dark" or "light", from the page JSON)
-//   <!-- @cta label="Talk to us" -->       green closing section
-//   <!-- @mark variant="light" size="36" label="Valence" -->   the animated V mark
+//   <!-- @cta label="Book a 15-minute call" -->   green closing section
+//   <!-- @mark variant="light" size="36" label="Valence" -->   the V mark
 //   <!-- @img name="heroes/space" ratio="4/5" alt="…" label="photo: …" sizes="…" -->
-//   <!-- @proof -->                        the logo conveyor
+//   <!-- @proof -->                        the logo carousel
 // An @img renders a <picture> when assets/img/<name>-{800,1600}.{jpg,webp} exist,
 // and a sized placeholder otherwise, so a missing photo never breaks the layout.
 
@@ -32,7 +32,6 @@ const attrs = (s) => Object.fromEntries([...s.matchAll(/(\w+)="([^"]*)"/g)].map(
 
 // ───────────── logo mark ─────────────
 let markSeq = 0;
-const ORBIT = 'M 83.7,-27.2 A 88,30 -18 1 0 -83.7,27.2 A 88,30 -18 1 0 83.7,-27.2 Z';
 const MARK = {
   dark: { v: '#15140F', ring: '#5F7A64' },
   light: { v: '#EEEDE8', ring: '#98AE9C' },
@@ -41,7 +40,8 @@ function mark({ variant = 'dark', size = '30', label = '' } = {}) {
   const { v, ring } = MARK[variant];
   const id = `vm${++markSeq}`;
   const a11y = label ? `role="img" aria-label="${esc(label)}"` : 'aria-hidden="true" focusable="false"';
-  const dot = `<circle r="7.5" fill="${v}"><animateMotion dur="6s" repeatCount="indefinite" path="${ORBIT}"/></circle>`;
+  // The dot rests on the ring, where the old orbit animation started. The mark no longer moves.
+  const dot = `<circle cx="83.7" cy="-27.2" r="7.5" fill="${v}"/>`;
   const ellipse = `<ellipse rx="88" ry="30" transform="rotate(-18)" fill="none" stroke="${ring}" stroke-width="5"/>`;
   return `<svg class="mark" viewBox="-100 -100 200 200" width="${size}" height="${size}" ${a11y}>`
     + `<defs><clipPath id="${id}b"><polygon points="-100,-100 100,-100 100,-32.49 -100,32.49"/></clipPath>`
@@ -74,18 +74,18 @@ function header(page) {
           ${links}
         </nav>
         <a class="site-login" href="${LOGIN}">Customer login</a>
-        <a class="btn btn--dark" href="#contact">Talk to us</a>
+        <a class="btn btn--dark" href="#contact">Book a 15-minute call</a>
       </div>
     </div>
   </header>`;
 }
 
-function cta({ label = 'Talk to us' } = {}) {
+function cta({ label = 'Book a 15-minute call' } = {}) {
   return `<section id="contact" class="cta" aria-labelledby="cta-title">
     <div class="container cta__grid">
       <div>
         <h2 id="cta-title" class="cta__title">Tell us what's eating your week.</h2>
-        <p class="cta__lede">Fifteen minutes. No deck. We'll tell you what we'd take off your plate first.</p>
+        <p class="cta__lede">Fifteen minutes, no deck. We'll say what we'd take first.</p>
         <p class="cta__direct"><a href="${MAILTO}">${EMAIL}</a><span aria-hidden="true"> · </span><a href="tel:${PHONE_TEL}">${PHONE}</a></p>
       </div>
       <div class="cta__action"><a class="btn btn--paper" href="${MAILTO}">${esc(label)}</a></div>
@@ -124,40 +124,39 @@ function img({ name, ratio = '4/3', alt = '', label = '', sizes = '100vw', eager
 }
 
 // ───────────── proof conveyor ─────────────
-// Order and tile colors come from the Home mockup. Logos are optional per brand:
-// a file at assets/logos/<slug>.svg (or .png) is drawn faded behind the name.
+// Logos only, in one neutral color. A brand with a file at assets/logos/<slug>.svg
+// (single color, inlined so it takes currentColor) or .png shows the logo; a brand
+// without one shows its name as plain text at the same size.
 const BRANDS = [
-  ['Walmart', '#0053e2', '#ffc220'], ['Anheuser-Busch', '#c8102e', '#fff'], ['Volvo', '#1c2b4a', '#fff'],
-  ['Aldi', '#00005f', '#ffc700'], ['Rivian', '#f5c400', '#15140f'], ['Labatt', '#1f3f7a', '#fff'],
-  ['Ingredion', '#0057a8', '#fff'], ['TreeHouse Foods', '#2f6b3a', '#fff'], ['Refresco', '#009ddc', '#fff'],
-  ['Rich Products', '#c41230', '#fff'], ['Ferrara', '#e4002b', '#fff'], ['Harvest Hill Beverage', '#6b8e23', '#fff'],
-  ['FGF Brands', '#8a4b2a', '#fff'], ['Premium Waters', '#1e90c8', '#fff'], ['LT Foods Americas', '#1a7f37', '#fff'],
-  ['Canadian Canning', '#5c5c5c', '#fff'], ['Johanna Foods', '#d4a017', '#15140f'], ['F.X. Matt Brewing', '#0b3d2e', '#fff'],
-  ['Sanders Candy', '#4a2c2a', '#fff'], ['Astor Chocolate', '#3b2314', '#fff'],
+  'Walmart', 'Anheuser-Busch', 'Volvo', 'Aldi', 'Rivian', 'Labatt', 'Ingredion', 'TreeHouse Foods',
+  'Refresco', 'Rich Products', 'Ferrara', 'Harvest Hill Beverage', 'FGF Brands', 'Premium Waters',
+  'LT Foods Americas', 'Canadian Canning', 'Johanna Foods', 'F.X. Matt Brewing', 'Sanders Candy', 'Astor Chocolate',
 ];
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-function tile([name, bg, fg], hidden) {
+function logoItem(name, hidden) {
   const s = slug(name);
   const file = ['svg', 'png'].map((x) => `assets/logos/${s}.${x}`).find((p) => existsSync(join(ROOT, p)));
-  let logo = '';
+  // The duplicate set only exists for the loop: hide it from assistive tech, and label nothing in it.
+  const label = hidden ? 'aria-hidden="true" focusable="false"' : `role="img" aria-label="${esc(name)}" focusable="false"`;
+  let inner;
   if (file && file.endsWith('.svg')) {
-    // Inline single-color SVGs so the mark takes the tile's text color.
-    const svg = readFileSync(join(ROOT, file), 'utf8')
+    inner = readFileSync(join(ROOT, file), 'utf8')
       .replace(/<title>[\s\S]*?<\/title>/g, '')
       .replace(/<\?xml[^>]*>/, '')
       .replace(/\s(width|height|role)="[^"]*"/g, '')
-      .replace('<svg', '<svg class="tile__logo" aria-hidden="true" focusable="false" fill="currentColor" preserveAspectRatio="xMidYMid meet"');
-    logo = svg.trim();
+      .replace('<svg', `<svg class="logo" ${label} fill="currentColor" preserveAspectRatio="xMidYMid meet"`)
+      .trim();
   } else if (file) {
-    logo = `<img class="tile__logo" src="/${file}" alt="" loading="lazy" decoding="async">`;
+    inner = `<img class="logo" src="/${file}" alt="${hidden ? '' : esc(name)}" loading="lazy" decoding="async">`;
+  } else {
+    inner = `<span class="logo-name">${esc(name)}</span>`;
   }
-  const a11y = hidden ? ' aria-hidden="true"' : '';
-  return `<li class="tile" style="--tile-bg:${bg};--tile-fg:${fg}"${a11y}>${logo}<span class="tile__name">${esc(name)}</span></li>`;
+  return `<li class="logos__item"${hidden ? ' aria-hidden="true"' : ''}>${inner}</li>`;
 }
 function proof() {
-  const first = BRANDS.map((b) => tile(b, false)).join('');
-  const second = BRANDS.map((b) => tile(b, true)).join('');
-  return `<div class="marquee" style="--marquee-speed:90s"><ul class="marquee__track" aria-label="Companies our team has experience with">${first}${second}</ul></div>`;
+  const first = BRANDS.map((b) => logoItem(b, false)).join('');
+  const second = BRANDS.map((b) => logoItem(b, true)).join('');
+  return `<div class="marquee" tabindex="0" role="region" aria-labelledby="proof-title"><ul class="marquee__track">${first}${second}</ul></div>`;
 }
 
 // ───────────── head ─────────────

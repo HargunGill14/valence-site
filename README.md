@@ -1,18 +1,18 @@
 # valencesupplychain.com
 
 Static marketing site for Valence Supply Chain. Plain HTML, one stylesheet, two small scripts,
-no framework. Every page reads fully with JavaScript off; scripts only add the animations and
-the phone menu.
+no framework. Every page reads fully with JavaScript off; scripts only run the phone menu and
+the background video.
 
 ## Layout
 
 - `src/pages/*.html` is the source for each page. Shared header, footer, closing section, logo
-  mark, image slots and the logo conveyor come from directives in `scripts/build.mjs`.
+  mark, image slots and the logo carousel come from directives in `scripts/build.mjs`.
 - `node scripts/build.mjs` writes `index.html`, `<page>/index.html`, `404.html` and `sitemap.xml`.
   The built files are committed, so the host serves the repo as is.
 - `assets/css/site.css` holds every design token from the design spec.
-- `assets/js/site.js` runs the menu, splash, video autoplay and reduced-motion handling.
-  `assets/js/home.js` runs the hero card and the "How it feels" loop.
+- `assets/js/site.js` runs the menu and the background video (plays only on screen, never with reduced motion).
+  `assets/js/home.js` only switches the hero card variant; the hero cards and the portal are static.
 
 ## Common jobs
 

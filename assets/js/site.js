@@ -1,5 +1,6 @@
 /* Valence: shared page behavior. Plain ES5 so it runs on older Safari and Android browsers.
-   Everything here is enhancement: every page reads fully without JavaScript. */
+   Everything here is enhancement: every page reads fully without JavaScript.
+   Only one thing on the site moves on its own: the background video, and only while it is on screen. */
 (function () {
   'use strict';
 
@@ -29,44 +30,18 @@
     window.addEventListener('resize', function () { if (window.innerWidth > 1023) setMenu(false); });
   }
 
-  /* ── logo mark: freeze the orbiting dot for reduced motion ── */
-  if (reduce) {
-    each(doc.querySelectorAll('svg.mark'), function (svg) {
-      try { svg.pauseAnimations(); svg.setCurrentTime(0); } catch (err) { /* SMIL unsupported: dot sits still anyway */ }
-    });
-  }
-
-  /* ── background video: muted autoplay, with a kick for iOS Safari ── */
+  /* ── background video: muted, plays only while on screen, never for reduced motion ── */
   each(doc.querySelectorAll('video'), function (v) {
     v.muted = true;
     if (reduce) { v.removeAttribute('autoplay'); try { v.pause(); } catch (err) {} return; }
-    var p = v.play();
-    if (p && typeof p.catch === 'function') p.catch(function () { /* autoplay refused: the poster stays */ });
+    var play = function () {
+      var p = v.play();
+      if (p && typeof p.catch === 'function') p.catch(function () { /* autoplay refused: the poster stays */ });
+    };
+    if (!('IntersectionObserver' in window)) { play(); return; }
+    v.removeAttribute('autoplay');
+    new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) play(); else v.pause(); });
+    }).observe(v);
   });
-
-  /* ── splash (home only, first visit per session) ── */
-  var splash = doc.getElementById('splash');
-  if (splash) {
-    var seen = false;
-    try { seen = sessionStorage.getItem('valence-splash') === '1'; } catch (err) {}
-    if (!seen && !reduce && !location.hash) {
-      splash.hidden = false;
-      doc.body.classList.add('is-locked');
-      try { splash.focus({ preventScroll: true }); } catch (err) { splash.focus(); }
-      var done = false;
-      var events = ['wheel', 'touchstart', 'touchmove', 'click', 'keydown', 'scroll'];
-      var dismiss = function () {
-        if (done) return;
-        done = true;
-        try { sessionStorage.setItem('valence-splash', '1'); } catch (err) {}
-        events.forEach(function (ev) { window.removeEventListener(ev, dismiss, true); });
-        splash.classList.add('is-fading');
-        setTimeout(function () {
-          splash.hidden = true;
-          doc.body.classList.remove('is-locked');
-        }, 700);
-      };
-      events.forEach(function (ev) { window.addEventListener(ev, dismiss, { capture: true, passive: true }); });
-    }
-  }
 })();
