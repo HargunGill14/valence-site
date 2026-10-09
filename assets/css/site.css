@@ -506,12 +506,16 @@ html:not(.js) .intro__stage { --intro-bg: #F3EEE4; --intro-fg: #2A2925; --intro-
 }
 .intro__handled i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
 .intro__after { padding-top: 24px; }
+@media (min-width: 1500px) {
+  /* wide screens: the copy hugs the left so it sits in the open floor beside the office, not on it */
+  .intro__copy { max-width: none; margin-left: 0; padding-left: clamp(32px, 5vw, 120px); }
+}
 @media (max-width: 760px) {
   .intro { height: 300svh; }
-  .intro__copy { padding-bottom: 28px; }
+  .intro__copy { padding-bottom: 28px; transform: translateY(calc((1 - var(--intro-h, 0)) * (var(--intro-drop, 0px) - 22px))); }
   .intro__copy .h1 { font-size: clamp(36px, 10vw, 56px); }
   .intro__copy .lede { font-size: 16px; }
-  .intro__cue { right: auto; left: var(--gutter); bottom: 20px; flex-direction: row; gap: 10px; align-items: center; font-size: 11px; }
+  .intro__cue { right: var(--gutter); left: auto; bottom: 20px; flex-direction: row; gap: 10px; align-items: center; font-size: 11px; }
   .intro__cue span { width: 24px; height: 1px; }
   .intro__step { top: 16px; }
 }

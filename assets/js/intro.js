@@ -664,10 +664,16 @@
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     cv.style.width = W + 'px'; cv.style.height = H + 'px';
     var wide = W > 900;
-    ocx = wide ? W * .66 : W * .5;
+    ocx = wide ? (W > 1500 ? W * .68 : W * .66) : W * .5;    /* a touch further right on very wide screens */
     ocy = wide ? H * .52 : H * .3;
     var span = FLOOR.w + FLOOR.d + 3;
     u = Math.min((wide ? W * .62 : W * 1.05) / span, (wide ? H * .74 : H * .48) / (span * .5 + 3.5));
+    /* on phones the copy sits lower while it is chaos, by the height of the lines that are still hidden */
+    var copy = sec.querySelector('.intro__copy'), h1 = document.getElementById('hero-title');
+    if (copy && h1) {
+      var pb = parseFloat(getComputedStyle(copy).paddingBottom) || 0;
+      stage.style.setProperty('--intro-drop', Math.max(0, copy.offsetHeight - (h1.offsetTop + h1.offsetHeight) - pb + 6) + 'px');
+    }
   }
 
   /* ── loop: scurry at 12 fps while it is chaos; redraw whenever the scrollbar moved ── */
