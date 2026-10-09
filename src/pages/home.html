@@ -1,149 +1,90 @@
-<!--{"out":"index.html","title":"Valence Supply Chain | Full view. Your call. Our hands.","description":"Valence is a boutique supply chain partner in Los Angeles. We run your suppliers, inventory and freight. You see it all live, and you make every call.","footer":"dark","bodyClass":"page-home","scripts":["/assets/js/home.js"]}-->
+<!--{"out": "index.html", "title": "Valence Supply Chain | Nothing great gets made in fight or flight.", "description": "Valence takes the work around the work, your co-packers, suppliers, inventory and freight, so you can get back to building the brand. A person picks up any hour, and nothing moves without your OK.", "footer": "dark", "bodyClass": "page-home has-intro", "scripts": ["/assets/js/home.js", "/assets/js/intro.js", "/assets/js/pdemo.js"]}-->
 <!-- @header -->
 
 <main id="main">
-  <section class="container hero" aria-labelledby="hero-title">
-    <div>
-      <p class="eyebrow">Boutique supply chain partner · Los Angeles</p>
-      <h1 id="hero-title" class="h1">Full view. Your call.<br><em>Our hands.</em></h1>
-      <p class="lede">We run your suppliers, inventory and freight. You see it all live, and you make every call.</p>
-      <div class="btn-row">
-        <a class="btn btn--green" href="#contact">Book a 15-minute call</a>
+  <section class="intro" id="intro" data-phase="chaos" aria-labelledby="hero-title">
+    <div class="intro__sticky">
+      <div class="intro__stage">
+        <canvas id="intro-canvas" aria-hidden="true"></canvas>
+        <p class="intro__handled" aria-hidden="true"><i></i>Handled</p>
+        <div class="container intro__copy">
+          <p class="eyebrow">Supply chain team for CPG brands · Los Angeles</p>
+          <h1 id="hero-title" class="h1">Nothing great gets made in <em>fight or flight.</em></h1>
+          <p class="intro__kicker">Valence steps in</p>
+          <p class="lede">Valence takes the work around the work, your co-packers, suppliers, inventory, and freight, so you can get back to building the brand. A person picks up any hour, and nothing moves without your OK.</p>
+          <div class="btn-row intro__btns">
+            <a class="btn cbox cbox--primary" href="#contact"><img class="cbox__art" src="/assets/img/box-long.webp" alt="" width="1000" height="463" decoding="async"><span class="cbox__text">Send us your worst lane</span></a>
+            <a class="btn cbox" href="#contact"><img class="cbox__art" src="/assets/img/box-long.webp" alt="" width="1000" height="463" decoding="async"><span class="cbox__text">Book a 15‑minute call</span></a>
+          </div>
+        </div>
+        <p class="intro__cue" aria-hidden="true">Let Valence fix this<span></span></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="proof" class="proof proof--dark" aria-labelledby="proof-title">
+    <div class="container"><h2 id="proof-title" class="proof__label">Companies our team has experience with</h2></div>
+    <!-- @proof -->
+  </section>
+
+  <section class="results" aria-labelledby="results-title">
+    <div class="container">
+      <h2 id="results-title" class="results__title">In chemistry, valence is an atom's capacity to bond. Ours is keeping every dot connected while you grow.</h2>
+      <ul class="results__grid">
+        <li class="result"><p class="result__n">~60 hrs</p><p class="result__t">a week back for a 3-person beverage brand</p></li>
+        <li class="result"><p class="result__n">70%+</p><p class="result__t">fewer retail chargebacks for an emerging snack brand</p></li>
+        <li class="result"><p class="result__n">18%</p><p class="result__t">under spot on a regional condiment maker's core lane</p></li>
+        <li class="result"><p class="result__n">0</p><p class="result__t">spoilage claims across 500+ reefer loads for a premium plant-based brand</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="portalmap" id="portalmap" aria-labelledby="portalmap-title">
+    <div class="container portalmap__inner">
+      <div class="portalmap__copy">
+        <p class="eyebrow">Your portal · live</p>
+        <h2 id="portalmap-title" class="h2">We see the slip before it costs you, and fix it with your approval.</h2>
+        <p class="lede">Every truck, PO and document, live in your portal. Not in a Friday email.</p>
+        <ul class="portalmap__list">
+          <li>Live tracking on every load, LTL and drayage milestones as they happen</li>
+          <li>An ETA before anyone has to ask</li>
+          <li>POD in your inbox the day it delivers</li>
+        </ul>
         <a class="btn btn--secondary" href="#how">See how we work</a>
       </div>
-    </div>
-
-    <!-- Hero card, variant "split" (default). Add ?hero=ticker to the URL for the ticker variant. -->
-    <div class="hero-card split" id="hero-split" aria-label="Illustration: a founder's inbox next to the same load in the Valence portal">
-      <div class="split__inbox">
-        <div class="card-head"><span>Your inbox</span><span>5 new</span></div>
-        <div class="mail"><span class="mail__meta"><span class="mail__from">Carrier dispatch</span><time>6:48</time></span><span class="mail__subj">Re: Re: ETA? PO 4471</span></div>
-        <div class="mail"><span class="mail__meta"><span class="mail__from">Co-packer</span><time>7:02</time></span><span class="mail__subj">Run update, pushed to Mon</span></div>
-        <div class="mail"><span class="mail__meta"><span class="mail__from">KeHE Stockton</span><time>7:15</time></span><span class="mail__subj">Appt confirmation needed</span></div>
-        <div class="mail"><span class="mail__meta"><span class="mail__from">Driver</span><time>7:41</time></span><span class="mail__subj">Where do I check in</span></div>
-        <div class="mail"><span class="mail__meta"><span class="mail__from">3PL</span><time>8:03</time></span><span class="mail__subj">Count variance, 3 SKUs</span></div>
-      </div>
-      <div class="split__portal">
-        <div class="card-head"><span>Your portal</span><span class="live"><span class="dot"></span>Live</span></div>
-        <div class="po-title">PO 4471 · Fresno → Stockton</div>
-        <div class="po-sub">6 pallets · reefer · KeHE</div>
-        <ol class="steps">
-          <li><span class="dot" style="--dot:#98AE9C"></span><span>Run confirmed</span><time>Mon</time></li>
-          <li><span class="dot" style="--dot:#98AE9C"></span><span>Picked up</span><time>Tue 9:12</time></li>
-          <li><span class="dot" style="--dot:#98AE9C"></span><span>Appt set, Thu 7:00</span><time>Tue 9:30</time></li>
-          <li><span class="dot" style="--dot:#98AE9C"></span><span>Delivered</span><time>Thu 7:14</time></li>
-          <li><span class="dot" style="--dot:#98AE9C"></span><span>POD · BOL filed</span><time>Thu 7:20</time></li>
-        </ol>
-        <div class="split__foot">Nothing to chase.</div>
-      </div>
-    </div>
-
-    <div class="hero-card ticker" id="hero-ticker" aria-label="Illustration: a week of loads and POs in the Valence portal" hidden>
-      <div class="card-head"><span>Your portal · this week</span><span class="live"><span class="dot"></span>Live</span></div>
-      <ol class="feed">
-        <li><span class="feed__main"><span class="feed__title">Co-packer run, Fresno</span><span class="feed__sub"><span class="mono">PO 4471</span> · 6 pallets · reefer</span></span><span class="feed__status" style="--dot:#98AE9C"><span class="dot"></span><span>POD filed</span></span></li>
-        <li><span class="feed__main"><span class="feed__title">LTL into KeHE Stockton</span><span class="feed__sub"><span class="mono">LD 2093</span> · Appt Thu 7:00</span></span><span class="feed__status" style="--dot:#98AE9C"><span class="dot"></span><span>POD filed</span></span></li>
-        <li><span class="feed__main"><span class="feed__title">Cans, Canadian Canning</span><span class="feed__sub"><span class="mono">PO 4468</span> · Cross-border · 2 loads</span></span><span class="feed__status" style="--dot:#98AE9C"><span class="dot"></span><span>Rebooked</span></span></li>
-        <li><span class="feed__main"><span class="feed__title">Reno 3PL count</span><span class="feed__sub"><span class="mono">INV</span> · 3 SKUs · 412 cases</span></span><span class="feed__status" style="--dot:#98AE9C"><span class="dot"></span><span>Reconciled</span></span></li>
-        <li><span class="feed__main"><span class="feed__title">Drayage, LA/LB → Fresno</span><span class="feed__sub"><span class="mono">LD 2088</span> · Packaging, 1×40ft</span></span><span class="feed__status" style="--dot:#98AE9C"><span class="dot"></span><span>Booked</span></span></li>
-      </ol>
-      <div class="ticker__foot">Illustrative. Not real client data.</div>
-    </div>
-  </section>
-
-  <section class="week" aria-labelledby="week-title">
-    <div class="week__bg" aria-hidden="true"></div>
-    <video class="week__video" autoplay muted loop playsinline preload="metadata" poster="/assets/video/week-bg.jpg" aria-hidden="true" tabindex="-1">
-      <source src="/assets/video/week-bg.mp4" type="video/mp4">
-    </video>
-    <div class="week__scrim" aria-hidden="true"></div>
-    <div class="container week__inner split-4-8">
-      <h2 id="week-title" class="h2">Where the week goes</h2>
-      <ol class="numlist">
-        <li><span class="n">01</span>The supplier's run slips without warning.</li>
-        <li><span class="n">02</span>Three warehouses, three counts, none match.</li>
-        <li><span class="n">03</span>A load goes quiet and the customer tells you.</li>
-        <li><span class="n">04</span>The invoice doesn't match the quote.</li>
-      </ol>
-    </div>
-  </section>
-
-  <section class="section" aria-labelledby="record-title">
-    <div class="container record">
-      <div class="split-4-8 record__intro">
-        <h2 id="record-title" class="h2">Five co-packers. No new ops team.</h2>
-        <p class="lede">We audited one brand’s record, every email and document by load. Then we built our software around what we found.</p>
-      </div>
-      <h3 class="stats__label">What we found</h3>
-      <div class="stats">
-        <div class="stat"><p class="stat__n">20.6</p><p class="stat__t"><strong>emails and 3 threads per load,</strong> across 18,105 emails and 2,923 documents.</p></div>
-        <div class="stat"><p class="stat__n">27%</p><p class="stat__t"><strong>of freight threads were just “where’s my truck.”</strong></p></div>
-        <div class="stat"><p class="stat__n">23%</p><p class="stat__t"><strong>of loads had POD on file within 48 hours,</strong> the industry average.</p></div>
-      </div>
-      <h3 class="stats__label">What we’re built to do</h3>
-      <div class="stats">
-        <div class="stat"><p class="stat__n">&lt; 8</p><p class="stat__t"><strong>freight emails per load,</strong> with check calls and ETAs moved to the portal.</p></div>
-        <div class="stat"><p class="stat__n">97%</p><p class="stat__t"><strong>of loads with POD on file in 48 hours,</strong> uploaded by drivers.</p></div>
-        <div class="stat"><p class="stat__n">3 days</p><p class="stat__t"><strong>to invoice every load after delivery,</strong> down from an 18-day median.</p></div>
-        <div class="stat"><p class="stat__n">Every</p><p class="stat__t"><strong>accessorial approved before it’s paid,</strong> checked against the rate confirmation.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="services" class="takeon takeon--stripes" aria-labelledby="services-title">
-    <div class="container takeon__inner">
-      <h2 id="services-title" class="h2">What we take on</h2>
-      <div class="cols">
-        <div class="col"><h3>Your suppliers</h3><p>We chase dates and paperwork, and warn you the day one slips.</p></div>
-        <div class="col"><h3>Your inventory</h3><p>We reconcile every warehouse and 3PL against what actually moved.</p></div>
-        <div class="col"><h3>Your freight</h3><p>Drayage to oversize, US and Canada, with paperwork the day it delivers.</p></div>
-      </div>
-      <p class="takeon__foot"><strong>Not on the list?</strong> Ask.</p>
-    </div>
-  </section>
-
-  <section id="how" class="section" aria-labelledby="how-title">
-    <div class="container feels">
-      <div>
-        <h2 id="how-title" class="h2">How it feels</h2>
-        <p class="feels__sub">We recommend. You approve. We execute.</p>
-        <ol class="promises">
-          <li><span class="num">1</span><span><span class="promise__t">You see everything</span><span class="promise__d">Every load, PO and document, live.</span></span></li>
-          <li><span class="num">2</span><span><span class="promise__t">You get a small team</span><span class="promise__d">Two people who know your business. No ticket queue.</span></span></li>
-          <li><span class="num">3</span><span><span class="promise__t">You know the price</span><span class="promise__d">Itemized, accessorials up front.</span></span></li>
-          <li><span class="num">4</span><span><span class="promise__t">You make the call</span><span class="promise__d">We bring the problem, the risk and the fix.</span></span></li>
-        </ol>
-      </div>
-
-      <div class="portal" aria-label="Illustration: one problem in the Valence portal, from flag to booked">
-        <div class="portal__head"><span class="label">Your portal · Tuesday</span></div>
-        <div class="portal__issue">
-          <div><div class="label">PO 4471 · Co-packer run</div><div class="portal__title">Run pushed 3 days. KeHE Stockton goes short Thursday.</div></div>
-          <div class="pill"><span class="dot" style="--dot:var(--muted)"></span><b>Resolved 9:48 am</b></div>
+      <div class="pdemo-wrap">
+        <div class="portal pdemo" id="pdemo" aria-label="Illustration: one problem in the Valence portal, from flag to booked, played as a sequence">
+          <div class="portal__head"><span class="label">Your portal · Tuesday</span><span class="label pdemo__clock" data-pdemo-clock>9:12 am</span></div>
+          <div class="portal__issue pstep" data-at="1">
+            <div><div class="label">PO 4471 · Co-packer run</div><div class="portal__title">Run pushed 3 days. KeHE Stockton goes short Thursday.</div></div>
+            <div class="pill"><span class="dot" data-pdemo-dot style="--dot:var(--amber)"></span><b data-pdemo-pill>Flagged 9:12 am</b></div>
+          </div>
+          <div class="chips pstep" data-at="1">
+            <div><small>Run</small><b>Fri → Mon</b></div>
+            <div><small>Pickup</small><b data-pdemo-pickup>Not booked</b></div>
+            <div><small>Stockton DC</small><b>3.0 wks supply</b></div>
+            <div><small>Docs</small><b data-pdemo-docs>PO</b></div>
+          </div>
+          <div class="msg pstep" data-at="2">
+            <div class="avatar">S</div>
+            <div><div class="msg__who">Sam · 9:31 am</div><p class="msg__body">Stockton runs dry before the Sprouts review. I'd send 2 pallets LTL from the Reno 3PL today.</p></div>
+          </div>
+          <div class="quote pstep" data-at="3">
+            <div><span>LTL, Reno → Stockton, 2 pallets</span><span>$412</span></div>
+            <div class="sub"><span>Liftgate, delivery appointment</span><span>$85</span></div>
+            <div class="sub"><span>3PL pick fee</span><span>$30</span></div>
+            <div class="total"><span>Total, nothing added later</span><span>$527</span></div>
+            <div class="atrisk"><span>At risk if we wait</span><span>~$6,800 in review-week sales</span></div>
+          </div>
+          <div class="actions pstep" data-at="3">
+            <span class="approve" data-pdemo-approve>Approve</span>
+            <span class="hold" data-pdemo-hold>Hold, call me</span>
+            <span class="team"><span class="team__avatars"><span class="avatar avatar--sm">S</span><span class="avatar avatar--sm avatar--alt">S</span></span>Your team</span>
+          </div>
+          <div class="booked pstep" data-at="5"><span class="dot" style="--dot:#4F6B55"></span><span><strong>Booked.</strong> Sasha sent the BOL and the Stockton appointment. Tracking is live.</span></div>
+          <span class="pdemo__cursor" aria-hidden="true"><svg width="18" height="20" viewBox="0 0 18 20" fill="none"><path d="M1 1l6.5 16 2.3-6.3L16 8.4 1 1z" fill="#15140F" stroke="#F4F1EA" stroke-width="1.3" stroke-linejoin="round"/></svg></span>
         </div>
-        <div class="chips">
-          <div><small>Run</small><b>Fri → Mon</b></div>
-          <div><small>Pickup</small><b>Tue, 6 pallets</b></div>
-          <div><small>Stockton DC</small><b>3.0 wks supply</b></div>
-          <div><small>Docs</small><b>PO · BOL · Appt</b></div>
-        </div>
-        <div class="msg">
-          <div class="avatar">S</div>
-          <div><div class="msg__who">Sam · 9:31 am</div><p class="msg__body">Stockton runs dry before the Sprouts review. I'd send 2 pallets LTL from the Reno 3PL today.</p></div>
-        </div>
-        <div class="quote">
-          <div><span>LTL, Reno → Stockton, 2 pallets</span><span>$412</span></div>
-          <div class="sub"><span>Liftgate, delivery appointment</span><span>$85</span></div>
-          <div class="sub"><span>3PL pick fee</span><span>$30</span></div>
-          <div class="total"><span>Total, nothing added later</span><span>$527</span></div>
-          <div class="atrisk"><span>At risk if we wait</span><span>~$6,800 in review-week sales</span></div>
-        </div>
-        <div class="actions">
-          <span class="approve is-done">Approved ✓</span>
-          <span class="hold is-dim">Hold, call me</span>
-          <span class="team"><span class="team__avatars"><span class="avatar avatar--sm">S</span><span class="avatar avatar--sm avatar--alt">S</span></span>Your team</span>
-        </div>
-        <div class="booked"><span class="dot" style="--dot:#4F6B55"></span><span><strong>Booked.</strong> Sasha sent the BOL and the Stockton appointment. Tracking is live.</span></div>
+        <ol class="pdemo__rail" aria-hidden="true"><li data-n="1">Flagged</li><li data-n="2">Recommended</li><li data-n="3">Priced</li><li data-n="4">Approved</li><li data-n="5">Booked</li></ol>
       </div>
     </div>
   </section>
@@ -168,12 +109,26 @@
     </div>
   </section>
 
-  <section id="proof" class="section proof" aria-labelledby="proof-title">
-    <div class="container"><h2 id="proof-title" class="proof__label">Companies our team has experience with</h2></div>
-    <!-- @proof -->
+  <span id="services"></span>
+  <section id="how" class="pull pull--home" aria-label="How we work">
+    <p>Capacity to connect.</p>
+    <p class="pull__sub">We recommend. You approve. We execute.</p>
   </section>
 
-  <!-- @cta label="Book a 15-minute call" -->
+  <section id="contact" class="proofband" aria-label="Proof">
+    <div class="container proofband__grid">
+      <article class="proofcard">
+        <p class="proofcard__tag">Co-packer inbound</p>
+        <p class="proofcard__quote">We kept a founder-run beverage brand's co-packer fed, delivering more than 430 inbound loads from its can supplier to its production plant on a schedule that ran night shifts.</p>
+        <p class="proofcard__by">Team experience before Valence · a private-label soda brand, 2023 to 2025</p>
+      </article>
+      <article class="proofcard">
+        <p class="proofcard__tag">Retailer compliance</p>
+        <p class="proofcard__quote">We delivered 149 loads into Trader Joe's distribution centers across five states by managing PO-specific appointments, BOLs and bioterrorism paperwork on every load.</p>
+        <p class="proofcard__by">Team experience before Valence · the same brand, into Trader Joe's and Aldi</p>
+      </article>
+    </div>
+  </section>
 </main>
 
 <!-- @footer -->
