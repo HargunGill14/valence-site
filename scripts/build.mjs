@@ -31,31 +31,35 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').repl
 const attrs = (s) => Object.fromEntries([...s.matchAll(/(\w+)="([^"]*)"/g)].map((m) => [m[1], m[2]]));
 
 // ───────────── logo mark ─────────────
+// The V is the one on the office door in the intro: a thick stroke down, a thin stroke up, round ends.
+// The ring is an orbit, and the clay electron travels it, passing behind the V on the far side.
 let markSeq = 0;
 const MARK = {
   dark: { v: '#15140F', ring: '#5F7A64' },
   light: { v: '#EEEDE8', ring: '#98AE9C' },
 };
+const DOT = '#B9573A';
 function mark({ variant = 'dark', size = '30', label = '' } = {}) {
   const { v, ring } = MARK[variant];
   const id = `vm${++markSeq}`;
   const a11y = label ? `role="img" aria-label="${esc(label)}"` : 'aria-hidden="true" focusable="false"';
-  // The dot rests on the ring, where the old orbit animation started. The mark no longer moves.
-  const dot = `<circle cx="83.7" cy="-27.2" r="7.5" fill="${v}"/>`;
+  const orbit = 'M 88 0 A 88 30 0 1 1 -88 0 A 88 30 0 1 1 88 0';
+  const electron = `<g transform="rotate(-18)"><circle r="7.5" fill="${DOT}"><animateMotion dur="7s" repeatCount="indefinite" path="${orbit}"/></circle></g>`;
   const ellipse = `<ellipse rx="88" ry="30" transform="rotate(-18)" fill="none" stroke="${ring}" stroke-width="5"/>`;
   return `<svg class="mark" viewBox="-100 -100 200 200" width="${size}" height="${size}" ${a11y}>`
     + `<defs><clipPath id="${id}b"><polygon points="-100,-100 100,-100 100,-32.49 -100,32.49"/></clipPath>`
     + `<clipPath id="${id}f"><polygon points="-100,32.49 100,-32.49 100,100 -100,100"/></clipPath></defs>`
-    + `<g clip-path="url(#${id}b)">${dot}</g>${ellipse}`
-    + `<polygon points="-66,-60 -30,-60 0,26 30,-60 66,-60 17,64 -17,64" fill="${v}"/>`
-    + `<g clip-path="url(#${id}f)">${ellipse}${dot}</g></svg>`;
+    + `<g clip-path="url(#${id}b)">${electron}</g>${ellipse}`
+    + `<path d="M-46 -48 L0 46" fill="none" stroke="${v}" stroke-width="22" stroke-linecap="round"/>`
+    + `<path d="M0 46 L46 -48" fill="none" stroke="${v}" stroke-width="8" stroke-linecap="round"/>`
+    + `<g clip-path="url(#${id}f)">${ellipse}${electron}</g></svg>`;
 }
 
 // ───────────── shared blocks ─────────────
 const NAV = [
   ['Industries', '/#industries'],
-  ['Services', '/#services'],
-  ['How we work', '/#how'],
+  ['Services', '/services/'],
+  ['How we work', '/how-we-work/'],
   ['Case studies', '/case-studies/', true],
   ['About', '/about/'],
 ];
@@ -98,7 +102,7 @@ function footer(page) {
   return `<footer class="site-footer site-footer--${variant}">
     <div class="container site-footer__grid">
       <div class="site-footer__col"><span class="site-footer__label">Industries</span><a href="/food-and-beverage/">Food and beverage</a><a href="/space/">Space and aerospace</a><a href="/data-centers-and-construction/">Data centers and construction</a></div>
-      <div class="site-footer__col"><span class="site-footer__label">Company</span><a href="/#services">Services</a><a href="/#how">How we work</a><a href="/case-studies/">Case studies</a><a href="/about/">About</a></div>
+      <div class="site-footer__col"><span class="site-footer__label">Company</span><a href="/services/">Services</a><a href="/how-we-work/">How we work</a><a href="/case-studies/">Case studies</a><a href="/about/">About</a></div>
       <div class="site-footer__col"><span class="site-footer__label">Contact</span><a href="#contact">Talk to us</a><a href="${LOGIN}">Customer login</a><a href="mailto:${EMAIL}">${EMAIL}</a><a href="tel:${PHONE_TEL}">${PHONE}</a></div>
       <div class="site-footer__note">${mark({ variant: variant === 'dark' ? 'light' : 'dark', size: '36' })}</div>
     </div>
