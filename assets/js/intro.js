@@ -12,7 +12,7 @@
   var cv = document.getElementById('intro-canvas');
   if (!sec || !cv || !cv.getContext) return;
   var cx = cv.getContext('2d');
-  var stage = sec.querySelector('.intro__stage');
+  var stage = sec.querySelector('.intro__stage'), sticky = sec.querySelector('.intro__sticky');
   var root = document.documentElement;
   var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   var stepEl = document.getElementById('intro-step');
@@ -38,7 +38,7 @@
   var h = 0; /* harmony: 0 chaos, 1 handled */
   function mix(a, b, k) { return 'rgb(' + Math.round(a[0] + (b[0] - a[0]) * k) + ',' + Math.round(a[1] + (b[1] - a[1]) * k) + ',' + Math.round(a[2] + (b[2] - a[2]) * k) + ')'; }
   function C(n) {
-    if (n === 'bg') return mix(CH.bg, CA.bg, smooth(h, .38, .62));
+    if (n === 'bg') return mix(CH.bg, CA.bg, smooth(h, .46, .54));     /* one short beat, together with the text */
     if (n === 'text') return mix(h < .5 ? CH.text : CA.text, h < .5 ? CH.text : CA.text, 0);
     return mix(CH[n], CA[n], h);
   }
@@ -105,7 +105,7 @@
   ];
 
   /* ── projection ── */
-  var W = 0, H = 0, dpr = 1, u = 20, theta = 0, zoom = 1, ocx = 0, ocy = 0;
+  var W = 0, H = 0, dpr = 1, u = 20, theta = 0, zoom = 1, ocx = 0, ocy = 0, kx = 1, ky = 1, zoomCalm = .82, calmTop = 0;
   function rot(x, y) { var c = Math.cos(theta), s = Math.sin(theta); return [x * c - y * s, x * s + y * c]; }
   function proj(x, y, z) { var r = rot(x, y); return [ocx + (r[0] - r[1]) * u * zoom, ocy + (r[0] + r[1]) * u * .5 * zoom - (z || 0) * u * zoom]; }
   /* the plan position whose projection is this screen point (at height z) */
@@ -164,17 +164,19 @@
   var p = 0, e = 0, tnow = 0, scurry = true;
   function applyScroll() {
     var y = window.pageYOffset || root.scrollTop || 0;
-    var range = (sec.offsetHeight - window.innerHeight) || 1;
+    var range = (sec.offsetHeight - sticky.offsetHeight) || 1;   /* the stuck distance: steady even as a phone's toolbar comes and goes */
     p = clamp(y / range, 0, 1);
-    var frame = smooth(p, .62, .96);                   /* page frame and header */
+    /* 0 to .62: spin and shrink, the paper flies out.  .36 to .62: the office settles and the paper lands.
+       .62 to .7: a beat, full screen and calm.  .7 to .84: the page frame and the header arrive.  .84 to 1: hold. */
+    var frame = smooth(p, .7, .84);
     root.style.setProperty('--intro-p', frame.toFixed(3));
-    e = smooth(p, .5, .9);                             /* objects settle, palette warms */
+    e = smooth(p, .36, .62);                           /* objects settle, palette warms */
     h = e;
-    var spin = smooth(p, .06, .9);
+    var spin = smooth(p, .04, .62);
     theta = spin * Math.PI * 4;                         /* two turns on the turntable */
-    zoom = lerp(1.28, W > 900 ? .82 : .6, smooth(p, .04, .8));         /* smaller and smaller */
+    zoom = lerp(1.28, zoomCalm, smooth(p, .03, .58));   /* smaller and smaller */
     scurry = e < .35;
-    var ph = p < .5 ? 'chaos' : (e < 1 ? 'settle' : 'calm');
+    var ph = p < .36 ? 'chaos' : (e < 1 ? 'settle' : 'calm');
     if (sec.getAttribute('data-phase') !== ph) {
       sec.setAttribute('data-phase', ph);
       if (stepEl) stepEl.textContent = ph === 'chaos' ? '01 // fight or flight' : (ph === 'settle' ? '02 // valence steps in' : '03 // handled');
@@ -374,7 +376,7 @@
     var ex = wl.axis === 'x' ? proj(u0 + dir, wl.face, z0) : proj(wl.face, u0 + dir, z0);
     var ey = wl.axis === 'x' ? proj(u0, wl.face, z0 - 1) : proj(wl.face, u0, z0 - 1);
     var ux = (ex[0] - O[0]) / 100, uy = (ex[1] - O[1]) / 100, vx = (ey[0] - O[0]) / 100, vy = (ey[1] - O[1]) / 100;
-    cx.save(); cx.setTransform(dpr * ux, dpr * uy, dpr * vx, dpr * vy, dpr * O[0], dpr * O[1]); fn(); cx.restore();
+    cx.save(); cx.setTransform(dpr * kx * ux, dpr * ky * uy, dpr * kx * vx, dpr * ky * vy, dpr * kx * O[0], dpr * ky * O[1]); fn(); cx.restore();
   }
   /* which way along the wall reads left to right on screen right now */
   function wallDir(wl) {
@@ -395,9 +397,9 @@
 
   /* ── draw one frame ── */
   function draw() {
-    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cx.setTransform(dpr * kx, 0, 0, dpr * ky, 0, 0);
     var game = (e >= .98 && !reduce) ? rally() : null;
-    ocy = W > 900 ? H * .52 : H * (.3 - .09 * e);   /* on phones the calm office sits higher, clear of the copy */
+    ocy = W > 900 ? H * .52 : lerp(H * .3, calmTop * .5 + 16, e);   /* on phones the calm office sits in the room above the copy */
     cx.fillStyle = C('bg'); cx.fillRect(0, 0, W, H);
     var line = C('line'), sc = u * zoom, items = [], flight = [];
     var jit = scurry ? 1 - e / .35 : 0;
@@ -527,8 +529,8 @@
 
     /* paper: on the floor, in the air, out of the room, or landing on a desk */
     papers.forEach(function (pp) {
-      var out = smooth(p, .1 + pp.delay * .18, .42 + pp.delay * .18);        /* leaves the room */
-      var land = smooth(p, .52 + pp.delay * .1, .84 + pp.delay * .1);        /* lands on its desk */
+      var out = smooth(p, .06 + pp.delay * .14, .3 + pp.delay * .14);        /* leaves the room */
+      var land = smooth(p, .4 + pp.delay * .1, .56 + pp.delay * .1);         /* lands on its desk, every sheet down by .66 */
       var gx = pp.desk.x + .72, gy = pp.desk.y - .05, gz = .78 + pp.k * .035;
       if (out < .02) {
         if (pp.fly) {
@@ -661,18 +663,24 @@
   function resize() {
     W = stage.clientWidth; H = stage.clientHeight;
     dpr = Math.min(window.devicePixelRatio || 1, 2);
-    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
-    cv.style.width = W + 'px'; cv.style.height = H + 'px';
+    /* the bitmap is sized once to the full sticky area; while the frame insets, the stage shrinks and the
+       drawing is scaled to match, so no frame ever reallocates the canvas */
+    var BW = sticky.clientWidth || W, BH = sticky.clientHeight || H, bw = Math.round(BW * dpr), bh = Math.round(BH * dpr);
+    if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
+    kx = BW / W; ky = BH / H;
     var wide = W > 900;
     ocx = wide ? (W > 1500 ? W * .68 : W * .66) : W * .5;    /* a touch further right on very wide screens */
     ocy = wide ? H * .52 : H * .3;
     var span = FLOOR.w + FLOOR.d + 3;
     u = Math.min((wide ? W * .62 : W * 1.05) / span, (wide ? H * .74 : H * .48) / (span * .5 + 3.5));
-    /* on phones the copy sits lower while it is chaos, by the height of the lines that are still hidden */
+    /* on phones the copy sits lower while it is chaos, by the height of the lines that are still hidden,
+       and the calm office shrinks to fit the room left above the full copy block */
     var copy = sec.querySelector('.intro__copy'), h1 = document.getElementById('hero-title');
+    calmTop = H * .55; zoomCalm = wide ? .82 : .6;
     if (copy && h1) {
       var pb = parseFloat(getComputedStyle(copy).paddingBottom) || 0;
       stage.style.setProperty('--intro-drop', Math.max(0, copy.offsetHeight - (h1.offsetTop + h1.offsetHeight) - pb + 6) + 'px');
+      if (!wide) { calmTop = Math.max(H * .3, copy.offsetTop); zoomCalm = Math.min(.6, (calmTop - 56) / ((span * .5 + 3.5) * u)); }
     }
   }
 
