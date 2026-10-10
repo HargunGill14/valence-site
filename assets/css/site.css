@@ -460,7 +460,7 @@ html { --intro-p: 0; }
 html:not(.js) { --intro-p: 1; }
 .page-home.has-intro .site-header { transform: translateY(calc(-100% + var(--intro-p) * 100%)); }
 .page-home .site-header { will-change: transform; }
-.intro { position: relative; z-index: 1; height: 340svh; margin-top: calc(-1 * var(--header-h)); background: var(--paper); }
+.intro { position: relative; z-index: 1; height: 400svh; margin-top: calc(-1 * var(--header-h)); background: var(--paper); }
 html:not(.js) .intro { height: auto; margin-top: 0; }
 .intro__sticky {
   position: sticky; top: 0; height: 100svh; background: var(--paper);
@@ -498,7 +498,7 @@ html:not(.js) .intro__stage { --intro-bg: #F3EEE4; --intro-fg: #2A2925; --intro-
 .intro__cue {
   position: absolute; right: var(--gutter); bottom: 28px; z-index: 2; margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px;
   font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: inherit;
-  opacity: calc(1 - var(--intro-p) * 3); transition: opacity .3s;
+  opacity: calc(1 - var(--intro-h, 0) * 2.5); transition: opacity .3s;
 }
 .intro__cue span { width: 1px; height: 40px; background: currentColor; opacity: .6; animation: intro-cue 1.6s ease-in-out infinite; }
 @keyframes intro-cue { 0%, 100% { transform: scaleY(.4); transform-origin: top; opacity: .3; } 50% { transform: scaleY(1); transform-origin: top; opacity: .7; } }
@@ -515,7 +515,7 @@ html:not(.js) .intro__stage { --intro-bg: #F3EEE4; --intro-fg: #2A2925; --intro-
   .intro__copy { max-width: none; margin-left: 0; padding-left: clamp(32px, 5vw, 120px); }
 }
 @media (max-width: 760px) {
-  .intro { height: 300svh; }
+  .intro { height: 360svh; }
   .intro__copy { padding-bottom: 28px; transform: translateY(calc((1 - var(--intro-h, 0)) * (var(--intro-drop, 0px) - 22px))); }
   .intro__copy .h1 { font-size: clamp(36px, 10vw, 56px); }
   .intro__copy .lede { font-size: 16px; }
