@@ -1,6 +1,6 @@
 /* Valence: shared page behavior. Plain ES5 so it runs on older Safari and Android browsers.
    Everything here is enhancement: every page reads fully without JavaScript.
-   Only one thing on the site moves on its own: the background video, and only while it is on screen. */
+   Blocks marked data-reveal rise in as they scroll into view; a background video plays only while on screen. */
 (function () {
   'use strict';
 
@@ -28,6 +28,23 @@
       if ((e.key === 'Escape' || e.key === 'Esc') && menu.classList.contains('is-open')) { setMenu(false); toggle.focus(); }
     });
     window.addEventListener('resize', function () { if (window.innerWidth > 1023) setMenu(false); });
+  }
+
+  /* ── reveal on scroll: blocks marked data-reveal rise in as they arrive, once.
+        Reduced motion, or no IntersectionObserver, shows everything at once. ── */
+  var reveal = doc.querySelectorAll('[data-reveal]');
+  if (reveal.length) {
+    if (reduce || !('IntersectionObserver' in window)) {
+      each(reveal, function (el) { el.classList.add('is-in'); });
+    } else {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          /* in view, or already scrolled past in one fast fling: show it and stop watching */
+          if (e.isIntersecting || e.boundingClientRect.bottom < 0) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+        });
+      }, { rootMargin: '0px 0px -8% 0px', threshold: 0.1 });
+      each(reveal, function (el) { io.observe(el); });
+    }
   }
 
   /* ── background video: muted, plays only while on screen, never for reduced motion ── */
