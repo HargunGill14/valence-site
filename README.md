@@ -1,8 +1,8 @@
 # valencesupplychain.com
 
-Static marketing site for Valence Supply Chain. Plain HTML, one stylesheet, two small scripts,
-no framework. Every page reads fully with JavaScript off; scripts only run the phone menu and
-the background video.
+Static marketing site for Valence Supply Chain. Plain HTML, one stylesheet, a few small scripts,
+no framework. Every page reads fully with JavaScript off; scripts only run the phone menu, the
+background video and the home page map demo.
 
 ## Layout
 
@@ -12,7 +12,9 @@ the background video.
   The built files are committed, so the host serves the repo as is.
 - `assets/css/site.css` holds every design token from the design spec.
 - `assets/js/site.js` runs the menu and the background video (plays only on screen, never with reduced motion).
-  `assets/js/home.js` only switches the hero card variant; the hero cards and the portal are static.
+  `assets/js/home.js` lazy-loads the "How it feels" map demo (`assets/js/portal-map*.js`) when it
+  nears the screen. The hero card is static. The demo shows a static image (`assets/img/portal/map-*`)
+  until `data-tiles` is set in `src/pages/home.html`; Leaflet is self-hosted in `assets/vendor/`.
 
 ## Common jobs
 
@@ -20,7 +22,7 @@ the background video.
 - Add a photo or the background video: `node scripts/add-media.mjs list`, then
   `node scripts/add-media.mjs <slot> <file>`. Log the source in `docs/MEDIA-CREDITS.md`.
 - Add a logo: save it as `assets/logos/<slug>.svg`, then `npm run build`.
-- Show the ticker hero instead of the split card: add `?hero=ticker` to the URL.
+- Re-render the map demo's static image: see the header of `scripts/render-portal-map.mjs`.
 - Re-render favicon, icons and the social image: see the header of `scripts/render-brand-assets.mjs`.
 
 ## Run locally

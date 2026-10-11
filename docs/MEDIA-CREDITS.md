@@ -27,6 +27,13 @@ Mixkit only serves these clips at 720p, so the 1600px files are upscaled (Lanczo
 Source: Mixkit (https://mixkit.co, Mixkit Free License, no attribution required). Self-host every
 file; never hotlink.
 
+## Maps
+
+| File | Source | License |
+|---|---|---|
+| `assets/img/portal/map-800`, `map-1600` (`.jpg`, `.webp`) | Rendered once with `scripts/render-portal-map.mjs` from OpenStreetMap standard tiles (tile.openstreetmap.org), with the home page's sample lanes drawn on top | Map data and tiles © OpenStreetMap contributors, ODbL (https://www.openstreetmap.org/copyright). Credit shown under the map and in the image corner. Re-render and update this row if the tile provider changes |
+| `assets/vendor/leaflet/1.9.4/` | Leaflet 1.9.4 from the npm package, unmodified | BSD-2-Clause, `LICENSE` alongside |
+
 ## Logos (Proof carousel)
 
 Drop `assets/logos/<slug>.svg` (single color, preferred) or `.png`, then run `node scripts/build.mjs`.

@@ -1,4 +1,4 @@
-<!--{"out":"index.html","title":"Valence Supply Chain | Full view. Your call. Our hands.","description":"Valence is a boutique supply chain partner in Los Angeles. We run your suppliers, inventory and freight. You see it all live, and you make every call.","footer":"dark","bodyClass":"page-home","scripts":["/assets/js/home.js"]}-->
+<!--{"out":"index.html","title":"Valence Supply Chain | Full view. Your call. Our hands.","description":"Valence is a boutique supply chain partner in Los Angeles. We run your suppliers, inventory and freight. You see every load and PO, and you make every call.","footer":"dark","bodyClass":"page-home","scripts":["/assets/js/home.js"]}-->
 <!-- @header -->
 
 <main id="main">
@@ -6,48 +6,37 @@
     <div>
       <p class="eyebrow">Boutique supply chain partner · Los Angeles</p>
       <h1 id="hero-title" class="h1">Full view. Your call.<br><em>Our hands.</em></h1>
-      <p class="lede">We run your suppliers, inventory and freight. You see it all live, and you make every call.</p>
+      <p class="lede">We run your suppliers, inventory and freight. You see every load and PO, and you make every call.</p>
       <div class="btn-row">
         <a class="btn btn--green" href="#contact">Book a 15-minute call</a>
         <a class="btn btn--secondary" href="#how">See how we work</a>
       </div>
     </div>
 
-    <!-- Hero card, variant "split" (default). Add ?hero=ticker to the URL for the ticker variant. -->
-    <div class="hero-card split" id="hero-split" aria-label="Illustration: a founder's inbox next to the same load in the Valence portal">
+    <!-- Hero card: the same five loads, as inbox threads and as portal rows. Static; the portal rows fade in once on load. -->
+    <div class="hero-card split" role="group" aria-label="Illustration: five loads as a cluttered inbox, then the same five loads in the Valence portal">
       <div class="split__inbox">
-        <div class="card-head"><span>Your inbox</span><span>5 new</span></div>
-        <div class="mail"><span class="mail__meta"><span class="mail__from">Carrier dispatch</span><time>6:48</time></span><span class="mail__subj">Re: Re: ETA? PO 4471</span></div>
-        <div class="mail"><span class="mail__meta"><span class="mail__from">Co-packer</span><time>7:02</time></span><span class="mail__subj">Run update, pushed to Mon</span></div>
-        <div class="mail"><span class="mail__meta"><span class="mail__from">KeHE Stockton</span><time>7:15</time></span><span class="mail__subj">Appt confirmation needed</span></div>
-        <div class="mail"><span class="mail__meta"><span class="mail__from">Driver</span><time>7:41</time></span><span class="mail__subj">Where do I check in</span></div>
-        <div class="mail"><span class="mail__meta"><span class="mail__from">3PL</span><time>8:03</time></span><span class="mail__subj">Count variance, 3 SKUs</span></div>
+        <div class="card-head"><span>Your inbox</span><span>37 unread</span></div>
+        <ul class="mails">
+          <li class="mail"><span class="mail__meta"><span class="mail__from">Carrier dispatch <span class="mail__n">(4)</span></span><time>6:48</time></span><span class="mail__subj">Re: Re: Re: PU appt? PO-5110</span></li>
+          <li class="mail"><span class="mail__meta"><span class="mail__from"><span class="mail__flag" aria-hidden="true">!</span>Riverside DC</span><time>7:12</time></span><span class="mail__subj">Where&#8217;s the truck?? PO-5102</span></li>
+          <li class="mail"><span class="mail__meta"><span class="mail__from">Broker <span class="mail__n">(2)</span></span><time>7:30</time></span><span class="mail__subj">BOL attached (v3) FINAL</span></li>
+          <li class="mail"><span class="mail__meta"><span class="mail__from"><span class="mail__flag" aria-hidden="true">!</span>Vegas warehouse <span class="mail__n">(3)</span></span><time>9:14</time></span><span class="mail__subj">FW: FW: appt moved to Tue???</span></li>
+          <li class="mail"><span class="mail__meta"><span class="mail__from">Phoenix DC</span><time>9:40</time></span><span class="mail__subj">ETA today?? Need answer by 10</span></li>
+        </ul>
+        <div class="split__foot">and 32 more</div>
       </div>
       <div class="split__portal">
-        <div class="card-head"><span>Your portal</span><span class="live"><span class="dot"></span>Live</span></div>
-        <div class="po-title">PO 4471 · Fresno → Stockton</div>
-        <div class="po-sub">6 pallets · reefer · KeHE</div>
-        <ol class="steps">
-          <li><span class="dot" style="--dot:#98AE9C"></span><span>Run confirmed</span><time>Mon</time></li>
-          <li><span class="dot" style="--dot:#98AE9C"></span><span>Picked up</span><time>Tue 9:12</time></li>
-          <li><span class="dot" style="--dot:#98AE9C"></span><span>Appt set, Thu 7:00</span><time>Tue 9:30</time></li>
-          <li><span class="dot" style="--dot:#98AE9C"></span><span>Delivered</span><time>Thu 7:14</time></li>
-          <li><span class="dot" style="--dot:#98AE9C"></span><span>POD · BOL filed</span><time>Thu 7:20</time></li>
-        </ol>
-        <div class="split__foot">Nothing to chase.</div>
+        <div class="card-head"><span>Our portal</span><span>Updated today, 2:00 PM</span></div>
+        <ul class="hp-rows">
+          <li class="hp-row"><span class="hp-row__top"><span class="vm-mono">VL-24135</span><span class="vm-chip"><span class="dot" style="--dot:#8C877A"></span><span class="vm-chip__g" aria-hidden="true">○</span>Booked</span></span><span class="hp-row__lane">Dinuba → Sacramento</span><span class="hp-row__eta">Pickup tomorrow, 7:00 AM</span></li>
+          <li class="hp-row"><span class="hp-row__top"><span class="vm-mono">VL-24131</span><span class="vm-chip"><span class="dot" style="--dot:#4F6B55"></span><span class="vm-chip__g" aria-hidden="true">→</span>In transit</span></span><span class="hp-row__lane">Dinuba → Riverside</span><span class="hp-row__eta">ETA Tue 6:00 AM</span></li>
+          <li class="hp-row"><span class="hp-row__top"><span class="vm-mono">VL-24130</span><span class="vm-chip"><span class="dot" style="--dot:#4F6B55"></span><span class="vm-chip__g" aria-hidden="true">↑</span>Picked up</span></span><span class="hp-row__lane">Dinuba → Oakland</span><span class="hp-row__eta">ETA today, 5:00 PM</span></li>
+          <li class="hp-row"><span class="hp-row__top"><span class="vm-mono">VL-24126</span><span class="vm-chip"><span class="dot" style="--dot:#B8552F"></span><span class="vm-chip__g" aria-hidden="true">!</span>Exception</span></span><span class="hp-row__lane">Fresno → Las Vegas</span><span class="hp-row__eta">Appt moved to Tue 6:00 AM</span></li>
+          <li class="hp-row"><span class="hp-row__top"><span class="vm-mono">VL-24128</span><span class="vm-chip"><span class="dot" style="--dot:#4F6B55"></span><span class="vm-chip__g" aria-hidden="true">→</span>In transit</span></span><span class="hp-row__lane">Fresno → Phoenix</span><span class="hp-row__eta">ETA today, 4:00 PM</span></li>
+        </ul>
+        <div class="split__foot">Same five loads. Nothing to chase.</div>
       </div>
-    </div>
-
-    <div class="hero-card ticker" id="hero-ticker" aria-label="Illustration: a week of loads and POs in the Valence portal" hidden>
-      <div class="card-head"><span>Your portal · this week</span><span class="live"><span class="dot"></span>Live</span></div>
-      <ol class="feed">
-        <li><span class="feed__main"><span class="feed__title">Co-packer run, Fresno</span><span class="feed__sub"><span class="mono">PO 4471</span> · 6 pallets · reefer</span></span><span class="feed__status" style="--dot:#98AE9C"><span class="dot"></span><span>POD filed</span></span></li>
-        <li><span class="feed__main"><span class="feed__title">LTL into KeHE Stockton</span><span class="feed__sub"><span class="mono">LD 2093</span> · Appt Thu 7:00</span></span><span class="feed__status" style="--dot:#98AE9C"><span class="dot"></span><span>POD filed</span></span></li>
-        <li><span class="feed__main"><span class="feed__title">Cans, Canadian Canning</span><span class="feed__sub"><span class="mono">PO 4468</span> · Cross-border · 2 loads</span></span><span class="feed__status" style="--dot:#98AE9C"><span class="dot"></span><span>Rebooked</span></span></li>
-        <li><span class="feed__main"><span class="feed__title">Reno 3PL count</span><span class="feed__sub"><span class="mono">INV</span> · 3 SKUs · 412 cases</span></span><span class="feed__status" style="--dot:#98AE9C"><span class="dot"></span><span>Reconciled</span></span></li>
-        <li><span class="feed__main"><span class="feed__title">Drayage, LA/LB → Fresno</span><span class="feed__sub"><span class="mono">LD 2088</span> · Packaging, 1×40ft</span></span><span class="feed__status" style="--dot:#98AE9C"><span class="dot"></span><span>Booked</span></span></li>
-      </ol>
-      <div class="ticker__foot">Illustrative. Not real client data.</div>
     </div>
   </section>
 
@@ -104,46 +93,52 @@
 
   <section id="how" class="section" aria-labelledby="how-title">
     <div class="container feels">
-      <div>
+      <div class="feels__intro">
         <h2 id="how-title" class="h2">How it feels</h2>
         <p class="feels__sub">We recommend. You approve. We execute.</p>
-        <ol class="promises">
-          <li><span class="num">1</span><span><span class="promise__t">You see everything</span><span class="promise__d">Every load, PO and document, live.</span></span></li>
-          <li><span class="num">2</span><span><span class="promise__t">You get a small team</span><span class="promise__d">Two people who know your business. No ticket queue.</span></span></li>
-          <li><span class="num">3</span><span><span class="promise__t">You know the price</span><span class="promise__d">Itemized, accessorials up front.</span></span></li>
-          <li><span class="num">4</span><span><span class="promise__t">You make the call</span><span class="promise__d">We bring the problem, the risk and the fix.</span></span></li>
-        </ol>
       </div>
+      <ol class="promises">
+        <li><span class="num">1</span><span><span class="promise__t">You see everything</span><span class="promise__d">Every load, PO and document, updated twice a day.</span></span></li>
+        <li><span class="num">2</span><span><span class="promise__t">You get a small team</span><span class="promise__d">Two people who know your business. No ticket queue.</span></span></li>
+        <li><span class="num">3</span><span><span class="promise__t">You know the price</span><span class="promise__d">Itemized, accessorials up front.</span></span></li>
+        <li><span class="num">4</span><span><span class="promise__t">You make the call</span><span class="promise__d">We bring the problem, the risk and the fix.</span></span></li>
+      </ol>
 
-      <div class="portal" aria-label="Illustration: one problem in the Valence portal, from flag to booked">
-        <div class="portal__head"><span class="label">Your portal · Tuesday</span></div>
-        <div class="portal__issue">
-          <div><div class="label">PO 4471 · Co-packer run</div><div class="portal__title">Run pushed 3 days. KeHE Stockton goes short Thursday.</div></div>
-          <div class="pill"><span class="dot" style="--dot:var(--muted)"></span><b>Resolved 9:48 am</b></div>
+      <!-- Map demo. Sample data only. The tile provider is not chosen yet, so data-tiles and
+           data-attribution are empty and visitors see the static image below. To turn on the
+           interactive map, set both together for the chosen provider, re-render the image from the
+           same tiles (scripts/render-portal-map.mjs) and update the "Map image" credit to match. -->
+      <div class="demo" data-map-demo>
+        <div class="demo__head">
+          <div class="demo__intro">
+            <span class="demo__tag">Sample data</span>
+            <h3 class="demo__title">This is what your team sees</h3>
+            <p class="demo__sub">The map in the Valence portal, with a sample juice shipper&#8217;s loads. Pick an origin, a destination or a load.</p>
+          </div>
+          <p class="demo__note">Positions are estimates between check-calls, not live GPS.</p>
         </div>
-        <div class="chips">
-          <div><small>Run</small><b>Fri → Mon</b></div>
-          <div><small>Pickup</small><b>Tue, 6 pallets</b></div>
-          <div><small>Stockton DC</small><b>3.0 wks supply</b></div>
-          <div><small>Docs</small><b>PO · BOL · Appt</b></div>
+        <div class="demo__frame">
+          <div class="demo__mapcol" role="region" aria-label="Sample map of a juice shipper&#8217;s loads from the Central Valley across the Southwest">
+            <div class="demo__stage">
+              <div class="demo__fallback">
+                <!-- @img name="portal/map" ratio="16/11" alt="Sample map: two origins in California&#8217;s Central Valley, Dinuba and Fresno, with dashed routes along the highways to ten destinations from Oakland and Reno to Phoenix, Tucson and Albuquerque" label="map: sample lanes" sizes="(max-width: 760px) 100vw, 840px" -->
+              </div>
+              <div class="demo__map" data-map data-tiles="" data-attribution=""></div>
+              <button type="button" class="demo__explore" data-explore aria-pressed="false" hidden>Explore the map</button>
+            </div>
+            <ul class="demo__legend" aria-label="Map key">
+              <li><span class="dot" style="--dot:#4F6B55"></span>In transit or picked up</li>
+              <li><span class="dot" style="--dot:#B8552F"></span>Needs attention</li>
+              <li><span class="dot" style="--dot:#8C877A"></span>Booked</li>
+              <li><span class="dot" style="--dot:#2D4A35"></span>Delivered</li>
+              <li><span class="dot" style="--dot:#15140F"></span>Origin, active loads</li>
+            </ul>
+          </div>
+          <aside class="demo__panel" data-panel tabindex="0" aria-label="Sample shipments">
+            <!-- @mappanel -->
+          </aside>
         </div>
-        <div class="msg">
-          <div class="avatar">S</div>
-          <div><div class="msg__who">Sam · 9:31 am</div><p class="msg__body">Stockton runs dry before the Sprouts review. I'd send 2 pallets LTL from the Reno 3PL today.</p></div>
-        </div>
-        <div class="quote">
-          <div><span>LTL, Reno → Stockton, 2 pallets</span><span>$412</span></div>
-          <div class="sub"><span>Liftgate, delivery appointment</span><span>$85</span></div>
-          <div class="sub"><span>3PL pick fee</span><span>$30</span></div>
-          <div class="total"><span>Total, nothing added later</span><span>$527</span></div>
-          <div class="atrisk"><span>At risk if we wait</span><span>~$6,800 in review-week sales</span></div>
-        </div>
-        <div class="actions">
-          <span class="approve is-done">Approved ✓</span>
-          <span class="hold is-dim">Hold, call me</span>
-          <span class="team"><span class="team__avatars"><span class="avatar avatar--sm">S</span><span class="avatar avatar--sm avatar--alt">S</span></span>Your team</span>
-        </div>
-        <div class="booked"><span class="dot" style="--dot:#4F6B55"></span><span><strong>Booked.</strong> Sasha sent the BOL and the Stockton appointment. Tracking is live.</span></div>
+        <p class="demo__credit"><span class="demo__credit-img">Map image: OpenStreetMap standard tiles, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>. </span>In the portal, data refreshes twice a day, around 8:00 AM and 2:00 PM Pacific.</p>
       </div>
     </div>
   </section>

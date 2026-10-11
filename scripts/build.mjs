@@ -12,14 +12,17 @@
 //   <!-- @mark variant="light" size="36" label="Valence" -->   the V mark
 //   <!-- @img name="heroes/space" ratio="4/5" alt="…" label="photo: …" sizes="…" -->
 //   <!-- @proof -->                        the logo carousel
+//   <!-- @mappanel -->                     the map demo's overview panel, from assets/js/portal-map-data.js
 // An @img renders a <picture> when assets/img/<name>-{800,1600}.{jpg,webp} exist,
 // and a sized placeholder otherwise, so a missing photo never breaks the layout.
 
 import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const require = createRequire(import.meta.url);
 const SITE = 'https://www.valencesupplychain.com';
 const EMAIL = 'ops@valencesupplychain.com';
 const PHONE = '(628) 218-8500';
@@ -224,6 +227,8 @@ for (const file of readdirSync(pagesDir).filter((f) => f.endsWith('.html')).sort
       case 'mark': return mark(a);
       case 'img': return img(a);
       case 'proof': return proof();
+      // Same renderer the page uses, so the no-JavaScript panel matches the scripted one.
+      case 'mappanel': return require('../assets/js/portal-map-data.js').panel({}, false);
       default: throw new Error(`${file}: unknown directive @${name}`);
     }
   });
