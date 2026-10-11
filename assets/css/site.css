@@ -402,7 +402,7 @@ p, li, h1, h2, h3, span, div { text-wrap: pretty; }
   /* without JS the menu wraps under the bar instead of collapsing */
   html:not(.js) .site-header__bar { height: auto; flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; }
   html:not(.js) .site-menu { flex-basis: 100%; flex-wrap: wrap; gap: 4px 20px; }
-  html:not(.js) .site-nav { margin-left: 0; flex-basis: 100%; gap: 4px 20px; }
+  html:not(.js) .site-nav { margin-left: 0; flex-basis: 100%; flex-wrap: wrap; gap: 4px 20px; }
   html:not(.js) .site-nav a, html:not(.js) .site-login { padding: 10px 0; }
 }
 @media (max-width: 1000px) {
