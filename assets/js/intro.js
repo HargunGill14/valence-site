@@ -105,7 +105,7 @@
   ];
 
   /* ── projection ── */
-  var W = 0, H = 0, dpr = 1, u = 20, theta = 0, zoom = 1, ocx = 0, ocy = 0, kx = 1, ky = 1, zoomCalm = .82, calmTop = 0;
+  var W = 0, H = 0, dpr = 1, u = 20, theta = 0, zoom = 1, ocx = 0, ocy = 0, kx = 1, ky = 1, zoomChaos = 1.28, zoomCalm = .82, calmTop = 0, ocyChaos = 0;
   function rot(x, y) { var c = Math.cos(theta), s = Math.sin(theta); return [x * c - y * s, x * s + y * c]; }
   function proj(x, y, z) { var r = rot(x, y); return [ocx + (r[0] - r[1]) * u * zoom, ocy + (r[0] + r[1]) * u * .5 * zoom - (z || 0) * u * zoom]; }
   /* the plan position whose projection is this screen point (at height z) */
@@ -174,7 +174,7 @@
     h = e;
     var spin = smooth(p, .04, .62);
     theta = spin * Math.PI * 4;                         /* two turns on the turntable */
-    zoom = lerp(1.28, zoomCalm, smooth(p, .03, .58));   /* smaller and smaller */
+    zoom = lerp(zoomChaos, zoomCalm, smooth(p, .03, .58));   /* smaller and smaller */
     scurry = e < .35;
     var ph = p < .36 ? 'chaos' : (e < 1 ? 'settle' : 'calm');
     if (sec.getAttribute('data-phase') !== ph) {
@@ -399,7 +399,7 @@
   function draw() {
     cx.setTransform(dpr * kx, 0, 0, dpr * ky, 0, 0);
     var game = (e >= .98 && !reduce) ? rally() : null;
-    ocy = W > 900 ? H * .52 : lerp(H * .3, calmTop * .5 + 16, e);   /* on phones the calm office sits in the room above the copy */
+    ocy = W > 900 ? H * .52 : lerp(ocyChaos, calmTop * .5 + 16, e);   /* on phones the office sits in the room above the copy, chaos and calm */
     cx.fillStyle = C('bg'); cx.fillRect(0, 0, W, H);
     var line = C('line'), sc = u * zoom, items = [], flight = [];
     var jit = scurry ? 1 - e / .35 : 0;
@@ -646,7 +646,7 @@
     flight.forEach(function (f) { f(); });   /* paper in the air draws over everything */
 
     /* mono callouts beside the action */
-    var ch = 1 - smooth(e, 0, .5), ca2 = smooth(e, .6, 1);
+    var ch = 1 - smooth(e, 0, .5), ca2 = smooth(e, .6, 1) * (W > 900 ? 1 : clamp((zoom - .28) / .14, 0, 1));   /* a very small calm office (short phones) goes without its callouts */
     var d1 = desks[1], d6 = desks[6], b0 = boxes[0], w3 = workers[3], q;
     q = proj(d1.x + d1.ox * (1 - e), d1.y + d1.oy * (1 - e), 1.4); label('count from 3PL: 412 //', q[0] + sc * .6, q[1] + (ch < 1 ? 0 : Math.sin(tnow * 9) * 2), ch);
     q = proj(d6.x + d6.ox * (1 - e), d6.y + d6.oy * (1 - e), 1.4); label('co-packer says 380 //', q[0] + sc * .6, q[1], ch);
@@ -670,18 +670,24 @@
     kx = BW / W; ky = BH / H;
     var wide = W > 900;
     ocx = wide ? (W > 1500 ? W * .68 : W * .66) : W * .5;    /* a touch further right on very wide screens */
-    ocy = wide ? H * .52 : H * .3;
     var span = FLOOR.w + FLOOR.d + 3;
     u = Math.min((wide ? W * .62 : W * 1.05) / span, (wide ? H * .74 : H * .48) / (span * .5 + 3.5));
+    /* phones: the whole room fits inside the screen while it is chaos, a little air either side */
+    zoomChaos = wide ? 1.28 : Math.min(1.28, (W - 28) / ((FLOOR.w + FLOOR.d + WALL_T * 2) * u));
     /* on phones the copy sits lower while it is chaos, by the height of the lines that are still hidden,
+       the chaos office is centred in the room above the headline,
        and the calm office shrinks to fit the room left above the full copy block */
     var copy = sec.querySelector('.intro__copy'), h1 = document.getElementById('hero-title');
-    calmTop = H * .55; zoomCalm = wide ? .82 : .6;
+    calmTop = H * .55; zoomCalm = wide ? .82 : .6; ocyChaos = wide ? H * .52 : H * .3;
     if (copy && h1) {
-      var pb = parseFloat(getComputedStyle(copy).paddingBottom) || 0;
-      stage.style.setProperty('--intro-drop', Math.max(0, copy.offsetHeight - (h1.offsetTop + h1.offsetHeight) - pb + 6) + 'px');
-      if (!wide) { calmTop = Math.max(H * .3, copy.offsetTop); zoomCalm = Math.min(.6, (calmTop - 56) / ((span * .5 + 3.5) * u)); }
+      var pb = parseFloat(getComputedStyle(copy).paddingBottom) || 0, h1b = h1.offsetTop + h1.offsetHeight;
+      stage.style.setProperty('--intro-drop', Math.max(0, copy.offsetHeight - h1b - pb + 6) + 'px');
+      if (!wide) {
+        calmTop = Math.max(H * .24, copy.offsetTop); zoomCalm = Math.min(.66, (calmTop - 56) / ((span * .5 + 3.5) * u));
+        ocyChaos = Math.max(H * .22, (H - (h1b + pb + 16)) * .5 + 10);   /* the headline's top while chaos is H - (h1b + pb + 16) */
+      }
     }
+    ocy = wide ? H * .52 : ocyChaos;
   }
 
   /* ── loop: scurry at 12 fps while it is chaos; redraw whenever the scrollbar moved ── */
