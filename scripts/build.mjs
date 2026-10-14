@@ -94,7 +94,7 @@ function footer(page) {
       <div class="site-footer__col"><span class="site-footer__label">Contact</span><a href="#contact">Talk to us</a><a href="${LOGIN}">Customer login</a><a href="mailto:${EMAIL}">${EMAIL}</a><a href="tel:${PHONE_TEL}">${PHONE}</a></div>
       <div class="site-footer__note">${mark({ size: '44' })}</div>
     </div>
-    <div class="container site-footer__fine">© 2026 Valence Supply Chain LLC · Los Angeles<span aria-hidden="true"> · </span><a href="/privacy/" target="_blank" rel="noopener">Privacy policy</a></div>
+    <div class="container site-footer__fine">© 2026 Valence Supply Chain LLC · Los Angeles<span aria-hidden="true"> · </span><a href="/privacy" target="_blank" rel="noopener">Privacy policy</a><span aria-hidden="true"> · </span><a href="/sms-terms" target="_blank" rel="noopener">SMS terms</a></div>
   </footer>`;
 }
 
@@ -153,7 +153,7 @@ function proof() {
 
 // ───────────── head ─────────────
 function head(page) {
-  const url = SITE + '/' + page.out.replace(/index\.html$/, '');
+  const url = SITE + '/' + page.out.replace(/index\.html$/, '').replace(/(?<!^404)\.html$/, '');   // privacy.html is served at /privacy
   const robots = page.out === '404.html' ? '\n  <meta name="robots" content="noindex">' : '';
   const title = esc(page.title);
   const desc = esc(page.description);
@@ -232,7 +232,7 @@ const today = new Date().toISOString().slice(0, 10);
 const listed = built.filter((o) => o !== '404.html').sort((a, b) => (a === 'index.html' ? -1 : b === 'index.html' ? 1 : a.localeCompare(b)));
 writeFileSync(join(ROOT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${listed.map((o) => `  <url><loc>${SITE}/${o.replace(/index\.html$/, '')}</loc><lastmod>${today}</lastmod></url>`).join('\n')}
+${listed.map((o) => `  <url><loc>${SITE}/${o.replace(/index\.html$/, '').replace(/\.html$/, '')}</loc><lastmod>${today}</lastmod></url>`).join('\n')}
 </urlset>
 `);
 console.log(`built ${built.length} pages: ${built.join(', ')}`);

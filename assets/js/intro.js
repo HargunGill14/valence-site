@@ -683,7 +683,7 @@
       var pb = parseFloat(getComputedStyle(copy).paddingBottom) || 0, h1b = h1.offsetTop + h1.offsetHeight;
       stage.style.setProperty('--intro-drop', Math.max(0, copy.offsetHeight - h1b - pb + 6) + 'px');
       if (!wide) {
-        calmTop = Math.max(H * .24, copy.offsetTop); zoomCalm = Math.min(.66, (calmTop - 56) / ((span * .5 + 3.5) * u));
+        calmTop = Math.max(H * .24, copy.offsetTop); zoomCalm = Math.min(.9, (calmTop - 56) / ((span * .5 + 3.5) * u));   /* the copy is short now, so the office can be bigger */
         ocyChaos = Math.max(H * .22, (H - (h1b + pb + 16)) * .5 + 10);   /* the headline's top while chaos is H - (h1b + pb + 16) */
       }
     }
