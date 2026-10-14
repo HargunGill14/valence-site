@@ -24,17 +24,17 @@
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
   function smooth(x, a, b) { x = clamp((x - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); }
 
-  /* ── two palettes: chaos is drained and grey, handled is warm (Valence brand kit) ── */
+  /* ── two palettes: chaos is drained and grey, handled is clean and cool, to sit with the silver mark ── */
   var CH = { bg: [38, 39, 42], slab: [48, 49, 52], tileA: [72, 73, 76], tileB: [64, 65, 68], desk: [98, 98, 100], deskSide: [78, 78, 80],
     chair: [86, 86, 88], skin: [156, 150, 142], shirt: [112, 112, 114], paper: [196, 196, 196], plant: [96, 100, 96], pot: [88, 84, 80],
     box: [102, 98, 92], boxSide: [84, 80, 74], mon: [58, 58, 62], screen: [128, 130, 134], line: [22, 22, 24], alert: [176, 100, 82],
     text: [226, 226, 228], door: [60, 60, 64], panel: [30, 30, 33], cab: [90, 90, 92], cabSide: [72, 72, 74],
     wall: [62, 63, 66], wallTop: [74, 75, 78], pane: [50, 52, 56], board: [118, 118, 120], ink: [40, 40, 42] };
-  var CA = { bg: [243, 238, 228], slab: [217, 209, 194], tileA: [234, 227, 213], tileB: [226, 218, 202], desk: [250, 246, 238], deskSide: [217, 209, 194],
-    chair: [94, 91, 84], skin: [216, 192, 168], shirt: [110, 128, 98], paper: [253, 251, 246], plant: [110, 128, 98], pot: [196, 170, 136],
-    box: [204, 180, 148], boxSide: [176, 150, 116], mon: [42, 41, 37], screen: [156, 175, 142], line: [42, 41, 37], alert: [185, 87, 58],
-    text: [42, 41, 37], door: [217, 209, 194], panel: [250, 236, 206], cab: [234, 227, 213], cabSide: [217, 209, 194],
-    wall: [236, 229, 215], wallTop: [217, 209, 194], pane: [220, 230, 232], board: [252, 250, 245], ink: [110, 128, 98] };
+  var CA = { bg: [248, 249, 250], slab: [214, 218, 223], tileA: [238, 240, 243], tileB: [228, 231, 235], desk: [255, 255, 255], deskSide: [214, 218, 223],
+    chair: [94, 91, 84], skin: [216, 192, 168], shirt: [110, 128, 98], paper: [255, 255, 255], plant: [110, 128, 98], pot: [196, 170, 136],
+    box: [204, 180, 148], boxSide: [176, 150, 116], mon: [30, 36, 43], screen: [156, 175, 142], line: [30, 36, 43], alert: [185, 87, 58],
+    text: [30, 36, 43], door: [214, 218, 223], panel: [240, 243, 246], cab: [238, 240, 243], cabSide: [214, 218, 223],
+    wall: [240, 242, 245], wallTop: [214, 218, 223], pane: [218, 228, 236], board: [255, 255, 255], ink: [110, 128, 98] };
   var h = 0; /* harmony: 0 chaos, 1 handled */
   function mix(a, b, k) { return 'rgb(' + Math.round(a[0] + (b[0] - a[0]) * k) + ',' + Math.round(a[1] + (b[1] - a[1]) * k) + ',' + Math.round(a[2] + (b[2] - a[2]) * k) + ')'; }
   function C(n) {
@@ -154,7 +154,7 @@
     var tw = cx.measureText(text).width, ph = u * zoom * .22, py = u * zoom * .6;
     if (right) x -= tw;                                         /* anchored by its right edge */
     x = clamp(x, ph + 8, W - tw - ph - 8);                      /* keep every callout inside the stage */
-    cx.fillStyle = h > .5 ? 'rgba(250,246,238,.92)' : 'rgba(20,20,22,.78)';
+    cx.fillStyle = h > .5 ? 'rgba(255,255,255,.92)' : 'rgba(20,20,22,.78)';
     roundRect(x - ph, y - py, tw + ph * 2, py * 1.5, 3); cx.fill();
     cx.fillStyle = C('text'); cx.textBaseline = 'middle'; cx.fillText(text, x, y - py * .25);
     cx.restore();
@@ -609,11 +609,11 @@
         cx.save(); cx.globalAlpha = ta;
         [-1, 1].forEach(function (k) { cuboid(PP.x + k * (PP.w / 2 - .18), PP.y, 0, .1, PP.d - .3, PP.h - .06, 0, '#3F3D38', '#3F3D38', '#2A2925', line); });
         cuboid(PP.x, PP.y, PP.h - .06, PP.w, PP.d, .06, 0, '#5E8C6A', '#4B7255', '#3E6148', line);
-        cx.strokeStyle = '#F4F1EA'; cx.lineWidth = Math.max(1, sc * .025); cx.beginPath();
+        cx.strokeStyle = '#FFFFFF'; cx.lineWidth = Math.max(1, sc * .025); cx.beginPath();
         var a1 = proj(PP.x - PP.w / 2 + .06, PP.y, PP.h), a2 = proj(PP.x + PP.w / 2 - .06, PP.y, PP.h); cx.moveTo(a1[0], a1[1]); cx.lineTo(a2[0], a2[1]);
         [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(function (c, i) { var q = proj(PP.x + c[0] * (PP.w / 2 - .06), PP.y + c[1] * (PP.d / 2 - .06), PP.h); if (i) cx.lineTo(q[0], q[1]); else cx.moveTo(q[0], q[1]); });
         cx.closePath(); cx.stroke();
-        cuboid(PP.x, PP.y, PP.h, .04, PP.d + .08, .16, 0, '#F4F1EA', '#E6E1D6', '#D8D2C4', line);   /* the net */
+        cuboid(PP.x, PP.y, PP.h, .04, PP.d + .08, .16, 0, '#FFFFFF', '#E6E9ED', '#D3D8DE', line);   /* the net */
         cx.restore();
       } });
       if (game) {
