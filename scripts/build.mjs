@@ -92,9 +92,10 @@ function footer(page) {
       <div class="site-footer__col"><span class="site-footer__label">Industries</span><a href="/food-and-beverage/">Food and beverage</a><a href="/space/">Space and aerospace</a><a href="/data-centers-and-construction/">Data centers and construction</a></div>
       <div class="site-footer__col"><span class="site-footer__label">Company</span><a href="/services/">Services</a><a href="/how-we-work/">How we work</a><a href="/case-studies/">Case studies</a><a href="/about/">About</a></div>
       <div class="site-footer__col"><span class="site-footer__label">Contact</span><a href="#contact">Talk to us</a><a href="${LOGIN}">Customer login</a><a href="mailto:${EMAIL}">${EMAIL}</a><a href="tel:${PHONE_TEL}">${PHONE}</a></div>
+      <div class="site-footer__col"><span class="site-footer__label">Legal</span><a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a><a href="/sms-terms" target="_blank" rel="noopener">SMS Terms</a></div>
       <div class="site-footer__note">${mark({ size: '44' })}</div>
     </div>
-    <div class="container site-footer__fine">© 2026 Valence Supply Chain LLC · Los Angeles<span aria-hidden="true"> · </span><a href="/privacy" target="_blank" rel="noopener">Privacy policy</a><span aria-hidden="true"> · </span><a href="/sms-terms" target="_blank" rel="noopener">SMS terms</a></div>
+    <div class="container site-footer__fine">© 2026 Valence Supply Chain LLC · Los Angeles</div>
   </footer>`;
 }
 
