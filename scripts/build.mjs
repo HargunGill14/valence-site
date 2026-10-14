@@ -22,8 +22,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = 'https://www.valencesupplychain.com';
 const EMAIL = 'ops@valencesupplychain.com';
-const PHONE = '(628) 218-8500';
-const PHONE_TEL = '+16282188500';
+const PHONE = '(628) 212-9947';
+const PHONE_TEL = '+16282129947';
 const LOGIN = 'https://app.substrate-lab.com';
 const MAILTO = `mailto:${EMAIL}?subject=${encodeURIComponent("What's eating our week")}`;
 
@@ -162,7 +162,7 @@ function head(page) {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Valence Supply Chain LLC', alternateName: 'Valence', url: SITE + '/',
-    logo: SITE + '/valence-mark-512.png', email: EMAIL, telephone: '+1-628-218-8500',
+    logo: SITE + '/valence-mark-512.png', email: EMAIL, telephone: '+1-628-212-9947',
     address: { '@type': 'PostalAddress', addressLocality: 'Los Angeles', addressRegion: 'CA', addressCountry: 'US' },
     knowsAbout: ['Supplier management', 'Inventory reconciliation', 'Freight', 'Food and beverage', 'Aerospace logistics', 'Project freight'],
   })}</script>` : '';
