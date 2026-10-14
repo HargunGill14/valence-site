@@ -94,7 +94,7 @@ function footer(page) {
       <div class="site-footer__col"><span class="site-footer__label">Contact</span><a href="#contact">Talk to us</a><a href="${LOGIN}">Customer login</a><a href="mailto:${EMAIL}">${EMAIL}</a><a href="tel:${PHONE_TEL}">${PHONE}</a></div>
       <div class="site-footer__note">${mark({ size: '44' })}</div>
     </div>
-    <div class="container site-footer__fine">© 2026 Valence Supply Chain LLC · Los Angeles</div>
+    <div class="container site-footer__fine">© 2026 Valence Supply Chain LLC · Los Angeles<span aria-hidden="true"> · </span><a href="/privacy/" target="_blank" rel="noopener">Privacy policy</a></div>
   </footer>`;
 }
 

@@ -24,7 +24,7 @@ const { chromium } = require('playwright');
 
 const PAGES = ['/', '/services/', '/how-we-work/', '/case-studies/', '/about/',
   '/food-and-beverage/', '/data-centers-and-construction/', '/space/',
-  '/case-studies/private-label-soda/', '/case-studies/fgf-brands/', '/case-studies/labatt/', '/case-studies/canadian-canning/'];
+  '/case-studies/private-label-soda/', '/case-studies/fgf-brands/', '/case-studies/labatt/', '/case-studies/canadian-canning/', '/privacy/'];
 const WIDTHS = [375, 768, 1440];
 const MODES = ['normal', 'reduced motion', 'no JS'];
 const PAGE_MS = 60000, RUN_MS = 10 * 60000;
