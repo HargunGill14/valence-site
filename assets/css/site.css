@@ -95,16 +95,19 @@ p, li, h1, h2, h3, span, div { text-wrap: pretty; }
   border-bottom: 1px solid var(--border);
 }
 .site-header__bar { height: var(--header-h); display: flex; align-items: center; gap: 28px; }
-.wordmark { display: flex; align-items: center; gap: 10px; font-family: var(--serif); font-size: 26px; letter-spacing: -.01em; text-decoration: none; color: var(--ink); min-height: 44px; }
+.wordmark { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); min-height: 44px; flex-shrink: 0; }
 .wordmark:hover { color: var(--ink); }
-.wordmark .mark { width: 30px; height: auto; overflow: visible; }
+.wordmark .mark img { display: block; width: 38px; height: 38px; }
+.wordmark__words { display: block; height: 15px; width: auto; }
+@media (max-width: 420px) { .wordmark { gap: 8px; } .wordmark .mark img { width: 32px; height: 32px; } .wordmark__words { height: 12px; } }
 .site-menu { display: flex; align-items: center; gap: 28px; flex: 1; }
 .site-nav { display: flex; gap: 24px; font-size: 14px; margin-left: 24px; flex: 1; white-space: nowrap; }
 .site-nav a { text-decoration: none; color: var(--ink); padding: 12px 0; }
 .site-nav a:hover, .site-nav a[aria-current="page"] { color: var(--green); }
 .site-login { font-size: 13px; color: var(--ink-3); text-decoration: none; padding: 12px 0; white-space: nowrap; }
 .menu-toggle { display: none; }
-.mark { overflow: visible; }
+.mark { display: block; }
+.mark img { display: block; max-width: 100%; height: auto; }
 
 
 /* ───────── hero (home) ───────── */
@@ -302,7 +305,7 @@ p, li, h1, h2, h3, span, div { text-wrap: pretty; }
 .site-footer--dark .site-footer__label, .site-footer--dark .site-footer__fine { color: var(--muted); }
 .site-footer__note { font-family: var(--serif); font-size: 20px; line-height: 1.3; color: var(--ink-2); }
 .site-footer--dark .site-footer__note { color: var(--border-2); }
-.site-footer__note .mark { width: 36px; height: auto; margin-bottom: 14px; }
+.site-footer__note .mark img { width: 52px; height: 52px; margin-bottom: 14px; }
 .site-footer__fine { padding-bottom: 40px; font-size: 12px; color: var(--ink-3); line-height: 1.5; }
 
 /* ───────── vertical pages ───────── */
@@ -482,7 +485,7 @@ html:not(.js) .intro__stage { --intro-bg: #F3EEE4; --intro-fg: #2A2925; --intro-
 .intro__copy .eyebrow { color: inherit; opacity: .75; margin-bottom: 18px; }
 /* the mark lands above the headline once the office is handled */
 .intro__mark { margin-bottom: 20px; opacity: calc((var(--intro-h, 0) - .7) * 3.4); transform: translateY(calc((1 - var(--intro-h, 0)) * -40px)); transition: opacity .3s, transform .3s; }
-.intro__mark .mark { display: block; }
+.intro__mark .mark img { width: 72px; height: 72px; }
 @media (max-width: 760px) { .intro__mark { display: none; } }   /* phones: the office is the picture; the mark would crowd the copy */
 .intro__copy .h1 { max-width: 12ch; font-size: clamp(42px, 6.6vw, 88px); color: inherit; text-wrap: balance; }
 .intro__kicker, .intro__copy .lede, .intro__btns {
@@ -490,7 +493,7 @@ html:not(.js) .intro__stage { --intro-bg: #F3EEE4; --intro-fg: #2A2925; --intro-
   transition: opacity .3s, transform .3s;
 }
 .intro__kicker { margin: 22px 0 0; font-family: var(--mono); font-size: 13px; letter-spacing: .06em; color: var(--green); }
-.intro__copy .lede { margin-top: 14px; color: inherit; max-width: 520px; }
+.intro__copy .lede { margin-top: 14px; color: inherit; max-width: 500px; font-family: 'Manrope', var(--sans); font-weight: 400; font-size: 18px; line-height: 1.6; letter-spacing: -.005em; }
 .intro__btns { margin-top: 28px; }
 .intro .btn--secondary { color: inherit; border-color: currentColor; }
 .intro .btn--secondary:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
@@ -538,33 +541,13 @@ html:not(.js) .intro__stage { --intro-bg: #F3EEE4; --intro-fg: #2A2925; --intro-
   .intro__cue span { animation: none; }
 }
 
-/* ───────── cardboard-box buttons (home intro): the illustrated open box, words on the front ───────── */
-.cbox {
-  position: relative; display: inline-block; width: 210px; max-width: 100%; container-type: inline-size;
-  padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; min-height: 0;
-  color: #2A2925; text-decoration: none; -webkit-tap-highlight-color: transparent;
-  transition: transform .18s;
-}
-.cbox:hover { color: #2A2925; transform: translateY(-3px); }
-.cbox:active { transform: translateY(1px) scale(.985); }
-.cbox:focus-visible { outline: 2px solid var(--green); outline-offset: 6px; border-radius: 8px; }
-.cbox__art { display: block; width: 100%; height: auto; pointer-events: none; }
-/* the front face of the box sits at 7.6%-92.1% across; its bright part (below the flap's shadow) runs 68%-97% down the picture */
-.cbox__text {
-  position: absolute; left: 7.6%; width: 84.5%; top: 82.6%; transform: translateY(-50%);
-  text-align: center; font-family: var(--serif); font-weight: 700; font-size: 15px; line-height: 1; letter-spacing: 0; -webkit-text-stroke: .35px currentColor; paint-order: stroke fill;
-  color: #2A2925; white-space: nowrap; pointer-events: none;
-}
-@supports (font-size: 1cqw) { .cbox__text { font-size: 7.4cqw; } }
-.intro__btns { gap: 12px; margin-top: 10px; align-items: flex-end; }
+/* ───────── home intro buttons ───────── */
+.intro__btns { gap: 12px; margin-top: 28px; }
 @media (max-width: 760px) {
-  .intro__btns { gap: 10px; margin-top: 12px; }
-  /* phones: the two boxes together take about two thirds of the paragraph's width */
-  .btn-row .cbox { flex: 0 0 auto; width: min(124px, 33%); }
-  @supports (font-size: 1cqw) { .cbox__text { font-size: 7.8cqw; -webkit-text-stroke-width: .25px; } }
+  /* phones: the two buttons side by side, sized to their words, not full width */
+  .intro__btns.btn-row { flex-direction: row; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .intro .intro__btns .btn { width: auto; flex: 0 0 auto; min-height: 0; padding: 10px 12px; font-size: 12.5px; }
 }
-@media (max-width: 760px) and (max-height: 600px) { .btn-row .cbox { width: min(116px, 31%); } }
-@media (prefers-reduced-motion: reduce) { .cbox { transition: none; } }
 
 /* ───────── the live map: copy on the left, the portal's map on the right, click to expand ───────── */
 .portalmap { border-top: 1px solid var(--border); padding: 88px 0; }

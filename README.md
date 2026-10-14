@@ -21,7 +21,7 @@ the background video.
   `node scripts/add-media.mjs <slot> <file>`. Log the source in `docs/MEDIA-CREDITS.md`.
 - Add a logo: save it as `assets/logos/<slug>.svg`, then `npm run build`.
 - Show the ticker hero instead of the split card: add `?hero=ticker` to the URL.
-- Re-render favicon, icons and the social image: see the header of `scripts/render-brand-assets.mjs`.
+- Re-make the logo files, favicons, app icons and the social image from `src/brand/`: `python3 scripts/brand-assets.py`.
 
 ## Run locally
 

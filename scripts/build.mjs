@@ -30,29 +30,17 @@ const MAILTO = `mailto:${EMAIL}?subject=${encodeURIComponent("What's eating our 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const attrs = (s) => Object.fromEntries([...s.matchAll(/(\w+)="([^"]*)"/g)].map((m) => [m[1], m[2]]));
 
-// ───────────── logo mark ─────────────
-// The V is the one on the office door in the intro: a thick stroke down, a thin stroke up, round ends.
-// The ring is an orbit, and the clay electron travels it, passing behind the V on the far side.
-let markSeq = 0;
-const MARK = {
-  dark: { v: '#15140F', ring: '#5F7A64' },
-  light: { v: '#EEEDE8', ring: '#98AE9C' },
-};
-const DOT = '#B9573A';
-function mark({ variant = 'dark', size = '30', label = '' } = {}) {
-  const { v, ring } = MARK[variant];
-  const id = `vm${++markSeq}`;
-  const a11y = label ? `role="img" aria-label="${esc(label)}"` : 'aria-hidden="true" focusable="false"';
-  const orbit = 'M 88 0 A 88 30 0 1 1 -88 0 A 88 30 0 1 1 88 0';
-  const electron = `<g transform="rotate(-18)"><circle r="7.5" fill="${DOT}"><animateMotion dur="7s" repeatCount="indefinite" path="${orbit}"/></circle></g>`;
-  const ellipse = `<ellipse rx="88" ry="30" transform="rotate(-18)" fill="none" stroke="${ring}" stroke-width="5"/>`;
-  return `<svg class="mark" viewBox="-100 -100 200 200" width="${size}" height="${size}" ${a11y}>`
-    + `<defs><clipPath id="${id}b"><polygon points="-100,-100 100,-100 100,-32.49 -100,32.49"/></clipPath>`
-    + `<clipPath id="${id}f"><polygon points="-100,32.49 100,-32.49 100,100 -100,100"/></clipPath></defs>`
-    + `<g clip-path="url(#${id}b)">${electron}</g>${ellipse}`
-    + `<path d="M-46 -48 L0 46" fill="none" stroke="${v}" stroke-width="22" stroke-linecap="round"/>`
-    + `<path d="M0 46 L46 -48" fill="none" stroke="${v}" stroke-width="8" stroke-linecap="round"/>`
-    + `<g clip-path="url(#${id}f)">${ellipse}${electron}</g></svg>`;
+// ───────────── logo ─────────────
+// The mark is the silver knot with the V inside it (assets/img/brand, cut from the brand files by
+// scripts/brand-assets.py). The words are the lockup's own lettering, as a picture, navy or paper.
+function mark({ size = '30', label = '', eager = '' } = {}) {
+  const alt = label ? esc(label) : '';
+  const hidden = label ? '' : ' aria-hidden="true"';
+  return `<picture class="mark"${hidden}><source srcset="/assets/img/brand/valence-mark.webp" type="image/webp">`
+    + `<img src="/assets/img/brand/valence-mark.png" alt="${alt}" width="${size}" height="${size}" decoding="async"${eager ? '' : ' loading="lazy"'}></picture>`;
+}
+function words({ light = false } = {}) {
+  return `<img class="wordmark__words" src="/assets/img/brand/valence-words${light ? '-light' : ''}.png" alt="Valence Supply Chain" width="762" height="52" decoding="async">`;
 }
 
 // ───────────── shared blocks ─────────────
@@ -71,7 +59,7 @@ function header(page) {
   }).join('\n          ');
   return `<header class="site-header">
     <div class="container site-header__bar">
-      <a class="wordmark" href="/" aria-label="Valence, home">${mark({ variant: 'dark', size: '30' })}<span>Valence</span></a>
+      <a class="wordmark" href="/" aria-label="Valence Supply Chain, home">${mark({ size: '36', eager: '1' })}${words()}</a>
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu"><span class="menu-toggle__bars" aria-hidden="true"></span><span class="menu-toggle__label">Menu</span></button>
       <div class="site-menu" id="site-menu">
         <nav class="site-nav" aria-label="Main">
@@ -104,7 +92,7 @@ function footer(page) {
       <div class="site-footer__col"><span class="site-footer__label">Industries</span><a href="/food-and-beverage/">Food and beverage</a><a href="/space/">Space and aerospace</a><a href="/data-centers-and-construction/">Data centers and construction</a></div>
       <div class="site-footer__col"><span class="site-footer__label">Company</span><a href="/services/">Services</a><a href="/how-we-work/">How we work</a><a href="/case-studies/">Case studies</a><a href="/about/">About</a></div>
       <div class="site-footer__col"><span class="site-footer__label">Contact</span><a href="#contact">Talk to us</a><a href="${LOGIN}">Customer login</a><a href="mailto:${EMAIL}">${EMAIL}</a><a href="tel:${PHONE_TEL}">${PHONE}</a></div>
-      <div class="site-footer__note">${mark({ variant: variant === 'dark' ? 'light' : 'dark', size: '36' })}</div>
+      <div class="site-footer__note">${mark({ size: '44' })}</div>
     </div>
     <div class="container site-footer__fine">© 2026 Valence Supply Chain LLC · Los Angeles</div>
   </footer>`;
@@ -186,8 +174,9 @@ function head(page) {
   <title>${title}</title>
   <meta name="description" content="${desc}">${robots}
   <link rel="canonical" href="${url}">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon-96.png" type="image/png" sizes="96x96">
+  <link rel="icon" href="/favicon-48.png" type="image/png" sizes="48x48">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#F4F1EA">
@@ -205,7 +194,7 @@ function head(page) {
   <meta name="twitter:image" content="${SITE}/og-image.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500&display=swap">
   <link rel="stylesheet" href="/assets/css/site.css">${jsonld}
 </head>`;
 }
@@ -214,7 +203,6 @@ function head(page) {
 const pagesDir = join(ROOT, 'src/pages');
 const built = [];
 for (const file of readdirSync(pagesDir).filter((f) => f.endsWith('.html')).sort()) {
-  markSeq = 0;
   const src = readFileSync(join(pagesDir, file), 'utf8');
   const m = src.match(/^<!--(\{[\s\S]*?\})-->\s*/);
   if (!m) throw new Error(`${file}: missing JSON header comment`);
