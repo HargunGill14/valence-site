@@ -656,6 +656,8 @@ body.vmap-open { overflow: hidden; }
 .proofband__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
 .proofcard { border: 1px solid rgba(248, 249, 250, .28); border-radius: 28px; padding: 36px 36px 40px; display: flex; flex-direction: column; gap: 22px; min-height: 320px; }
 .proofcard__tag { align-self: flex-start; margin: 0; font-size: 14px; padding: 7px 12px; border: 1px solid rgba(248, 249, 250, .35); border-radius: 6px; color: rgba(248, 249, 250, .85); }
+.proofcard__n { margin: 0; display: flex; flex-direction: column; gap: 10px; font-family: var(--serif); font-size: clamp(72px, 9vw, 120px); line-height: .9; letter-spacing: -.03em; color: var(--paper); font-variant-numeric: tabular-nums; }
+.proofcard__n span { font-family: var(--mono); font-size: 12px; line-height: 1.3; letter-spacing: .1em; text-transform: uppercase; color: rgba(248, 249, 250, .6); }
 .proofcard__quote { margin: 0; font-family: var(--serif); font-size: clamp(22px, 2.1vw, 28px); line-height: 1.28; color: var(--paper); }
 .proofcard__by { margin: auto 0 0; font-size: 14px; color: rgba(248, 249, 250, .55); }
 @media (max-width: 760px) { .proofband { padding: 56px 0; } .proofband__grid { grid-template-columns: 1fr; } .proofcard { padding: 26px 24px 28px; border-radius: 20px; min-height: 0; } }
