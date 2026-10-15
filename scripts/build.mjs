@@ -24,7 +24,8 @@ const SITE = 'https://www.valencesupplychain.com';
 const EMAIL = 'ops@valencesupplychain.com';
 const PHONE = '(628) 212-9947';
 const PHONE_TEL = '+16282129947';
-const LOGIN = 'https://app.substrate-lab.com';
+// Customer login is off the site for now (2026-10-15). When the portal is ready, add one link
+// to the approved login URL back to the header and the footer Contact column.
 const MAILTO = `mailto:${EMAIL}?subject=${encodeURIComponent("What's eating our week")}`;
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -65,7 +66,6 @@ function header(page) {
         <nav class="site-nav" aria-label="Main">
           ${links}
         </nav>
-        <a class="site-login" href="${LOGIN}">Customer login</a>
         <a class="btn btn--dark" href="#contact">Book a 15-minute call</a>
       </div>
     </div>
@@ -91,7 +91,7 @@ function footer(page) {
     <div class="container site-footer__grid">
       <div class="site-footer__col"><span class="site-footer__label">Industries</span><a href="/food-and-beverage/">Food and beverage</a><a href="/space/">Space and aerospace</a><a href="/data-centers-and-construction/">Data centers and construction</a></div>
       <div class="site-footer__col"><span class="site-footer__label">Company</span><a href="/services/">Services</a><a href="/how-we-work/">How we work</a><a href="/case-studies/">Case studies</a><a href="/about/">About</a></div>
-      <div class="site-footer__col"><span class="site-footer__label">Contact</span><a href="#contact">Talk to us</a><a href="${LOGIN}">Customer login</a><a href="mailto:${EMAIL}">${EMAIL}</a><a href="tel:${PHONE_TEL}">${PHONE}</a></div>
+      <div class="site-footer__col"><span class="site-footer__label">Contact</span><a href="#contact">Talk to us</a><a href="mailto:${EMAIL}">${EMAIL}</a><a href="tel:${PHONE_TEL}">${PHONE}</a></div>
       <div class="site-footer__col"><span class="site-footer__label">Legal</span><a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a><a href="/sms-terms" target="_blank" rel="noopener">SMS Terms</a></div>
       <div class="site-footer__note">${mark({ size: '44' })}</div>
     </div>
