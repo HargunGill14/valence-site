@@ -464,6 +464,8 @@ html:not(.js) { --intro-p: 1; }
 .page-home.has-intro .site-header { transform: translateY(calc(-100% + var(--intro-p) * 100%)); }
 .page-home .site-header { will-change: transform; }
 .intro { position: relative; z-index: 1; height: 400svh; margin-top: calc(-1 * var(--header-h)); background: var(--paper); }
+/* mouse and trackpad: a wheel notch moves less than a swipe, so the desktop intro is shorter */
+@media (hover: hover) and (pointer: fine) { .intro { height: 280svh; } }
 html:not(.js) .intro { height: auto; margin-top: 0; }
 .intro__sticky {
   position: sticky; top: 0; height: 100svh; background: var(--paper);
