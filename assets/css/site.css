@@ -343,8 +343,9 @@ p, li, h1, h2, h3, span, div { text-wrap: pretty; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .also { margin-top: 40px; }
 .also__label { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
-.also__list { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
-.also__list li { font-size: 15px; padding: 8px 14px; border: 1px solid var(--border-2); border-radius: 999px; color: var(--ink-2); background: var(--surface); }
+.also__marquee { margin-top: 16px; padding: 4px 0; }
+.also__track { list-style: none; margin: 0; padding: 0; animation-duration: 70s; }
+.also__item { flex: none; margin-right: 12px; white-space: nowrap; font-size: 16px; padding: 10px 18px; border: 1px solid var(--border-2); border-radius: 999px; color: var(--ink); background: var(--surface); }
 .also__note { margin-top: 14px; font-size: 15px; color: var(--ink-3); }
 .stage__skip { grid-column: 1 / -1; margin: 0; font-size: 16px; color: var(--ink); }
 .stage__skip .label { display: inline; margin-right: 10px; }
@@ -355,7 +356,8 @@ p, li, h1, h2, h3, span, div { text-wrap: pretty; }
   .vs__table tbody tr:first-child { border-top-color: var(--ink); }
   .vs__table tbody th, .vs__table td { width: auto; border-top: 0; padding: 0 0 8px; }
   .vs__table td::before { content: attr(data-label) ": "; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
-  .also__list li { font-size: 14px; padding: 7px 12px; }
+  .also__item { font-size: 14px; padding: 8px 14px; }
+  .also__track { animation-duration: 50s; }
 }
 /* case studies: three stages, then the record */
 .stages { padding-top: 80px; padding-bottom: 88px; }
@@ -505,6 +507,9 @@ p, li, h1, h2, h3, span, div { text-wrap: pretty; }
   .marquee__track { animation: none; width: auto; flex-wrap: wrap; justify-content: center; gap: 20px 0; padding: 0 var(--gutter); }
   .logos__item { margin: 0 calc(var(--logo-gap) / 2); }
   .logos__item[aria-hidden="true"] { display: none; }
+  .also__track { gap: 10px; }
+  .also__item { margin: 0; }
+  .also__item[aria-hidden="true"] { display: none; }
 }
 
 /* ───────── home intro: the miniature office, full screen on load, framed after scroll ───────── */
