@@ -8,6 +8,27 @@
   var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   var each = function (list, fn) { Array.prototype.forEach.call(list, fn); };
 
+  /* ── where a page lands: the top, or the section its link names ──
+     Browsers restore an old scroll position on reload and back, and some embedded viewers do it on every
+     page change, which on a long page reads as a random spot. Land deliberately instead, once the layout
+     has settled, unless the visitor has already started scrolling. A page restored from the back/forward
+     cache keeps its place. */
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  var touched = false;
+  each(['wheel', 'touchstart', 'keydown', 'mousedown'], function (ev) {
+    window.addEventListener(ev, function () { touched = true; }, { passive: true, once: true });
+  });
+  function land() {
+    if (touched) return;
+    var id = '';
+    try { id = decodeURIComponent(location.hash.slice(1)); } catch (err) {}
+    var target = id && doc.getElementById(id);
+    if (target) target.scrollIntoView({ block: 'start' });
+    else window.scrollTo(0, 0);
+  }
+  if (doc.readyState === 'complete') land(); else window.addEventListener('load', land);
+  window.addEventListener('pageshow', function (e) { if (!e.persisted) land(); });
+
   /* ── mobile menu ── */
   var toggle = doc.querySelector('.menu-toggle');
   var menu = doc.getElementById('site-menu');
