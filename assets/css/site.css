@@ -326,6 +326,29 @@ p, li, h1, h2, h3, span, div { text-wrap: pretty; }
 .statcard p:last-child { font-size: 16px; line-height: 1.5; color: var(--ink-2); }
 
 /* ───────── case studies ───────── */
+/* homepage industries: intro above the cards, one line of detail per card */
+.industries__head { max-width: 760px; margin-bottom: 40px; }
+.industries__head .eyebrow { margin-bottom: 14px; }
+.industries__head .lede { margin-top: 16px; }
+.card__text { font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+/* case studies: three stages, then the record */
+.stages { padding-top: 80px; padding-bottom: 88px; }
+.stages__head { max-width: 760px; margin-bottom: 40px; }
+.stages__note, .cs-record-head .lede { margin-top: 14px; font-size: 15px; line-height: 1.55; color: var(--ink-3); }
+.stages__note .label, .stage__body .label { display: block; margin-bottom: 6px; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.stages__note .label { display: inline; margin-right: 8px; color: var(--green); }
+.stage { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 32px 56px; padding: 36px 0; border-top: 1px solid var(--ink); }
+.stage + .stage { border-top-color: var(--border); }
+.stage__tag { display: inline-block; font-size: 13px; padding: 6px 10px; border: 1px solid var(--border-2); border-radius: 6px; color: var(--ink-2); }
+.stage__title { margin-top: 18px; font-family: var(--serif); font-weight: 400; font-size: clamp(28px, 2.8vw, 38px); line-height: 1.1; letter-spacing: -.01em; text-wrap: balance; }
+.stage__body { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 40px; }
+.stage__body p { font-size: 16px; line-height: 1.6; color: var(--ink-2); }
+.stage__targets { grid-column: 1 / -1; list-style: none; margin: 0; padding: 18px 0 0; border-top: 1px dashed var(--border-2); display: flex; flex-wrap: wrap; gap: 12px 32px; font-size: 16px; color: var(--ink); }
+.stage__targets b { font-weight: 600; }
+.tag-target { margin-left: 6px; font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--green); border: 1px solid currentColor; border-radius: 4px; padding: 2px 5px; vertical-align: 2px; }
+.cs-record-head { padding-top: 80px; }
+@media (max-width: 900px) { .stage { grid-template-columns: minmax(0, 1fr); gap: 20px; } }
+@media (max-width: 760px) { .stages { padding-top: 56px; padding-bottom: 56px; } .stage__body { grid-template-columns: minmax(0, 1fr); } .stage__targets { flex-direction: column; gap: 10px; } .cs-record-head { padding-top: 56px; } .industries__head { margin-bottom: 28px; } }
 .cs-index { padding-top: 96px; padding-bottom: 80px; }
 .cs-index .lede { margin: 20px 0 48px; max-width: 600px; }
 /* the index: one row per company, the whole row is the link */
