@@ -153,7 +153,16 @@ function proof() {
 }
 
 // ───────────── head ─────────────
-function head(page) {
+// FAQ structured data, read from the page's own <details class="faq__item"> blocks so it never drifts
+function faqJsonld(body) {
+  const strip = (h) => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+    .replace(/&amp;/g, '&').replace(/&#39;|&rsquo;/g, "'").replace(/&quot;/g, '"');
+  const items = [...body.matchAll(/<details class="faq__item"[^>]*>\s*<summary>([\s\S]*?)<\/summary>([\s\S]*?)<\/details>/g)]
+    .map(([, q, a]) => ({ '@type': 'Question', name: strip(q), acceptedAnswer: { '@type': 'Answer', text: strip(a) } }));
+  return items.length ? `\n  <script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: items })}</script>` : '';
+}
+
+function head(page, body = '') {
   const url = SITE + '/' + page.out.replace(/index\.html$/, '').replace(/(?<!^404)\.html$/, '');   // privacy.html is served at /privacy
   const robots = page.out === '404.html' ? '\n  <meta name="robots" content="noindex">' : '';
   const title = esc(page.title);
@@ -196,7 +205,7 @@ function head(page) {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500&display=swap">
-  <link rel="stylesheet" href="/assets/css/site.css">${jsonld}
+  <link rel="stylesheet" href="/assets/css/site.css">${jsonld}${faqJsonld(body)}
 </head>`;
 }
 
@@ -221,7 +230,7 @@ for (const file of readdirSync(pagesDir).filter((f) => f.endsWith('.html')).sort
     }
   });
   const scripts = ['/assets/js/site.js', ...(page.scripts || [])].map((s) => `  <script src="${s}" defer></script>`).join('\n');
-  const html = `${head(page)}\n<body class="${page.bodyClass || ''}">\n  <a class="skip-link" href="#main">Skip to content</a>\n${body.trim()}\n${scripts}\n</body>\n</html>\n`;
+  const html = `${head(page, body)}\n<body class="${page.bodyClass || ''}">\n  <a class="skip-link" href="#main">Skip to content</a>\n${body.trim()}\n${scripts}\n</body>\n</html>\n`;
   const out = join(ROOT, page.out);
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, html);
