@@ -385,6 +385,28 @@ p, li, h1, h2, h3, span, div { text-wrap: pretty; }
 @media (max-width: 1100px) { .fbwork__grid--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 900px) { .fbwork__grid, .fbwork__grid--3 { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 760px) { .fbwork { padding-top: 56px; padding-bottom: 64px; } .fbcase { padding: 24px 22px 26px; } }
+/* brand roster: real accounts as rows, not big-number cards */
+.roster { margin: 0 0 48px; }
+.roster__label, .brandline__label { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.roster__list { list-style: none; margin: 14px 0 0; padding: 0; border-top: 1px solid var(--ink); }
+.roster__item { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) minmax(0, 6fr) minmax(0, 2fr) 7.5rem; gap: 8px 24px; align-items: baseline; padding: 16px 0; border-bottom: 1px solid var(--border); }
+.roster__name { font-family: var(--serif); font-size: clamp(22px, 2vw, 26px); line-height: 1.15; color: var(--ink); }
+.roster__tag { font-size: 13px; color: var(--ink-3); }
+.roster__line { font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+.roster__meta { font-family: var(--mono); font-size: 12px; letter-spacing: .04em; color: var(--ink-3); white-space: nowrap; }
+.roster__link { font-size: 14px; font-weight: 500; color: var(--ink); text-underline-offset: 3px; white-space: nowrap; }
+.fbwork__sub { margin: 8px 0 20px; font-family: var(--serif); font-weight: 400; font-size: clamp(24px, 2.4vw, 30px); }
+.fbcase__next { margin: 0; padding-top: 12px; font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+.fbcase__next .label { display: block; margin-bottom: 4px; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--green); }
+.fbcase__targets + .fbcase__next { border-top: 0; }
+.brandline { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.brandline__inner { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; padding-block: 22px; }
+.brandline__names { font-family: var(--serif); font-size: clamp(22px, 2.4vw, 30px); line-height: 1.25; color: var(--ink); }
+@media (max-width: 900px) {
+  .roster__item { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name meta" "tag tag" "line line" "link link"; }
+  .roster__name { grid-area: name; } .roster__meta { grid-area: meta; } .roster__tag { grid-area: tag; } .roster__line { grid-area: line; } .roster__link { grid-area: link; }
+  .roster__line:empty, .roster__link:empty { display: none; }
+}
 /* case studies: three stages, then the record */
 .stages { padding-top: 80px; padding-bottom: 88px; }
 .stages__head { max-width: 760px; margin-bottom: 40px; }
