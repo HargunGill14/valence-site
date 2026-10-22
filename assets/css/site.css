@@ -928,14 +928,22 @@ html.js [data-reveal="stagger"].is-in > :nth-child(n+6) { transition-delay: .4s;
   .stepsin__para { font-size: 16px; }
 }
 
-/* client quote between the industry cards and "Capacity to connect" */
-.testimonial { padding: 96px 0 0; }
-.testimonial__inner { margin-top: 0; margin-bottom: 0; }
-.testimonial__quote { margin: 0; max-width: 920px; padding-left: 28px; border-left: 2px solid var(--ink); }
-.testimonial__quote p { margin: 0; font-family: var(--serif); font-size: clamp(22px, 2.3vw, 30px); line-height: 1.35; letter-spacing: -.005em; color: var(--ink); text-wrap: pretty; }
-.testimonial__by { margin: 20px 0 0 30px; font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+/* client quote, right under the logo band */
+.testimonial { padding: 88px 0 24px; }
+.tquote { position: relative; margin: 0 auto; max-width: 920px; padding: 56px 56px 36px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; box-shadow: 0 1px 2px rgba(18, 22, 27, .04), 0 12px 32px -16px rgba(18, 22, 27, .12); }
+.tquote__mark { position: absolute; top: 18px; left: 44px; font-family: var(--serif); font-size: 120px; line-height: 1; color: var(--green); opacity: .9; }
+.tquote__text { margin: 0; padding-top: 28px; }
+.tquote__text p { margin: 0; font-family: var(--serif); font-size: clamp(22px, 2.2vw, 29px); line-height: 1.38; letter-spacing: -.005em; color: var(--ink); text-wrap: pretty; }
+.tquote__by { display: flex; align-items: center; gap: 14px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+.tquote__avatar { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--green-tint); color: var(--green-deep); }
+.tquote__who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tquote__name { font-size: 15px; font-weight: 600; color: var(--ink); }
+.tquote__meta { font-size: 14px; color: var(--ink-3); }
+.tquote__tag { margin-left: auto; flex: none; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--green-deep); background: var(--green-tint); border-radius: 999px; padding: 6px 12px; }
 @media (max-width: 760px) {
-  .testimonial { padding: 64px 0 0; }
-  .testimonial__quote { padding-left: 18px; }
-  .testimonial__by { margin-left: 20px; }
+  .testimonial { padding: 56px 0 8px; }
+  .tquote { padding: 44px 22px 24px; border-radius: 16px; }
+  .tquote__mark { top: 10px; left: 18px; font-size: 88px; }
+  .tquote__text { padding-top: 20px; }
+  .tquote__tag { display: none; }
 }
