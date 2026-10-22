@@ -341,9 +341,9 @@ p, li, h1, h2, h3, span, div { text-wrap: pretty; }
 .vs__table td { width: 36%; color: var(--ink-3); }
 .vs__table td:last-child { color: var(--ink); font-weight: 500; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.also { margin-top: 40px; }
+.also { margin: 0 0 40px; }
 .also__label { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
-.also__marquee { margin-top: 16px; padding: 4px 0; }
+.also__marquee { padding: 4px 0; }
 .also__track { list-style: none; margin: 0; padding: 0; animation-duration: 70s; }
 .also__item { flex: none; margin-right: 12px; white-space: nowrap; font-size: 16px; padding: 10px 18px; border: 1px solid var(--border-2); border-radius: 999px; color: var(--ink); background: var(--surface); }
 .also__note { margin-top: 14px; font-size: 15px; color: var(--ink-3); }
@@ -926,4 +926,16 @@ html.js [data-reveal="stagger"].is-in > :nth-child(n+6) { transition-delay: .4s;
 @media (max-width: 760px) {
   .stepsin { padding: 56px 0; }
   .stepsin__para { font-size: 16px; }
+}
+
+/* client quote between the industry cards and "Capacity to connect" */
+.testimonial { padding: 96px 0 0; }
+.testimonial__inner { margin-top: 0; margin-bottom: 0; }
+.testimonial__quote { margin: 0; max-width: 920px; padding-left: 28px; border-left: 2px solid var(--ink); }
+.testimonial__quote p { margin: 0; font-family: var(--serif); font-size: clamp(22px, 2.3vw, 30px); line-height: 1.35; letter-spacing: -.005em; color: var(--ink); text-wrap: pretty; }
+.testimonial__by { margin: 20px 0 0 30px; font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+@media (max-width: 760px) {
+  .testimonial { padding: 64px 0 0; }
+  .testimonial__quote { padding-left: 18px; }
+  .testimonial__by { margin-left: 20px; }
 }
