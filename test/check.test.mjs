@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkDist, checkLoginConstant } from '../scripts/check.mjs';
-import { LOGIN, GA_ID, GA_TAG_URL, SCRIPT_HOSTS } from '../scripts/config.mjs';
+import { LOGIN, GA_ID, GA_TAG_URL, SCRIPT_HOSTS, CLARITY_ID, CLARITY_TAG_URL } from '../scripts/config.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -271,4 +271,40 @@ test('a missing or weakened header, or a loosened CSP directive, in serve.json f
 test('installs never run package scripts, and CI checks registry signatures', () => {
   assert.match(readFileSync(join(ROOT, '.npmrc'), 'utf8'), /^ignore-scripts=true$/m);
   assert.match(readFileSync(join(ROOT, '.github/workflows/check.yml'), 'utf8'), /npm audit signatures/);
+});
+
+// ---- 6.5: Microsoft Clarity ---------------------------------------------------
+
+test('every built page loads Microsoft Clarity once, with CLARITY_ID, after its queue file', () => {
+  assert.match(CLARITY_ID, /^[a-z0-9]{10}$/);
+  const pages = readdirSync(join(ROOT, 'dist'), { recursive: true }).filter((f) => String(f).endsWith('.html'));
+  for (const rel of pages) {
+    const html = readFileSync(join(ROOT, 'dist', rel), 'utf8');
+    const queue = html.indexOf('<script defer src="/assets/js/clarity.js"></script>');
+    const tag = html.indexOf(`<script defer src="${CLARITY_TAG_URL}"></script>`);
+    assert.ok(queue > 0 && tag > queue, `${rel}: Clarity queue, then Clarity's tag`);
+    assert.equal(html.split(CLARITY_TAG_URL).length - 1, 1, `${rel}: one Clarity tag`);
+  }
+  assert.match(readFileSync(join(ROOT, 'dist/assets/js/clarity.js'), 'utf8'), /window\.clarity = window\.clarity \|\| function/);
+});
+
+test('the CSP lets Clarity load from its exact hosts and report to Microsoft', () => {
+  const csp = JSON.parse(readFileSync(join(ROOT, 'serve.json'), 'utf8')).headers[0].headers[0].value;
+  const dir = (name) => csp.split(';').map((d) => d.trim()).find((d) => d.startsWith(name + ' ')).split(/\s+/).slice(1);
+  for (const h of ['https://www.clarity.ms', 'https://scripts.clarity.ms']) assert.ok(dir('script-src').includes(h), `script-src has ${h}`);
+  assert.ok(!dir('script-src').includes('https://*.clarity.ms'), 'no wildcard script host');
+  for (const h of ['https://*.clarity.ms', 'https://c.bing.com']) assert.ok(dir('connect-src').includes(h), `connect-src has ${h}`);
+});
+
+test("Clarity's tag with a different project ID fails", () => {
+  withCopy((dist) => {
+    editPage(dist, 'about/index.html', (h) => h.replace(CLARITY_TAG_URL, 'https://www.clarity.ms/tag/someoneelse'));
+    expectProblem(checkDist(dist), /about\/index\.html: third-party script not on THIRD_PARTY_SCRIPTS.*clarity\.ms\/tag\/someoneelse/);
+  });
+});
+
+test('the Privacy Policy names both analytics tools', () => {
+  const html = readFileSync(join(ROOT, 'dist/privacy.html'), 'utf8');
+  assert.match(html, /Google Analytics/);
+  assert.match(html, /Microsoft Clarity/);
 });
