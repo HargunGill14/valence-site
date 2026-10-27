@@ -2,10 +2,15 @@
   "name": "valence-site",
   "private": true,
   "scripts": {
-    "start": "serve . -l tcp://0.0.0.0:${PORT:-3000}",
-    "build": "node scripts/build.mjs"
+    "start": "serve dist --config ../serve.json -l tcp://0.0.0.0:${PORT:-3000}",
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "test": "node --test"
   },
   "dependencies": {
-    "serve": "^14.2.4"
+    "serve": "14.2.6"
+  },
+  "overrides": {
+    "compression": "1.8.2"
   }
 }
