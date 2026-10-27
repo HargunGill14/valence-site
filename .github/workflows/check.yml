@@ -1,0 +1,35 @@
+name: Check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: build, check, test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      # Every installed package carries a valid npm registry signature.
+      - run: npm audit signatures
+      # Builds dist/ and serve.json and runs scripts/check.mjs (fails on any problem).
+      - run: npm run build
+      # The committed dist/, serve.json and src/lastmod.json must be what the build makes.
+      - name: Built files are committed
+        run: |
+          if [ -n "$(git status --porcelain -- dist serve.json src/lastmod.json)" ]; then
+            git status --short -- dist serve.json src/lastmod.json
+            echo "::error::Run 'npm run build' and commit dist/, serve.json and src/lastmod.json."
+            exit 1
+          fi
+      - run: npm test
+      - run: npm audit --omit=dev --audit-level=high
