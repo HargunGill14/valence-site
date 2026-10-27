@@ -26,11 +26,18 @@ export const APP_HOST_PATTERNS = [
 export const GA_ID = 'G-GV04GR4XZP';
 export const GA_TAG_URL = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
 
+// Microsoft Clarity (session replay and heatmaps). The build loads Microsoft's tag from
+// www.clarity.ms after a same-site queue stub (dist/assets/js/clarity.js), both deferred so
+// they run in order; the tag then loads clarity.js from scripts.clarity.ms and reports to
+// *.clarity.ms and c.bing.com (Microsoft's documented hosts).
+export const CLARITY_ID = 'z426pshvaq';
+export const CLARITY_TAG_URL = `https://www.clarity.ms/tag/${CLARITY_ID}`;
+
 // The only scripts a page may load from another site. check.mjs fails the build on any
 // other external <script src>: an analytics or chat snippet added later needs its own
 // line here, a CSP entry and a reason (plan 6.5).
-export const THIRD_PARTY_SCRIPTS = [GA_TAG_URL];
-export const SCRIPT_HOSTS = ['https://www.googletagmanager.com']; // the one host gtag.js loads from; no wildcard
+export const THIRD_PARTY_SCRIPTS = [GA_TAG_URL, CLARITY_TAG_URL];
+export const SCRIPT_HOSTS = ['https://www.googletagmanager.com', 'https://www.clarity.ms', 'https://scripts.clarity.ms']; // exact hosts, no wildcard
 
 // Content-Security-Policy, without script-src: build.mjs adds script-src with a
 // sha256 for each inline head script it writes (plan steps 1.13 and 1.14) and SCRIPT_HOSTS.
@@ -38,9 +45,9 @@ export const CSP_BASE = [
   "default-src 'self'",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   'font-src https://fonts.gstatic.com',
-  "img-src 'self' data: https://*.google-analytics.com https://www.googletagmanager.com",
+  "img-src 'self' data: https://*.google-analytics.com https://www.googletagmanager.com https://*.clarity.ms https://c.bing.com",
   "media-src 'self'",
-  "connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com",
+  "connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://*.clarity.ms https://c.bing.com",
   "manifest-src 'self'",
   "frame-src 'none'",
   "worker-src 'none'",

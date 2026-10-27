@@ -11,7 +11,7 @@
 //         has 0 login links (until labs. is live) or 2 (header and footer), never 1 or 3+;
 //         no page holds a form, a password field, an iframe, an embed or a meta refresh.
 //   6.5   a script from another site loads only if it is on THIRD_PARTY_SCRIPTS (today: Google
-//         Analytics with GA_ID), and the CSP's script-src names no source beyond SCRIPT_HOSTS.
+//         Analytics with GA_ID and Microsoft Clarity with CLARITY_ID), and the CSP's script-src names no source beyond SCRIPT_HOSTS.
 
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';

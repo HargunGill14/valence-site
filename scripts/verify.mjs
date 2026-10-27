@@ -12,8 +12,8 @@
 // then, after `node scripts/build.mjs`:
 //   NODE_PATH=~/.cache/valence-pw/node_modules node scripts/verify.mjs
 // It serves dist/ on a free local port. Each page gets 60 s, the whole run 10 min.
-// VERIFY_STUB_FONTS=1 answers Google Fonts with an empty stylesheet and Google's analytics tag with an
-// empty script, for machines without internet; the CSP still applies to both, so a blocked host fails.
+// VERIFY_STUB_FONTS=1 answers Google Fonts with an empty stylesheet and Google's and Microsoft Clarity's
+// tags with an empty script, for machines without internet; the CSP still applies to both, so a blocked host fails.
 // Exit code 0 when every check passes, 1 when any fails, 2 on the overall timeout.
 
 import { createServer } from 'node:http';
@@ -122,6 +122,7 @@ async function checkPage(path, w, mode) {
   if (process.env.VERIFY_STUB_FONTS) {
     await ctx.route(/^https:\/\/fonts\.(googleapis|gstatic)\.com\//, (r) => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
     await ctx.route(/^https:\/\/www\.googletagmanager\.com\/gtag\/js/, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+    await ctx.route(/^https:\/\/(www|scripts)\.clarity\.ms\//, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
   }
   ctx.setDefaultTimeout(10000);
   ctx.setDefaultNavigationTimeout(20000);
@@ -175,6 +176,7 @@ async function checkPage(path, w, mode) {
     if (mode !== 'no JS') {
       const ga = await page.evaluate(() => Array.isArray(window.dataLayer) && window.dataLayer.some((a) => a[0] === 'config'));
       ok(`${tag} analytics set up`, ga);
+      ok(`${tag} clarity queue set up`, await page.evaluate(() => typeof window.clarity === 'function'));
     }
     if (mode === 'no JS') {
       ok(`${tag} heading shows`, await page.locator('h1').first().isVisible());

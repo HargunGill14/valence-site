@@ -26,7 +26,7 @@ import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync, rmSync
 import { createHash } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SITE, CSP_BASE, SECURITY_HEADERS, ASSET_CACHE, GA_ID, GA_TAG_URL, SCRIPT_HOSTS } from './config.mjs';
+import { SITE, CSP_BASE, SECURITY_HEADERS, ASSET_CACHE, GA_ID, GA_TAG_URL, CLARITY_TAG_URL, SCRIPT_HOSTS } from './config.mjs';
 import { checkDist, sha256 } from './check.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -238,6 +238,8 @@ function head(page, body = '') {
   <script>${HEAD_SCRIPT}</script>
   <script async src="${GA_TAG_URL}"></script>
   <script async src="/assets/js/analytics.js"></script>
+  <script defer src="/assets/js/clarity.js"></script>
+  <script defer src="${CLARITY_TAG_URL}"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>${title}</title>
@@ -329,6 +331,12 @@ gtag('js', new Date());
 gtag('set', 'allow_google_signals', false);
 gtag('set', 'allow_ad_personalization_signals', false);
 gtag('config', '${GA_ID}');
+`);
+
+// Microsoft Clarity: the queue Microsoft's snippet sets up inline, as a file. It runs before the
+// deferred tag (document order), so calls made before Clarity loads are kept.
+writeFileSync(join(DIST, 'assets/js/clarity.js'), `// Microsoft Clarity queue. Written by scripts/build.mjs; the project ID is CLARITY_ID in scripts/config.mjs.
+window.clarity = window.clarity || function(){(window.clarity.q = window.clarity.q || []).push(arguments);};
 `);
 
 // ───────────── serve.json: headers (plan steps 1.13, 1.14) ─────────────
