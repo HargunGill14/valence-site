@@ -22,8 +22,8 @@
   --risk: #B8552F;
   --risk-dark: #D47A55;
 
-  --serif: 'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
-  --sans: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', sans-serif;
+  --serif: 'Helvetica Neue', Helvetica, Arial, 'Liberation Sans', sans-serif;   /* headlines: Helvetica, like the big corporate sites; the token name is kept so nothing else changes */
+  --sans: 'Helvetica Neue', Helvetica, Arial, 'Liberation Sans', sans-serif;
   --mono: ui-monospace, Menlo, Consolas, monospace;
 
   --gutter: 32px;
@@ -64,10 +64,10 @@ p, li, h1, h2, h3, span, div { text-wrap: pretty; }
 /* ───────── type ───────── */
 .eyebrow { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
 .label { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
-.h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(48px, 7vw, 92px); line-height: .98; letter-spacing: -.02em; }
+.h1 { font-family: var(--serif); font-weight: 500; font-size: clamp(42px, 6vw, 78px); line-height: 1.0; letter-spacing: -.035em; }
 .h1 em { font-style: italic; }
 .h1--vertical { font-size: clamp(40px, 5.6vw, 72px); line-height: 1.02; }
-.h2 { font-family: var(--serif); font-weight: 400; font-size: 40px; line-height: 1.1; letter-spacing: -.01em; }
+.h2 { font-family: var(--serif); font-weight: 500; font-size: 36px; line-height: 1.1; letter-spacing: -.025em; }
 .lede { font-size: 19px; line-height: 1.5; color: var(--ink-2); max-width: 560px; }
 
 /* ───────── buttons ───────── */
@@ -623,7 +623,7 @@ html:not(.js) .intro__stage { --intro-bg: #F8F9FA; --intro-fg: #1E242B; --intro-
   transition: opacity .3s, transform .3s;
 }
 .intro__kicker { margin: 22px 0 0; font-family: var(--mono); font-size: 13px; letter-spacing: .06em; color: var(--green); }
-.intro__copy .lede { margin-top: 14px; color: inherit; max-width: 500px; font-family: 'Manrope', var(--sans); font-weight: 400; font-size: 18px; line-height: 1.6; letter-spacing: -.005em; }
+.intro__copy .lede { margin-top: 14px; color: inherit; max-width: 500px; font-family: var(--sans); font-weight: 400; font-size: 18px; line-height: 1.6; letter-spacing: -.005em; }
 .intro__cue {
   position: absolute; right: var(--gutter); bottom: 28px; z-index: 2; margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px;
   font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: inherit;
@@ -915,7 +915,7 @@ html.js [data-reveal="stagger"].is-in > :nth-child(n+6) { transition-delay: .4s;
 .legal-hero { padding-top: 96px; padding-bottom: 48px; border-bottom: 1px solid var(--border); }
 .legal-hero .eyebrow { margin-bottom: 20px; }
 .legal-hero .lede { margin-top: 22px; max-width: 640px; color: var(--ink-3); }
-.legal { padding-top: 24px; padding-bottom: 104px; font-family: 'Manrope', var(--sans); font-size: 16.5px; line-height: 1.7; color: var(--ink-2); }
+.legal { padding-top: 24px; padding-bottom: 104px; font-family: var(--sans); font-size: 16.5px; line-height: 1.7; color: var(--ink-2); }
 .legal__sec { max-width: 780px; padding-top: 48px; scroll-margin-top: calc(var(--header-h) + 16px); }
 .legal h2 { margin: 0 0 16px; font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 2.6vw, 32px); line-height: 1.15; letter-spacing: -.01em; color: var(--ink); }
 .legal p + p, .legal p + ul, .legal p + dl, .legal dl + p, .legal ul + p { margin-top: 14px; }
@@ -936,7 +936,7 @@ html.js [data-reveal="stagger"].is-in > :nth-child(n+6) { transition-delay: .4s;
 .stepsin { padding: 88px 0; }
 .stepsin__grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: 56px; align-items: center; }
 .stepsin__kicker { margin: 0; font-family: var(--mono); font-size: 13px; letter-spacing: .06em; color: var(--green); }
-.stepsin__para { margin: 14px 0 0; max-width: 34em; font-family: 'Manrope', var(--sans); font-size: 18px; line-height: 1.65; color: var(--ink-2); }
+.stepsin__para { margin: 14px 0 0; max-width: 34em; font-family: var(--sans); font-size: 18px; line-height: 1.65; color: var(--ink-2); }
 .vsl { position: relative; aspect-ratio: 16 / 9; max-width: 100%; border-radius: 14px; overflow: hidden; background: #E7E2D8; }
 .vsl__video { display: block; width: 100%; height: 100%; object-fit: cover; background: #E7E2D8; }
 @media (max-width: 900px) { .stepsin__grid { grid-template-columns: minmax(0, 1fr); gap: 28px; } }
@@ -964,3 +964,9 @@ html.js [data-reveal="stagger"].is-in > :nth-child(n+6) { transition-delay: .4s;
   .tquote__text { padding-top: 20px; }
   .tquote__tag { display: none; }
 }
+
+/* Helvetica as the display face: medium weight and tighter tracking everywhere the serif used to sit */
+.po-title, .stat__n, .col h3, .promise__t, .portal__title, .card__title, .results__title, .result__n, .cta__title, .site-footer__note, .pull p, .statcard__n, .fbcase__title, .fbcase__n, .roster__name, .fbwork__sub, .brandline__names, .stage__title, .cs-also__names, .cs-row__name, .cs__next, .cs__title, .cs-block h2, .cs-fig, .proofcard__n, .proofcard__quote, .vhero__kicker, .pains__list p, .rules__table tbody th, .faq__title, .changes__grid h3, .promises3__grid h3, .subline p, .steps4__grid h3, .legal h2, .tquote__mark, .tquote__text p { font-weight: 500; letter-spacing: -.02em; }
+.proofcard__n, .stat__n, .result__n, .statcard__n, .fbcase__n { letter-spacing: -.04em; }
+.vhero__kicker { font-style: normal; font-weight: 400; letter-spacing: -.01em; color: var(--ink-3); }
+.tquote__mark { font-weight: 700; }

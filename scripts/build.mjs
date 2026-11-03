@@ -263,9 +263,6 @@ function head(page, body = '') {
   <meta name="twitter:title" content="${title}">
   <meta name="twitter:description" content="${desc}">
   <meta name="twitter:image" content="${SITE}/og-image.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500&display=swap">
   <link rel="stylesheet" href="/assets/css/site.css">${jsonld}${faqJsonld(body)}
 </head>`;
 }
