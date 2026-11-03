@@ -1,74 +1,78 @@
 {
   "404.html": {
-    "sha256": "71f2648d74249a799f22648742d1b88bc56503aaa97a2e51c8b51b81198fb220",
-    "lastmod": "2026-11-03"
+    "sha256": "0215ba4d5e9de6ba0b1f76eb9f93862036c54b7caef367958482779ff039d8b1",
+    "lastmod": "2026-11-05"
   },
   "about/index.html": {
-    "sha256": "bb23f9e45579895b237169b55976052ee368cbc5b0ad736eacc05be3319f0fec",
-    "lastmod": "2026-11-03"
+    "sha256": "25afdd189aab0ae4e00524cc8361ec896aac55055f7439a27b58138254db242d",
+    "lastmod": "2026-11-05"
   },
   "case-studies/aldi/index.html": {
-    "sha256": "8d565edd05c4eeeede1c43cff4b237c381728c39928dd3f48f91df12fb94c26c",
-    "lastmod": "2026-11-03"
+    "sha256": "b49f898da5f1e8b5b8fb6888f19aba2f27fa06aecaa5766ffef3f51a392da3f4",
+    "lastmod": "2026-11-05"
   },
   "case-studies/anheuser-busch/index.html": {
-    "sha256": "f951e5368341114983e280dfe5bf15151d12c90455a6cbdd0814ba7ee936a804",
-    "lastmod": "2026-11-03"
+    "sha256": "387a0bd70a28f2153704fcbd0fec96792bdcb1d08a916b889f025f9c06944d2a",
+    "lastmod": "2026-11-05"
   },
   "case-studies/canadian-canning/index.html": {
-    "sha256": "cbf20878564091c506bd0e30431770a3e5e9795da4564ab325ec98c1ffaa70a0",
-    "lastmod": "2026-11-03"
+    "sha256": "a0dddd5757360405491588d0bdf55f833fef93ab62fce3da344877dd36f4ecac",
+    "lastmod": "2026-11-05"
   },
   "case-studies/fgf-brands/index.html": {
-    "sha256": "484d19e9a70df2f742f38608ce6f686f8515f098c6e459c861dc1be1db3f1e29",
-    "lastmod": "2026-11-03"
+    "sha256": "33f35e8c504810e1fbc2905861ea8fe306bca31bca08e457c995bce3c4925d6e",
+    "lastmod": "2026-11-05"
   },
   "case-studies/index.html": {
-    "sha256": "0721f62306d6ce3d9723c2dfc9915491307a78a966802e87df268924a10b9c78",
-    "lastmod": "2026-11-03"
+    "sha256": "7614467d77759cb2e17efc902c462caa217c600ff0228cdfb66b4c8a71d1d00d",
+    "lastmod": "2026-11-05"
   },
   "case-studies/labatt/index.html": {
-    "sha256": "2e9e37f1821190546e6c02232a65a6e30a2cf19937dbf5cb18e057265cd516c3",
-    "lastmod": "2026-11-03"
+    "sha256": "12f582afec9a7ba10b24f67b6d29e3c073eddf428ba397d0e0e00f10ee776e56",
+    "lastmod": "2026-11-05"
   },
   "case-studies/private-label-soda/index.html": {
-    "sha256": "f555be5f4b452c75d0ec6196d778ce4de7cd4ce83282037a1d744b3c631bca8a",
-    "lastmod": "2026-11-03"
+    "sha256": "541050e8043de61d347172cc0b300fe7c4ac09a43ced1ed74837a70efac368d5",
+    "lastmod": "2026-11-05"
   },
   "case-studies/rivian/index.html": {
-    "sha256": "7a037dfe03f478eedf1451232e43e24900979e732e58c73e246e89480cacdf27",
-    "lastmod": "2026-11-03"
+    "sha256": "13b65789b2e209014a19fadc06f8adca1c245c799d936f2e6e35e6adc2033a70",
+    "lastmod": "2026-11-05"
+  },
+  "contact/index.html": {
+    "sha256": "c6d99da5dc7ffed2bf4856f423924520a77a52e8c8f5fc890894b34f49dd7231",
+    "lastmod": "2026-11-05"
   },
   "data-centers-and-construction/index.html": {
-    "sha256": "ea1d5a6d56128934bac89e46e2ad59baa03f4073105c0072b53120790dad89d4",
-    "lastmod": "2026-11-03"
+    "sha256": "6ef79ee0127b33c430f960e92772a841c197379c603c9e1c613820253419b211",
+    "lastmod": "2026-11-05"
   },
   "food-and-beverage/index.html": {
-    "sha256": "81d9ef2e9a1d325c2a28c2079223231720fdb9f0620db075d5e6c26a0fcedf97",
-    "lastmod": "2026-11-03"
+    "sha256": "8a34a628cc7dd663e650b5bae6d34d379c703e430ef3cacb9b505470005c668f",
+    "lastmod": "2026-11-05"
   },
   "how-we-work/index.html": {
-    "sha256": "7cb60656d0dc47ad53290c0013fcf0df2c955120a9f8b605c9eebb6d0291e2ce",
-    "lastmod": "2026-11-03"
+    "sha256": "b7d845372fcc62fc14a4d05d2b40986398913ea13efa50997d29b25eeb62d673",
+    "lastmod": "2026-11-05"
   },
   "index.html": {
-    "sha256": "01f7b8607e22e6096b06249fb2bc894585d110297668f5bea866f72bb26e6b08",
-    "lastmod": "2026-11-03"
+    "sha256": "63d385e238f80848cbc3a74458080986c10fe675d8b195ba351ad6141a23a6cb",
+    "lastmod": "2026-11-05"
   },
   "privacy.html": {
-    "sha256": "140078c50a21d4949fcd97f2d4d5f07604395fc78838c435aa77f40512a87a25",
-    "lastmod": "2026-11-03"
+    "sha256": "fcf9070439180c2bb740f2d08cee2dee42fd944c6844c122733a0401c3b8689c",
+    "lastmod": "2026-11-05"
   },
   "services/index.html": {
-    "sha256": "e6321dd42c9c3c2cc2e803d29f10159cba11116c4f53f0c4c693ff8bb38eb710",
-    "lastmod": "2026-11-03"
+    "sha256": "3cb95b3350adf56c1f8abacb3dd328f601ace9875f949292fdaddbbb1acf1ed6",
+    "lastmod": "2026-11-05"
   },
   "sms-terms.html": {
-    "sha256": "adc371a804c58eda8b612870adbe4c4b8903a2c26bc92a9923ef093b618c1a68",
-    "lastmod": "2026-11-03"
+    "sha256": "b0c7ec0eafd81e6b5e184b971a6599ff69b0356748c46ec530cb3901cbd7e2e8",
+    "lastmod": "2026-11-05"
   },
   "space/index.html": {
-    "sha256": "db4a18e30fbb339222033a42d041d9ed611beb6a9650301caa2fbbb90898ead8",
-    "lastmod": "2026-11-03"
+    "sha256": "f650c746da88d5d7f248ad3509339dfb68d8c8d63deef51b6a557cdd1319cfe6",
+    "lastmod": "2026-11-05"
   }
 }

@@ -89,7 +89,7 @@ function header(page) {
         <nav class="site-nav" aria-label="Main">
           ${links}
         </nav>
-        <a class="btn btn--dark" href="#contact">Book a 15-minute call</a>
+        <a class="btn btn--dark" href="/contact/" data-ask>Book a 15-minute call</a>
       </div>
     </div>
   </header>`;
@@ -103,9 +103,102 @@ function cta({ label = 'Book a 15-minute call' } = {}) {
         <p class="cta__lede">Fifteen minutes, no deck. We'll say what we'd take first.</p>
         <p class="cta__direct"><a href="${MAILTO}">${EMAIL}</a><span aria-hidden="true"> · </span><a href="tel:${PHONE_TEL}">${PHONE}</a></p>
       </div>
-      <div class="cta__action"><a class="btn btn--paper" href="${MAILTO}">${esc(label)}</a></div>
+      <div class="cta__action"><a class="btn btn--paper" href="/contact/" data-ask>${esc(label)}</a></div>
     </div>
   </section>`;
+}
+
+/* The five questions. No <form>: the site collects nothing itself. Finishing opens the visitor's
+   mail app with the answers addressed to EMAIL (data-ask-send builds the mailto in assets/js/ask.js). */
+function askBody(inline) {
+  const chip = (group, value, label, multi) => `<button type="button" class="ask__chip" data-group="${group}" data-value="${esc(value)}"${multi ? ' data-multi' : ''} aria-pressed="false">${esc(label)}</button>`;
+  return `<div class="ask__inner">
+      <div class="ask__top"><span class="ask__progress" data-ask-progress>1 of 5</span>${inline ? '' : '<button type="button" class="ask__close" data-ask-close aria-label="Close">×</button>'}</div>
+      <section class="ask__step" data-step="1">
+        <h3 class="ask__q">Where is your brand today?</h3>
+        <p class="ask__hint">Pick the closest. It tells us which team you'd be talking to.</p>
+        <div class="ask__chips">
+          ${chip('stage', 'Pre-launch', 'Pre-launch')}
+          ${chip('stage', 'Emerging · $500K to $5M', 'Emerging · $500K to $5M')}
+          ${chip('stage', 'Growing · $5M to $25M', 'Growing · $5M to $25M')}
+          ${chip('stage', 'Established · $25M to $150M', 'Established · $25M to $150M')}
+          ${chip('stage', 'National scale · $150M+', 'National scale · $150M+')}
+        </div>
+      </section>
+      <section class="ask__step" data-step="2" hidden>
+        <h3 class="ask__q">What do you make?</h3>
+        <div class="ask__chips">
+          ${chip('industry', 'Food and beverage', 'Food and beverage')}
+          ${chip('industry', 'Beauty and personal care', 'Beauty and personal care')}
+          ${chip('industry', 'Household and cleaning', 'Household and cleaning')}
+          ${chip('industry', 'Health, wellness and pet', 'Health, wellness and pet')}
+          ${chip('industry', 'Packaging and ingredients', 'Packaging and ingredients')}
+          ${chip('industry', 'Space and aerospace', 'Space and aerospace')}
+          ${chip('industry', 'Data centers and construction', 'Data centers and construction')}
+          ${chip('industry', 'Something else', 'Something else')}
+        </div>
+      </section>
+      <section class="ask__step" data-step="3" hidden>
+        <h3 class="ask__q">What's eating your week?</h3>
+        <p class="ask__hint">Pick everything that applies.</p>
+        <div class="ask__chips">
+          ${chip('pain', 'Chasing co-packers and suppliers on dates', 'Chasing co-packers and suppliers on dates', true)}
+          ${chip('pain', "Counts that don't match across warehouses", "Counts that don't match across warehouses", true)}
+          ${chip('pain', 'Late or quiet trucks', 'Late or quiet trucks', true)}
+          ${chip('pain', 'Chargebacks and deductions', 'Chargebacks and deductions', true)}
+          ${chip('pain', 'A retailer review coming up', 'A retailer review coming up', true)}
+          ${chip('pain', 'Finding a co-packer, 3PL or warehouse', 'Finding a co-packer, 3PL or warehouse', true)}
+          ${chip('pain', 'Freight that costs more than it should', 'Freight that costs more than it should', true)}
+          ${chip('pain', 'Something else', 'Something else', true)}
+        </div>
+        <label class="ask__field"><span>Anything to add?</span><textarea rows="2" data-field="notes" placeholder="Optional. A line or two is plenty."></textarea></label>
+      </section>
+      <section class="ask__step" data-step="4" hidden>
+        <h3 class="ask__q">Where do you sell?</h3>
+        <p class="ask__hint">Pick everything that applies.</p>
+        <div class="ask__chips">
+          ${chip('channels', 'Sprouts', 'Sprouts', true)}
+          ${chip('channels', 'Whole Foods', 'Whole Foods', true)}
+          ${chip('channels', 'KeHE or UNFI', 'KeHE or UNFI', true)}
+          ${chip('channels', 'Walmart, Costco or Target', 'Walmart, Costco or Target', true)}
+          ${chip('channels', 'Trader Joe’s or Aldi', 'Trader Joe’s or Aldi', true)}
+          ${chip('channels', 'Amazon or direct to consumer', 'Amazon or direct to consumer', true)}
+          ${chip('channels', 'Not in retail yet', 'Not in retail yet', true)}
+          ${chip('channels', 'Not a retail brand', 'Not a retail brand', true)}
+        </div>
+      </section>
+      <section class="ask__step" data-step="5" hidden>
+        <h3 class="ask__q">How do we reach you?</h3>
+        <div class="ask__fields">
+          <label class="ask__field"><span>Your name</span><input type="text" data-field="name" autocomplete="name" required></label>
+          <label class="ask__field"><span>Company</span><input type="text" data-field="company" autocomplete="organization" required></label>
+          <label class="ask__field"><span>Work email</span><input type="email" data-field="email" autocomplete="email" inputmode="email" required></label>
+          <label class="ask__field"><span>Phone <em>optional</em></span><input type="tel" data-field="phone" autocomplete="tel" inputmode="tel"></label>
+          <label class="ask__field ask__field--wide"><span>How did you hear about us?</span><select data-field="heard"><option value="">Choose one</option><option>Referral</option><option>LinkedIn</option><option>Founders Club</option><option>Search</option><option>Event or trade show</option><option>Other</option></select></label>
+        </div>
+        <p class="ask__error" data-ask-error hidden></p>
+      </section>
+      <section class="ask__step ask__step--done" data-step="6" hidden>
+        <h3 class="ask__q">Last step: send it to the team.</h3>
+        <p class="ask__hint">The button opens your email app with your answers filled in and addressed to ${EMAIL}. Press send there and we'll reply within one business day.</p>
+        <div class="ask__summary" data-ask-summary></div>
+        <div class="ask__actions ask__actions--done">
+          <a class="btn btn--green" href="${MAILTO}" data-ask-send>Open email with my answers</a>
+          <a class="btn btn--secondary" href="tel:${PHONE_TEL}">Or call ${PHONE}</a>
+        </div>
+        <details class="ask__fallback"><summary>Email app didn't open? Copy your answers instead.</summary><textarea rows="8" readonly data-ask-copytext></textarea><button type="button" class="btn btn--secondary" data-ask-copy>Copy</button> <span class="ask__copied" data-ask-copied hidden>Copied. Paste it into an email to ${EMAIL}.</span></details>
+      </section>
+      <div class="ask__actions" data-ask-nav>
+        <button type="button" class="btn btn--secondary" data-ask-back hidden>Back</button>
+        <button type="button" class="btn btn--dark" data-ask-next>Next</button>
+      </div>
+    </div>`;
+}
+function askModal() {
+  return `<dialog class="ask" id="ask" aria-labelledby="ask-title">
+    <p class="sr-only" id="ask-title">Tell us what's eating your week</p>
+    ${askBody(false)}
+  </dialog>`;
 }
 
 function footer(page) {
@@ -114,7 +207,7 @@ function footer(page) {
     <div class="container site-footer__grid">
       <div class="site-footer__col"><span class="site-footer__label">Industries</span><a href="/food-and-beverage/">Food and beverage</a><a href="/space/">Space and aerospace</a><a href="/data-centers-and-construction/">Data centers and construction</a></div>
       <div class="site-footer__col"><span class="site-footer__label">Company</span><a href="/services/">Services</a><a href="/how-we-work/">How we work</a><a href="/case-studies/">Case studies</a><a href="/about/">About</a></div>
-      <div class="site-footer__col"><span class="site-footer__label">Contact</span><a href="#contact">Talk to us</a><a href="mailto:${EMAIL}">${EMAIL}</a><a href="tel:${PHONE_TEL}">${PHONE}</a></div>
+      <div class="site-footer__col"><span class="site-footer__label">Contact</span><a href="/contact/">Talk to us</a><a href="mailto:${EMAIL}">${EMAIL}</a><a href="tel:${PHONE_TEL}">${PHONE}</a></div>
       <div class="site-footer__col"><span class="site-footer__label">Legal</span><a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a><a href="/sms-terms" target="_blank" rel="noopener">SMS Terms</a></div>
       <div class="site-footer__note">${mark({ size: '44' })}</div>
     </div>
@@ -284,14 +377,15 @@ for (const file of readdirSync(pagesDir).filter((f) => f.endsWith('.html')).sort
       case 'header': return header(page);
       case 'footer': return footer(page);
       case 'cta': return cta(a);
+      case 'ask': return `<div class="ask ask--inline" id="ask-inline">${askBody(true)}</div>`;
       case 'mark': return mark(a);
       case 'img': return img(a);
       case 'proof': return proof();
       default: throw new Error(`${file}: unknown directive @${name}`);
     }
   });
-  const scripts = ['/assets/js/site.js', ...(page.scripts || [])].map((s) => `  <script src="${s}" defer></script>`).join('\n');
-  const html = `${head(page, body)}\n<body class="${page.bodyClass || ''}">\n  <a class="skip-link" href="#main">Skip to content</a>\n${body.trim()}\n${scripts}\n</body>\n</html>\n`;
+  const scripts = ['/assets/js/site.js', '/assets/js/ask.js', ...(page.scripts || [])].map((s) => `  <script src="${s}" defer></script>`).join('\n');
+  const html = `${head(page, body)}\n<body class="${page.bodyClass || ''}">\n  <a class="skip-link" href="#main">Skip to content</a>\n${body.trim()}\n${askModal()}\n${scripts}\n</body>\n</html>\n`;
   const out = join(DIST, page.out);
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, html);

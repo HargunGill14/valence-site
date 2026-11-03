@@ -970,3 +970,66 @@ html.js [data-reveal="stagger"].is-in > :nth-child(n+6) { transition-delay: .4s;
 .proofcard__n, .stat__n, .result__n, .statcard__n, .fbcase__n { letter-spacing: -.04em; }
 .vhero__kicker { font-style: normal; font-weight: 400; letter-spacing: -.01em; color: var(--ink-3); }
 .tquote__mark { font-weight: 700; }
+
+/* ── the five questions: a popup from any "Book a call" button, or inline on /contact/ ── */
+.ask { color: var(--ink); }
+.ask [hidden] { display: none !important; }
+dialog.ask { width: min(680px, calc(100vw - 32px)); max-height: min(90vh, 820px); margin: auto; padding: 0; border: 0; border-radius: 14px; background: var(--surface); box-shadow: 0 30px 80px -20px rgba(18, 22, 27, .45); overflow: auto; }
+dialog.ask::backdrop { background: rgba(18, 22, 27, .55); backdrop-filter: blur(2px); }
+dialog.ask .ask__inner { padding: 22px 28px 28px; }
+.ask--inline { max-width: 760px; }
+.ask--inline .ask__inner { padding: 28px 0 0; }
+.ask__top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.ask__progress { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.ask__close { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; }
+.ask__close:hover { border-color: var(--ink); }
+.ask__q { margin: 0 0 6px; font-family: var(--serif); font-weight: 500; font-size: clamp(24px, 2.6vw, 30px); line-height: 1.15; letter-spacing: -.02em; text-wrap: balance; }
+.ask__hint { margin: 0 0 18px; font-size: 15px; line-height: 1.5; color: var(--ink-3); }
+.ask__chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.ask__chip { font: 500 15px/1.2 var(--sans); padding: 12px 16px; border-radius: 999px; border: 1px solid var(--border-2); background: var(--surface); color: var(--ink); cursor: pointer; text-align: left; transition: border-color .15s, background-color .15s, color .15s; }
+.ask__chip:hover { border-color: var(--ink); }
+.ask__chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.ask__fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+.ask__field { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 500; color: var(--ink-2); margin-top: 16px; }
+.ask__fields .ask__field { margin-top: 0; }
+.ask__field--wide { grid-column: 1 / -1; }
+.ask__field em { font-style: normal; font-weight: 400; color: var(--ink-3); }
+.ask__field input, .ask__field select, .ask__field textarea { font: 400 16px/1.4 var(--sans); color: var(--ink); background: var(--surface); border: 1px solid var(--border-2); border-radius: 6px; padding: 11px 12px; min-height: 44px; width: 100%; }
+.ask__field textarea { resize: vertical; }
+.ask__field input:focus, .ask__field select:focus, .ask__field textarea:focus { outline: 2px solid var(--green); outline-offset: 1px; border-color: var(--green); }
+.ask__error { margin: 14px 0 0; font-size: 14px; color: #B9573A; }
+.ask__actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+.ask__actions--done { margin-top: 18px; }
+.ask__actions .btn { font-size: 15px; padding: 12px 20px; }
+.ask__summary { margin: 0 0 6px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--paper); font-size: 14px; line-height: 1.5; }
+.ask__summary p { margin: 0; } .ask__summary p + p { margin-top: 4px; }
+.ask__summary b { font-weight: 600; color: var(--ink-3); }
+.ask__fallback { margin-top: 18px; font-size: 14px; color: var(--ink-3); }
+.ask__fallback summary { cursor: pointer; }
+.ask__fallback textarea { margin: 10px 0; font: 13px/1.5 var(--mono); width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 10px; color: var(--ink); background: var(--surface); }
+.ask__copied { color: var(--green); }
+@media (max-width: 600px) {
+  dialog.ask { width: calc(100vw - 20px); max-height: calc(100vh - 20px); border-radius: 12px; }
+  dialog.ask .ask__inner { padding: 16px 18px 22px; }
+  .ask__fields { grid-template-columns: 1fr; }
+  .ask__chip { font-size: 14px; padding: 11px 14px; }
+}
+@media (prefers-reduced-motion: reduce) { .ask__chip { transition: none; } }
+
+/* /contact/ */
+.contact-hero { padding: 72px var(--gutter) 56px; }
+.contact-hero .lede { margin-top: 18px; }
+.contact-ways { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 40px; }
+.contact-way { display: flex; flex-direction: column; gap: 8px; padding: 22px 22px 20px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--ink); text-decoration: none; transition: border-color .15s, transform .15s; }
+.contact-way:hover { border-color: var(--ink); color: var(--ink); transform: translateY(-2px); }
+.contact-way__label { font-family: var(--serif); font-weight: 500; font-size: 22px; letter-spacing: -.015em; }
+.contact-way__text { font-size: 15px; line-height: 1.5; color: var(--ink-2); flex: 1; }
+.contact-way__cta { font-size: 14px; font-weight: 600; color: var(--green); margin-top: 6px; }
+.contact-ask { padding-top: 64px; padding-bottom: 80px; }
+.contact-ask__head { max-width: 760px; }
+.contact-ask__head .lede { margin-top: 12px; }
+.contact-direct { padding-top: 56px; padding-bottom: 96px; }
+.contact-direct__line { margin: 10px 0 0; font-family: var(--serif); font-weight: 500; font-size: clamp(24px, 3vw, 36px); letter-spacing: -.02em; }
+.contact-direct__line a { color: var(--ink); text-decoration: none; } .contact-direct__line a:hover { color: var(--green); }
+.contact-direct__note { margin-top: 18px; font-size: 15px; color: var(--ink-3); }
+@media (max-width: 760px) { .contact-ways { grid-template-columns: 1fr; } .contact-hero { padding-top: 48px; } }
