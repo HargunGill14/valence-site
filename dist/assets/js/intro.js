@@ -461,7 +461,7 @@
           var w = pw * 100, hh = 120;
           cx.translate(w / 2, hh / 2); cx.rotate(tilt); cx.translate(-w / 2, -hh / 2);
           cx.fillStyle = mix([150, 148, 140], [252, 250, 245], h); cx.strokeStyle = C('line'); cx.lineWidth = 3; cx.fillRect(0, 0, w, hh); cx.strokeRect(0, 0, w, hh);
-          cx.fillStyle = e > .5 ? '#2E8B4E' : C('line'); cx.font = '700 16px Instrument Sans, system-ui, sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'alphabetic';
+          cx.fillStyle = e > .5 ? '#2E8B4E' : C('line'); cx.font = '700 16px Helvetica Neue, Helvetica, Arial, sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'alphabetic';
           cx.fillText(e > .5 ? 'HANDLED' : 'SHIP HAPPENS', w / 2, 22);
           cx.fillStyle = C('line'); cx.font = '500 8px ui-monospace, Menlo, monospace'; cx.fillText(e > .5 ? 'every load, on time' : 'q4 so far', w / 2, 34);
           if (e > .5) {                                                                  /* the climb, with the ground under it shaded green */
@@ -569,7 +569,7 @@
         var sp = proj(mx, my, 1.02);
         cx.fillStyle = C('screen'); cx.fillRect(sp[0] - sc * .36, sp[1] - sc * .18, sc * .72, sc * .36);
         if (h > .5) { cx.fillStyle = mix(CH.text, CA.panel, 1); cx.fillRect(sp[0] - sc * .3, sp[1] - sc * .1, sc * .4, sc * .04); cx.fillRect(sp[0] - sc * .3, sp[1], sc * .25, sc * .04); }
-        else { cx.fillStyle = C('alert'); cx.font = '700 ' + Math.round(sc * .28) + 'px Instrument Sans, system-ui, sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText('!', sp[0], sp[1] + 1); cx.textAlign = 'left'; }
+        else { cx.fillStyle = C('alert'); cx.font = '700 ' + Math.round(sc * .28) + 'px Helvetica Neue, Helvetica, Arial, sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText('!', sp[0], sp[1] + 1); cx.textAlign = 'left'; }
         /* keyboard and a mug */
         cuboid(x + Math.sin(ang) * .2, y + Math.cos(ang) * .22, .75, .7, .22, .05, ang, C('deskSide'), C('deskSide'), C('deskSide'), line);
         cuboid(x + .7 * Math.cos(ang), y - .7 * Math.sin(ang), .75, .2, .2, .2, ang, C('paper'), C('paper'), C('deskSide'), line);
@@ -587,7 +587,7 @@
         var ap = proj(x, y, 1.9 + Math.sin(tnow * 6 + i) * .08 * jit);
         items.push({ z: depth(x, y) + 20, f: function () {
           cx.globalAlpha = 1 - e; cx.fillStyle = C('alert'); cx.beginPath(); cx.arc(ap[0], ap[1], sc * .22, 0, 6.283); cx.fill();
-          cx.fillStyle = '#fff'; cx.font = '700 ' + Math.round(sc * .3) + 'px Instrument Sans, system-ui, sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText('!', ap[0], ap[1] + 1); cx.textAlign = 'left'; cx.globalAlpha = 1;
+          cx.fillStyle = '#fff'; cx.font = '700 ' + Math.round(sc * .3) + 'px Helvetica Neue, Helvetica, Arial, sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText('!', ap[0], ap[1] + 1); cx.textAlign = 'left'; cx.globalAlpha = 1;
         } });
       }
     });
