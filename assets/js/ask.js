@@ -61,6 +61,7 @@
     var endpoint = '', submitBtn = root.querySelector('[data-ask-submit]'), sendLink = root.querySelector('[data-ask-send]'), sendErr = root.querySelector('[data-ask-senderror]');
     function finish() {
       endpoint = root.getAttribute('data-ask-endpoint') || '';
+      submitBtn.disabled = false; submitBtn.textContent = 'Send to the team'; sendErr.hidden = true;   /* a second send in the same visit starts clean */
       submitBtn.hidden = !endpoint; sendLink.hidden = !!endpoint;
       if (!endpoint) { root.querySelector('[data-ask-done-hint]').textContent = 'The button opens your email app with your answers filled in and addressed to ' + EMAIL + '. Press send there and we\'ll reply within one business day.'; }
       var body = lines().join('\n'), subject = field('company') + ' · ' + (answers.stage || 'brand') + ' · ' + (answers.pain[0] || 'what’s eating our week');
@@ -93,7 +94,7 @@
       submitBtn.disabled = true; submitBtn.textContent = 'Sending\u2026'; sendErr.hidden = true;
       fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload()) })
         .then(function (r) { if (!r.ok) throw new Error('status ' + r.status); return r.json().catch(function () { return {}; }); })
-        .then(function () { cur = total + 2; each(steps, function (st) { st.hidden = +st.getAttribute('data-step') !== cur; }); progress.textContent = 'Sent'; nav.hidden = true; })
+        .then(function () { cur = total + 2; each(steps, function (st) { st.hidden = +st.getAttribute('data-step') !== cur; }); progress.textContent = 'Sent'; nav.hidden = true; sent = true; })
         .catch(function () {
           submitBtn.disabled = false; submitBtn.textContent = 'Send to the team';
           sendErr.textContent = "That didn't go through. Try again, or use the email button below."; sendErr.hidden = false;
@@ -110,7 +111,14 @@
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(done, function () { ta.select(); done(); });
       else { ta.select(); try { doc.execCommand('copy'); } catch (e) {} done(); }
     });
-    return { open: function () { go(1); } };
+    var sent = false;
+    function reset() {
+      answers = { stage: '', industry: '', pain: [], channels: [] };
+      each(root.querySelectorAll('.ask__chip'), function (c) { c.setAttribute('aria-pressed', 'false'); });
+      each(root.querySelectorAll('[data-field]'), function (f) { f.value = ''; });
+      nav.hidden = false; sent = false;
+    }
+    return { open: function () { if (sent) reset(); go(1); } };
   }
 
   var dlg = doc.getElementById('ask');
