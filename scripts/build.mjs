@@ -133,6 +133,7 @@ function askBody(inline) {
           ${chip('industry', 'Household and cleaning', 'Household and cleaning')}
           ${chip('industry', 'Health, wellness and pet', 'Health, wellness and pet')}
           ${chip('industry', 'Packaging and ingredients', 'Packaging and ingredients')}
+          ${chip('industry', 'Pharma and nutraceuticals', 'Pharma and nutraceuticals')}
           ${chip('industry', 'Space and aerospace', 'Space and aerospace')}
           ${chip('industry', 'Data centers and construction', 'Data centers and construction')}
           ${chip('industry', 'Something else', 'Something else')}
