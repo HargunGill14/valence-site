@@ -128,13 +128,12 @@ function askBody(inline) {
       <section class="ask__step" data-step="2" hidden>
         <h3 class="ask__q">What do you make?</h3>
         <div class="ask__chips">
-          ${chip('industry', 'Food and beverage', 'Food and beverage')}
-          ${chip('industry', 'Beauty and personal care', 'Beauty and personal care')}
-          ${chip('industry', 'Household and cleaning', 'Household and cleaning')}
-          ${chip('industry', 'Health, wellness and pet', 'Health, wellness and pet')}
-          ${chip('industry', 'Packaging and ingredients', 'Packaging and ingredients')}
-          ${chip('industry', 'Pharma and nutraceuticals', 'Pharma and nutraceuticals')}
+          ${chip('industry', 'Consumer packaged goods · food, beverage, beauty, household', 'Consumer packaged goods')}
+          ${chip('industry', 'Pharmaceuticals and nutraceuticals', 'Pharmaceuticals and nutraceuticals')}
+          ${chip('industry', 'Industrial manufacturing', 'Industrial manufacturing')}
+          ${chip('industry', 'Automotive', 'Automotive')}
           ${chip('industry', 'Space and aerospace', 'Space and aerospace')}
+          ${chip('industry', 'Tech and electronics', 'Tech and electronics')}
           ${chip('industry', 'Data centers and construction', 'Data centers and construction')}
           ${chip('industry', 'Something else', 'Something else')}
         </div>
