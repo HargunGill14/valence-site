@@ -1,6 +1,7 @@
-/* The five questions: a popup from any "Book a 15-minute call" button, or inline on /contact/.
-   Nothing is sent anywhere by this script. The last step builds a mailto: link with the answers,
-   so the visitor's own mail app sends them to ops@. */
+/* The five questions: a popup from any "Get in touch" button, or inline on /contact/.
+   With a LEAD_ENDPOINT (scripts/config.mjs) the last step posts the answers as JSON to it and the
+   form service emails ops@. Without one, or if the post fails, it opens the visitor's mail app with
+   the answers addressed to ops@. */
 (function () {
   'use strict';
   var EMAIL = 'ops@valencesupplychain.com';
@@ -57,7 +58,11 @@
         'Sent from valencesupplychain.com/contact'
       ];
     }
+    var endpoint = '', submitBtn = root.querySelector('[data-ask-submit]'), sendLink = root.querySelector('[data-ask-send]'), sendErr = root.querySelector('[data-ask-senderror]');
     function finish() {
+      endpoint = root.getAttribute('data-ask-endpoint') || '';
+      submitBtn.hidden = !endpoint; sendLink.hidden = !!endpoint;
+      if (!endpoint) { root.querySelector('[data-ask-done-hint]').textContent = 'The button opens your email app with your answers filled in and addressed to ' + EMAIL + '. Press send there and we\'ll reply within one business day.'; }
       var body = lines().join('\n'), subject = field('company') + ' · ' + (answers.stage || 'brand') + ' · ' + (answers.pain[0] || 'what’s eating our week');
       root.querySelector('[data-ask-send]').setAttribute('href', 'mailto:' + EMAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body));
       root.querySelector('[data-ask-copytext]').value = 'To: ' + EMAIL + '\nSubject: ' + subject + '\n\n' + body;
@@ -78,6 +83,24 @@
       if (f && isDialog) f.focus({ preventScroll: true });
       if (!isDialog && n !== 1) root.scrollIntoView({ block: 'start', behavior: 'smooth' });
     }
+    function payload() {
+      return { name: field('name'), company: field('company'), email: field('email'), phone: field('phone'), heard: field('heard'),
+        stage: answers.stage, industry: answers.industry, pains: answers.pain.join('; '), channels: answers.channels.join('; '), notes: field('notes'),
+        _subject: field('company') + ' \u00b7 ' + (answers.stage || 'brand') + ' \u00b7 ' + (answers.pain[0] || 'new enquiry'), _replyto: field('email'), page: location.pathname };
+    }
+    function submit() {
+      if (!endpoint || !window.fetch) { sendLink.click(); return; }
+      submitBtn.disabled = true; submitBtn.textContent = 'Sending\u2026'; sendErr.hidden = true;
+      fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload()) })
+        .then(function (r) { if (!r.ok) throw new Error('status ' + r.status); return r.json().catch(function () { return {}; }); })
+        .then(function () { cur = total + 2; each(steps, function (st) { st.hidden = +st.getAttribute('data-step') !== cur; }); progress.textContent = 'Sent'; nav.hidden = true; })
+        .catch(function () {
+          submitBtn.disabled = false; submitBtn.textContent = 'Send to the team';
+          sendErr.textContent = "That didn't go through. Try again, or use the email button below."; sendErr.hidden = false;
+          sendLink.hidden = false;
+        });
+    }
+    submitBtn.addEventListener('click', submit);
     back.addEventListener('click', function () { go(cur - 1); });
     next.addEventListener('click', function () { go(cur + 1); });
     root.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); go(cur + 1); } });
