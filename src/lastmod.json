@@ -1,78 +1,78 @@
 {
   "404.html": {
-    "sha256": "2bc03e317f656ad8ae0f8180743537e904b26eefeadf88a6199bbc5d5746809b",
+    "sha256": "96218b547ee65950cf7215207b4fa4e191a2f3dc1c9d98d38d8a7d9c14d7a937",
     "lastmod": "2026-11-05"
   },
   "about/index.html": {
-    "sha256": "6130a789bf78083246f276405dd9d263abe3e1e49178e89ba3915de1732457ac",
+    "sha256": "e140bce542ddb4a435882acd83ccdf9bbc1677b60da4bf062d94bccfce1af31a",
     "lastmod": "2026-11-05"
   },
   "case-studies/aldi/index.html": {
-    "sha256": "8fb2b3b5fe90baa178c39211a96369d184d74d579ecd891181e05d7a0971e2de",
+    "sha256": "71224ee36b80ed2ce446a26a6eba237d529fd7c746c00694d396f6e4912ccaeb",
     "lastmod": "2026-11-05"
   },
   "case-studies/anheuser-busch/index.html": {
-    "sha256": "68c71bb2c2310e549b159170957d9cd6f476bc6281adff984fc23b883065f5dc",
+    "sha256": "692b1653be481ace1ff77d25feb2ab4b0700c5e370fbb6872bc974a630cdb9c7",
     "lastmod": "2026-11-05"
   },
   "case-studies/canadian-canning/index.html": {
-    "sha256": "97ae4f9e0ae10dd5665642de67d9e4b795055066008245049cdeee05258392fa",
+    "sha256": "390b285338a4bea9db4422c956bbde6851c6f82516515d262e693535401ff632",
     "lastmod": "2026-11-05"
   },
   "case-studies/fgf-brands/index.html": {
-    "sha256": "dc116a84bd29b72f324f585cedd65f89b260fcac21580179f4d02097e13dea89",
+    "sha256": "042836a3acaaa2b1b33c8dbde3506fd61052208bc7fd52beb2e4113879915843",
     "lastmod": "2026-11-05"
   },
   "case-studies/index.html": {
-    "sha256": "7598e4cf1d0e1d39ffd4c9b8e5ebf9f372f61aa7f5efb762a90af785fb300bba",
+    "sha256": "8f2ea4c0c7fb98517759e5c83f2c3ac0c9766d50c9ae440b2162448a0a7d1e10",
     "lastmod": "2026-11-05"
   },
   "case-studies/labatt/index.html": {
-    "sha256": "9bed6caec0ea7bd9e68cfab2ddcaa0300b30d33bec472cc8e93e3facc8400023",
+    "sha256": "f820fed45409c9424539fb0489c215add9bffa464c96b713a7e88c07d8bc70b4",
     "lastmod": "2026-11-05"
   },
   "case-studies/private-label-soda/index.html": {
-    "sha256": "5b4687bcb98f6e6156db434341f6a87fada75663cbf8364505560d75f86b4fe7",
+    "sha256": "274b16f0f33aff17b6ebe81d868fb0b498db550630e838030f1fa423d2a25bd5",
     "lastmod": "2026-11-05"
   },
   "case-studies/rivian/index.html": {
-    "sha256": "7cabd4a69216eb6362d12eca0f2c94e126e938db06a426c38deca7c593a0e763",
+    "sha256": "9c6694225e26fd079da30c25118c204397fdb1be3f2b26e1f4429d86484ecec7",
     "lastmod": "2026-11-05"
   },
   "contact/index.html": {
-    "sha256": "cb86e31618a3225a2de4bde747ebe343a1bbed5e2d2e8a7a9bfb6bfbcd38d7a0",
+    "sha256": "b21783481da09a1989c78f90fbb7cc250f15c4141578a937beb5e014db05d653",
     "lastmod": "2026-11-05"
   },
   "data-centers-and-construction/index.html": {
-    "sha256": "359cb31b1f908d39a7d4fd5bb828175beaac9d76592a600bd80d95766944058f",
+    "sha256": "15843c053e28803fc19dcdda1639e446594469ded0305d10bc057a679052776f",
     "lastmod": "2026-11-05"
   },
   "food-and-beverage/index.html": {
-    "sha256": "158b7da2ac3f2a321ea0a4758aa26a428654359b80eb71e2368f64f4f4516a60",
+    "sha256": "3da2461bf1b9cdcf790d17ff906b1c462824dca08b699aa6401985d2478fd5a7",
     "lastmod": "2026-11-05"
   },
   "how-we-work/index.html": {
-    "sha256": "696f3f8c0122bc5555fbf8240718335f2b77f402343806b0225406bc804f7d3e",
+    "sha256": "53b0ec53d5a06241346bfb6610430b5c2eeea1bf2d7afe2da7a56ed7f4807ccc",
     "lastmod": "2026-11-05"
   },
   "index.html": {
-    "sha256": "63188f610d1a476eb12309461c8cd2844c310a3c36ba55b2c24a4a7278938b57",
+    "sha256": "74eed2fe23d1a7be64bb3dd4b9c131dfb8bd1360427c0efa52977d41d1d551d9",
     "lastmod": "2026-11-05"
   },
   "privacy.html": {
-    "sha256": "a0ba2a5bbc20abb68f54c21a933e26cbd89b337fec730814d94597c0c6317789",
+    "sha256": "17709cadd2995d80601a0ac29d1a8f0b3ffdb4288d88edc61379163f7cb4b1a1",
     "lastmod": "2026-11-05"
   },
   "services/index.html": {
-    "sha256": "9b32cff9f23c71a23be63dd86722c867e39332224aa7631e3e9ad60b9a4005a1",
+    "sha256": "ce0945602a8f82dcaf9ee8473bf587777a78071b294cd022f30c09e613abd648",
     "lastmod": "2026-11-05"
   },
   "sms-terms.html": {
-    "sha256": "83c2ef4aae69fd3d1e53984ed5b3044bde1234437c46fa88f17ff8321d0fccbb",
+    "sha256": "e88e0c50b41bd8fbc035dd1260627cff6411171a207d20ffb59caf332e6e3461",
     "lastmod": "2026-11-05"
   },
   "space/index.html": {
-    "sha256": "49693940068bd6afb9dead6bf2450eb19657b962c8e0bbffafd38127a4d31989",
+    "sha256": "bc3b7babdd6232ed80055c0262a4129113cdc75bae73014e04983c08aaeacd4e",
     "lastmod": "2026-11-05"
   }
 }

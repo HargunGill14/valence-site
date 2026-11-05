@@ -15,7 +15,7 @@
 // and may use these directives anywhere in its body:
 //   <!-- @header -->                       sticky site header
 //   <!-- @footer -->                       site footer ("dark" or "light", from the page JSON)
-//   <!-- @cta label="Book a 15-minute call" -->   green closing section
+//   <!-- @cta label="Get in touch" -->   green closing section
 //   <!-- @mark variant="light" size="36" label="Valence" -->   the V mark
 //   <!-- @img name="heroes/space" ratio="4/5" alt="…" label="photo: …" sizes="…" -->
 //   <!-- @proof -->                        the logo carousel
@@ -89,13 +89,13 @@ function header(page) {
         <nav class="site-nav" aria-label="Main">
           ${links}
         </nav>
-        <a class="btn btn--dark" href="/contact/" data-ask>Book a 15-minute call</a>
+        <a class="btn btn--dark" href="/contact/" data-ask>Get in touch</a>
       </div>
     </div>
   </header>`;
 }
 
-function cta({ label = 'Book a 15-minute call' } = {}) {
+function cta({ label = 'Get in touch' } = {}) {
   return `<section id="contact" class="cta" aria-labelledby="cta-title">
     <div class="container cta__grid">
       <div>
@@ -290,7 +290,7 @@ function structuredData(page, url) {
       '@id': url + '#service',
       name: page.service.name,
       serviceType: page.service.type,
-      description: page.description.replace(/\s*Book a 15-minute call[^.]*\.$/, ''),
+      description: page.description.replace(/\s*Get in touch[^.]*\.$/, ''),
       url,
       provider: { '@id': ORG_ID },
       areaServed: AREA_SERVED,
