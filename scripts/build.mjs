@@ -26,7 +26,7 @@ import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync, rmSync
 import { createHash } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SITE, CSP_BASE, SECURITY_HEADERS, ASSET_CACHE, GA_ID, GA_TAG_URL, CLARITY_TAG_URL, SCRIPT_HOSTS } from './config.mjs';
+import { SITE, LEAD_ENDPOINT, CSP_BASE, SECURITY_HEADERS, ASSET_CACHE, GA_ID, GA_TAG_URL, CLARITY_TAG_URL, SCRIPT_HOSTS } from './config.mjs';
 import { checkDist, sha256 } from './check.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -179,14 +179,20 @@ function askBody(inline) {
         <p class="ask__error" data-ask-error hidden></p>
       </section>
       <section class="ask__step ask__step--done" data-step="6" hidden>
-        <h3 class="ask__q">Last step: send it to the team.</h3>
-        <p class="ask__hint">The button opens your email app with your answers filled in and addressed to ${EMAIL}. Press send there and we'll reply within one business day.</p>
+        <h3 class="ask__q" data-ask-done-title>Last step: send it to the team.</h3>
+        <p class="ask__hint" data-ask-done-hint>Check your answers, then send. We'll reply within one business day.</p>
         <div class="ask__summary" data-ask-summary></div>
         <div class="ask__actions ask__actions--done">
-          <a class="btn btn--green" href="${MAILTO}" data-ask-send>Open email with my answers</a>
+          <button type="button" class="btn btn--green" data-ask-submit>Send to the team</button>
+          <a class="btn btn--green" href="${MAILTO}" data-ask-send hidden>Open email with my answers</a>
           <a class="btn btn--secondary" href="tel:${PHONE_TEL}">Or call ${PHONE}</a>
         </div>
-        <details class="ask__fallback"><summary>Email app didn't open? Copy your answers instead.</summary><textarea rows="8" readonly data-ask-copytext></textarea><button type="button" class="btn btn--secondary" data-ask-copy>Copy</button> <span class="ask__copied" data-ask-copied hidden>Copied. Paste it into an email to ${EMAIL}.</span></details>
+        <p class="ask__error" data-ask-senderror hidden></p>
+        <details class="ask__fallback"><summary>Rather send it yourself? Copy your answers.</summary><textarea rows="8" readonly data-ask-copytext></textarea><button type="button" class="btn btn--secondary" data-ask-copy>Copy</button> <span class="ask__copied" data-ask-copied hidden>Copied. Paste it into an email to ${EMAIL}.</span></details>
+      </section>
+      <section class="ask__step ask__step--sent" data-step="7" hidden>
+        <h3 class="ask__q">Sent. Thank you.</h3>
+        <p class="ask__hint">Your answers are with the team. We'll reply within one business day, usually sooner. If it can't wait, call <a href="tel:${PHONE_TEL}">${PHONE}</a>.</p>
       </section>
       <div class="ask__actions" data-ask-nav>
         <button type="button" class="btn btn--secondary" data-ask-back hidden>Back</button>
@@ -195,7 +201,7 @@ function askBody(inline) {
     </div>`;
 }
 function askModal() {
-  return `<dialog class="ask" id="ask" aria-labelledby="ask-title">
+  return `<dialog class="ask" id="ask" aria-labelledby="ask-title" data-ask-endpoint="${esc(LEAD_ENDPOINT)}">
     <p class="sr-only" id="ask-title">Tell us what's eating your week</p>
     ${askBody(false)}
   </dialog>`;
@@ -377,7 +383,7 @@ for (const file of readdirSync(pagesDir).filter((f) => f.endsWith('.html')).sort
       case 'header': return header(page);
       case 'footer': return footer(page);
       case 'cta': return cta(a);
-      case 'ask': return `<div class="ask ask--inline" id="ask-inline">${askBody(true)}</div>`;
+      case 'ask': return `<div class="ask ask--inline" id="ask-inline" data-ask-endpoint="${esc(LEAD_ENDPOINT)}">${askBody(true)}</div>`;
       case 'mark': return mark(a);
       case 'img': return img(a);
       case 'proof': return proof();

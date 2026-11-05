@@ -225,7 +225,7 @@
     </div>
     <div class="container site-footer__fine">© 2026 Valence Supply Chain LLC · Los Angeles</div>
   </footer>
-<dialog class="ask" id="ask" aria-labelledby="ask-title">
+<dialog class="ask" id="ask" aria-labelledby="ask-title" data-ask-endpoint="">
     <p class="sr-only" id="ask-title">Tell us what's eating your week</p>
     <div class="ask__inner">
       <div class="ask__top"><span class="ask__progress" data-ask-progress>1 of 5</span><button type="button" class="ask__close" data-ask-close aria-label="Close">×</button></div>
@@ -294,14 +294,20 @@
         <p class="ask__error" data-ask-error hidden></p>
       </section>
       <section class="ask__step ask__step--done" data-step="6" hidden>
-        <h3 class="ask__q">Last step: send it to the team.</h3>
-        <p class="ask__hint">The button opens your email app with your answers filled in and addressed to ops@valencesupplychain.com. Press send there and we'll reply within one business day.</p>
+        <h3 class="ask__q" data-ask-done-title>Last step: send it to the team.</h3>
+        <p class="ask__hint" data-ask-done-hint>Check your answers, then send. We'll reply within one business day.</p>
         <div class="ask__summary" data-ask-summary></div>
         <div class="ask__actions ask__actions--done">
-          <a class="btn btn--green" href="mailto:ops@valencesupplychain.com?subject=What's%20eating%20our%20week" data-ask-send>Open email with my answers</a>
+          <button type="button" class="btn btn--green" data-ask-submit>Send to the team</button>
+          <a class="btn btn--green" href="mailto:ops@valencesupplychain.com?subject=What's%20eating%20our%20week" data-ask-send hidden>Open email with my answers</a>
           <a class="btn btn--secondary" href="tel:+16282129947">Or call (628) 212-9947</a>
         </div>
-        <details class="ask__fallback"><summary>Email app didn't open? Copy your answers instead.</summary><textarea rows="8" readonly data-ask-copytext></textarea><button type="button" class="btn btn--secondary" data-ask-copy>Copy</button> <span class="ask__copied" data-ask-copied hidden>Copied. Paste it into an email to ops@valencesupplychain.com.</span></details>
+        <p class="ask__error" data-ask-senderror hidden></p>
+        <details class="ask__fallback"><summary>Rather send it yourself? Copy your answers.</summary><textarea rows="8" readonly data-ask-copytext></textarea><button type="button" class="btn btn--secondary" data-ask-copy>Copy</button> <span class="ask__copied" data-ask-copied hidden>Copied. Paste it into an email to ops@valencesupplychain.com.</span></details>
+      </section>
+      <section class="ask__step ask__step--sent" data-step="7" hidden>
+        <h3 class="ask__q">Sent. Thank you.</h3>
+        <p class="ask__hint">Your answers are with the team. We'll reply within one business day, usually sooner. If it can't wait, call <a href="tel:+16282129947">(628) 212-9947</a>.</p>
       </section>
       <div class="ask__actions" data-ask-nav>
         <button type="button" class="btn btn--secondary" data-ask-back hidden>Back</button>

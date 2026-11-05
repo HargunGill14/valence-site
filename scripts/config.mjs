@@ -41,13 +41,20 @@ export const SCRIPT_HOSTS = ['https://www.googletagmanager.com', 'https://www.cl
 
 // Content-Security-Policy, without script-src: build.mjs adds script-src with a
 // sha256 for each inline head script it writes (plan steps 1.13 and 1.14) and SCRIPT_HOSTS.
+// Where the five-question contact form sends its answers. A Formspree form endpoint
+// (https://formspree.io/f/<id>) whose recipient is ops@. The page posts JSON to it from
+// assets/js/ask.js; the host goes into connect-src below. Empty string: no network at all,
+// the last step opens the visitor's mail app instead (the site collects nothing itself).
+export const LEAD_ENDPOINT = '';
+const LEAD_HOST = LEAD_ENDPOINT ? new URL(LEAD_ENDPOINT).origin : '';
+
 export const CSP_BASE = [
   "default-src 'self'",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   'font-src https://fonts.gstatic.com',
   "img-src 'self' data: https://*.google-analytics.com https://www.googletagmanager.com https://*.clarity.ms https://c.bing.com",
   "media-src 'self'",
-  "connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://*.clarity.ms https://c.bing.com",
+  `connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://*.clarity.ms https://c.bing.com${LEAD_HOST ? ' ' + LEAD_HOST : ''}`,
   "manifest-src 'self'",
   "frame-src 'none'",
   "worker-src 'none'",
