@@ -45,7 +45,7 @@ export const SCRIPT_HOSTS = ['https://www.googletagmanager.com', 'https://www.cl
 // (https://formspree.io/f/<id>) whose recipient is ops@. The page posts JSON to it from
 // assets/js/ask.js; the host goes into connect-src below. Empty string: no network at all,
 // the last step opens the visitor's mail app instead (the site collects nothing itself).
-export const LEAD_ENDPOINT = '';
+export const LEAD_ENDPOINT = 'https://formspree.io/f/xvkkywjn';
 const LEAD_HOST = LEAD_ENDPOINT ? new URL(LEAD_ENDPOINT).origin : '';
 
 export const CSP_BASE = [
