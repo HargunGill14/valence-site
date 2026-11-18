@@ -8,7 +8,9 @@ import { tmpdir } from 'node:os';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkDist, checkLoginConstant } from '../scripts/check.mjs';
-import { LOGIN, GA_ID, GA_TAG_URL, SCRIPT_HOSTS, CLARITY_ID, CLARITY_TAG_URL } from '../scripts/config.mjs';
+import { LOGIN, GA_ID, GA_TAG_URL, SCRIPT_HOSTS, CLARITY_ID, CLARITY_TAG_URL, TURNSTILE_ORIGIN, TURNSTILE_SCRIPT_URL, TURNSTILE_SITE_KEY, LEAD_ENDPOINT } from '../scripts/config.mjs';
+import { QUOTE_ENDPOINT } from '../scripts/quote-fields.mjs';
+import { headersFile } from '../scripts/headers.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -307,4 +309,129 @@ test('the Privacy Policy names both analytics tools', () => {
   const html = readFileSync(join(ROOT, 'dist/privacy.html'), 'utf8');
   assert.match(html, /Google Analytics/);
   assert.match(html, /Microsoft Clarity/);
+});
+
+// ---- lane 16: the quote box, Turnstile, Cloudflare's _headers, and secrets ----------------------
+
+const cspOf = () => JSON.parse(readFileSync(join(ROOT, 'serve.json'), 'utf8')).headers[0].headers[0].value;
+const directive = (csp, name) => csp.split(';').map((d) => d.trim()).find((d) => d.startsWith(name + ' ')).split(/\s+/).slice(1);
+
+test('the CSP names Turnstile and nothing new: frame-src is exactly Turnstile, form-action stays none, connect-src gains nothing', () => {
+  const csp = cspOf();
+  assert.deepEqual(directive(csp, 'frame-src'), [TURNSTILE_ORIGIN]);
+  assert.ok(directive(csp, 'script-src').includes(TURNSTILE_ORIGIN));
+  assert.deepEqual(directive(csp, 'form-action'), ["'none'"]);
+  // The endpoint is same-origin ('self'); connect-src is exactly what it was before lane 16.
+  assert.deepEqual(directive(csp, 'connect-src'), ["'self'", 'https://*.google-analytics.com', 'https://*.analytics.google.com', 'https://www.googletagmanager.com', 'https://*.clarity.ms', 'https://c.bing.com', 'https://formspree.io']);
+  assert.equal(QUOTE_ENDPOINT, '/api/quote-request');
+});
+
+test('dist/_headers is serve.json for Cloudflare: same CSP and headers on every path, asset caching on /assets/*', () => {
+  const hf = readFileSync(join(ROOT, 'dist/_headers'), 'utf8');
+  assert.equal(hf, headersFile(JSON.parse(readFileSync(join(ROOT, 'serve.json'), 'utf8'))));
+  assert.ok(hf.includes(`/*\n  Content-Security-Policy: ${cspOf()}\n`));
+  assert.match(hf, /^\/assets\/\*\n  Cache-Control: public, max-age=86400$/m);
+  assert.ok(hf.split('\n').every((l) => l.length <= 2000), 'Cloudflare reads at most 2,000 characters a line');
+});
+
+test('a missing or hand-edited _headers fails', () => {
+  withCopy((dist) => {
+    rmSync(join(dist, '_headers'));
+    expectProblem(checkDist(dist), /_headers: missing/);
+  });
+  withCopy((dist) => {
+    editPage(dist, '_headers', (h) => h.replace("frame-ancestors 'none'", 'frame-ancestors *'));
+    expectProblem(checkDist(dist), /_headers: differs from serve\.json/);
+  });
+  withCopy((dist) => {
+    mkdirSync(join(dist, 'assets/x'), { recursive: true });
+    writeFileSync(join(dist, 'assets/x/_headers'), '/*\n  X-Frame-Options: ALLOWALL\n');
+    expectProblem(checkDist(dist), /assets\/x\/_headers: file type \(none\) is not on the allowed list/);
+  });
+});
+
+test('a Slack webhook, a secret name, or the Worker source in dist/ fails', () => {
+  for (const [text, re] of [
+    ['https://hooks.slack.com/services/T000/B000/abcdef', /holds a secret/],
+    ['SLACK_WEBHOOK_URL', /holds a secret/],
+    ['TURNSTILE_SECRET_KEY', /holds a secret/],
+    ['FORMSPREE_QUOTE_FORM_ID', /holds a secret/],
+  ]) {
+    withCopy((dist) => {
+      editPage(dist, 'assets/js/rate.js', (j) => j + `\n// ${text}\n`);
+      expectProblem(checkDist(dist), re);
+    });
+  }
+  withCopy((dist) => {
+    mkdirSync(join(dist, 'worker'));
+    writeFileSync(join(dist, 'worker/quote.js'), '// source');
+    expectProblem(checkDist(dist), /worker\/quote\.js: source folder in dist\//);
+  });
+});
+
+test('the quote form ID never reaches dist/: any Formspree form but the questionnaire\'s fails, and so does the secret value itself', () => {
+  withCopy((dist) => {
+    editPage(dist, 'index.html', (h) => h.replace('data-rate-box', 'data-rate-box data-x="https://formspree.io/f/qsecret77"'));
+    expectProblem(checkDist(dist), /index\.html: names a Formspree form other than the questionnaire's/);
+  });
+  withCopy((dist) => {
+    editPage(dist, 'assets/js/rate.js', (j) => j + '\nvar id = "qsecret77";\n');
+    expectProblem(checkDist(dist, { formspreeQuoteId: 'qsecret77' }), /rate\.js: holds the value of FORMSPREE_QUOTE_FORM_ID/);
+    assert.deepEqual(checkDist(dist, { formspreeQuoteId: 'qother000' }), []);
+  });
+  withCopy((dist) => assert.deepEqual(checkDist(dist, { formspreeQuoteId: 'qsecret77' }), []));
+  assert.ok(LEAD_ENDPOINT.startsWith('https://formspree.io/f/'), 'the questionnaire keeps its own form');
+});
+
+test('Turnstile loads once on each page with the quote box, and on no other page', () => {
+  withCopy((dist) => {
+    editPage(dist, 'index.html', (h) => h.replace(`<script src="${TURNSTILE_SCRIPT_URL}" defer></script>`, ''));
+    expectProblem(checkDist(dist), /index\.html: has the quote box but loads Turnstile 0 times/);
+  });
+  withCopy((dist) => {
+    editPage(dist, 'about/index.html', (h) => h.replace('</main>', `<script src="${TURNSTILE_SCRIPT_URL}" defer></script></main>`));
+    expectProblem(checkDist(dist), /about\/index\.html: loads Turnstile without the quote box/);
+  });
+});
+
+test('home and contact each hold one quote box: no <form>, the Worker endpoint, the site key, a honeypot, the approved copy, and never a price', () => {
+  for (const rel of ['index.html', 'contact/index.html']) {
+    const html = readFileSync(join(ROOT, 'dist', rel), 'utf8');
+    assert.equal(html.split(' data-rate-box ').length - 1, 1, `${rel}: one box`);
+    assert.ok(!/<form\b/i.test(html));
+    assert.ok(html.includes(`data-rate-endpoint="${QUOTE_ENDPOINT}"`), `${rel}: posts to the Worker`);
+    assert.ok(html.includes(`data-rate-sitekey="${TURNSTILE_SITE_KEY}"`));
+    assert.ok(html.includes('data-rate="website"'), `${rel}: honeypot`);
+    const box = html.slice(html.indexOf('id="rate"'), html.indexOf('</section>', html.indexOf('id="rate"')));
+    // Hargun's decision, Nov 18 14:19, and Jesse's drayage line, Nov 18 14:17.
+    for (const line of ['>Get an instant quote</h2>', '>Send your lane and get your quote.</p>', 'data-fine="truck">No account needed.</p>',
+      '>Port or ramp to door. Accessorials may apply.</p>', '>We have your request.</h3>', '>Your quote is on its way to your inbox. If it can'])
+      assert.ok(box.includes(line), `${rel}: ${line}`);
+    assert.ok(!/\$\s?\d|USD/i.test(box), `${rel}: no price in the box`);
+    assert.ok(!/within the hour|business hours|a person on our desk|prices it|from our team/i.test(box), `${rel}: no reply-time promise, no "a person prices it"`);
+    assert.ok(!/chassis, fuel|empty return|real sailings|freight-class quiz/i.test(box), `${rel}: lines Jesse has not approved stay out`);
+  }
+  for (const rel of ['about/index.html', 'privacy.html']) assert.ok(!readFileSync(join(ROOT, 'dist', rel), 'utf8').includes('data-rate-box'));
+  const js = readFileSync(join(ROOT, 'dist/assets/js/rate.js'), 'utf8');
+  assert.ok(!/formspree/i.test(js), 'the browser never posts to Formspree');
+});
+
+test('the Worker config: assets from dist/, /api/* to the Worker, the per-IP rate-limit binding, and no secrets', () => {
+  const raw = readFileSync(join(ROOT, 'wrangler.jsonc'), 'utf8');
+  const cfg = JSON.parse(raw.split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n'));
+  assert.equal(cfg.main, 'worker/index.mjs');
+  assert.equal(cfg.assets.directory, './dist');
+  assert.deepEqual(cfg.assets.run_worker_first, ['/api/*']);
+  assert.equal(cfg.assets.not_found_handling, '404-page');
+  const rl = cfg.ratelimits.find((r) => r.name === 'QUOTE_LIMITER');
+  assert.ok(rl && [10, 60].includes(rl.simple.period) && rl.simple.limit > 0);
+  assert.equal(cfg.vars, undefined, 'no plain-text vars; secrets go through wrangler secret put');
+  assert.ok(!/hooks\.slack\.com\/services|formspree\.io\/f\//.test(raw));
+  for (const f of ['.gitignore']) assert.match(readFileSync(join(ROOT, f), 'utf8'), /^\.dev\.vars/m, `${f} keeps local secrets out of git`);
+});
+
+test('the Privacy Policy says what the quote box collects, who sees it, and how long it is kept', () => {
+  const html = readFileSync(join(ROOT, 'dist/privacy.html'), 'utf8');
+  assert.match(html, /<dt>Quote requests<\/dt>/);
+  for (const w of ['Slack', 'Formspree', 'Cloudflare Turnstile', 'We keep quote requests for as long as we need them to respond and follow up, and delete them on request.']) assert.ok(html.includes(w), w);
 });

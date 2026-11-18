@@ -15,9 +15,16 @@
 // VERIFY_STUB_FONTS=1 answers Google Fonts with an empty stylesheet and Google's and Microsoft Clarity's
 // tags with an empty script, for machines without internet; the CSP still applies to both, so a blocked host fails.
 // Exit code 0 when every check passes, 1 when any fails, 2 on the overall timeout.
+//
+// The quote box (lane 16): Cloudflare Turnstile is answered by a stub under its real URL (so the CSP
+// still decides whether it may load) that hands back a fixed token, and /api/quote-request is a local
+// stand-in for the Worker. On / and /contact/ at 375 and 1440 px: the two-step flow ends on the
+// thank-you with the token and the fields posted; a failing endpoint shows the error and the phone
+// number, never the thank-you; on / at 1440 px each of the four tabs sends. VERIFY_SHOTS=<folder>
+// saves screenshots of the box (steps 1, 2 and 3) at both widths.
 
 import { createServer } from 'node:http';
-import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs';
+import { readFileSync, existsSync, statSync, readdirSync, mkdirSync } from 'node:fs';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
@@ -74,7 +81,21 @@ const runTimer = setTimeout(() => { console.log(`\nOverall timeout after ${RUN_M
 const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.json': 'application/json',
   '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.ico': 'image/x-icon',
   '.mp4': 'video/mp4', '.xml': 'application/xml', '.txt': 'text/plain', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json' };
+// The Worker's stand-in: records each body and answers with quoteStatus.
+const quotePosts = [];
+let quoteStatus = 200;
+const TURNSTILE_STUB = "window.turnstile={render:function(el,o){setTimeout(function(){o.callback('stub-token')},30);return 'w1'},reset:function(){},remove:function(){}};";
 const server = createServer((req, res) => {
+  if (req.url === '/api/quote-request') {
+    let raw = '';
+    req.on('data', (c) => { raw += c; });
+    req.on('end', () => {
+      try { quotePosts.push(JSON.parse(raw)); } catch { quotePosts.push(null); }
+      res.writeHead(quoteStatus, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+      res.end(JSON.stringify({ ok: quoteStatus === 200 }));
+    });
+    return;
+  }
   let path;
   try { path = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch { res.writeHead(400); return res.end(); }
   if (path.endsWith('/')) path += 'index.html';
@@ -124,6 +145,7 @@ async function checkPage(path, w, mode) {
     await ctx.route(/^https:\/\/www\.googletagmanager\.com\/gtag\/js/, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
     await ctx.route(/^https:\/\/(www|scripts)\.clarity\.ms\//, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
   }
+  await ctx.route(/^https:\/\/challenges\.cloudflare\.com\/turnstile\//, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: TURNSTILE_STUB }));
   ctx.setDefaultTimeout(10000);
   ctx.setDefaultNavigationTimeout(20000);
   try {
@@ -194,6 +216,78 @@ for (const mode of MODES) {
     }
   }
 }
+
+// ── the quote box ──
+const SHOTS = process.env.VERIFY_SHOTS ? resolve(process.env.VERIFY_SHOTS) : null;
+if (SHOTS) mkdirSync(SHOTS, { recursive: true });
+const tomorrow = () => { const d = new Date(Date.now() + 86400000); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+const STEP1 = {
+  truck: async (b) => { await b.locator('[data-for="truck"] [data-rate="from"]').fill('90058'); await b.locator('[data-for="truck"] [data-rate="to"]').fill('75247'); },
+  intl: async (b) => { await b.locator('[data-for="intl"] [data-rate="from"]').fill('Shanghai'); await b.locator('[data-for="intl"] [data-rate="to"]').fill('Port of Long Beach'); },
+  dray: async (b) => { await b.locator('[data-for="dray"] [data-rate="from"]').selectOption('Port of Oakland'); await b.locator('[data-for="dray"] [data-rate="to"]').fill('94607'); await b.locator('[data-seg="container"][data-val="20 ft"]').click(); },
+  parcel: async (b) => { const r = b.locator('[data-for="parcel"]'); await r.locator('[data-rate="from"]').fill('100 Main St, Fresno CA 93725'); await r.locator('[data-rate="to"]').fill('200 Elm St, Denver CO 80216'); await r.locator('[data-rate="weight"]').fill('12.5'); await r.locator('[data-rate="box"]').fill('12 x 10 x 8 in'); },
+};
+async function quoteFlow(path, w, mode, { status = 200, shots = false } = {}) {
+  const tag = `[${w} quote ${mode}${status === 200 ? '' : ' ' + status}] ${path}`;
+  const ctx = await browser.newContext({ viewport: { width: w, height: w < 500 ? 812 : 900 } });
+  await ctx.route(/^https:\/\/challenges\.cloudflare\.com\/turnstile\//, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: TURNSTILE_STUB }));
+  await ctx.route(/^https:\/\/(fonts\.(googleapis|gstatic)\.com|www\.googletagmanager\.com|(www|scripts)\.clarity\.ms)\//, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+  ctx.setDefaultTimeout(10000);
+  try {
+    const page = await ctx.newPage();
+    const errs = [];
+    page.on('pageerror', (e) => errs.push(String(e)));
+    await page.exposeFunction('__cspViolation', (v) => errs.push(`CSP blocked ${v}`)).catch(() => {});
+    await page.addInitScript(() => document.addEventListener('securitypolicyviolation', (e) => window.__cspViolation(`${e.violatedDirective} ${e.blockedURI || ''}`.trim())));
+    await page.goto(BASE + path + '#rate', { waitUntil: 'load' });
+    const box = page.locator('[data-rate-box]');
+    await box.scrollIntoViewIfNeeded();
+    await page.evaluate(() => document.querySelectorAll('[data-reveal]').forEach((e) => e.classList.add('is-in')));
+    const shot = async (n) => { if (shots && SHOTS) await page.locator('#rate').screenshot({ path: join(SHOTS, `quote-${path === '/' ? 'home' : 'contact'}-${w}-step${n}.png`), animations: 'disabled' }); };
+    await box.locator(`.rate__tab[data-mode="${mode}"]`).click();
+    await STEP1[mode](box);
+    await shot(1);
+    await box.locator(`[data-for="${mode}"] [data-rate-next]`).click();
+    ok(`${tag} step 2 shows`, await box.locator('[data-rate-step="2"]').isVisible());
+    if (mode === 'truck') await box.locator('[data-rate="equipment"]').selectOption('Full truckload · reefer');
+    if (mode === 'intl') await box.locator('[data-rate="intlmode"]').selectOption('Air');
+    await box.locator('[data-rate="date"]').fill(tomorrow());
+    if (mode !== 'parcel') await box.locator('[data-rate="weight2"]').fill('42,000');
+    await box.locator('[data-rate="name"]').fill('Test Shipper');
+    await box.locator('[data-rate="company"]').fill('Verify Foods');
+    await box.locator('[data-rate="email"]').fill('test@verify.example');
+    await shot(2);
+    quoteStatus = status;
+    const before = quotePosts.length;
+    await box.locator('[data-rate-submit]').click();
+    if (status === 200) {
+      await box.locator('[data-rate-step="3"]').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
+      ok(`${tag} thank-you shows`, await box.locator('[data-rate-step="3"]').isVisible());
+      const body = quotePosts[before];
+      ok(`${tag} posted once with the Turnstile token and the tab`, quotePosts.length === before + 1 && body && body.token === 'stub-token' && body.mode === mode && body.website === '' && body.email === 'test@verify.example', JSON.stringify(body));
+      await shot(3);
+    } else {
+      await box.locator('[data-rate-error2]').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
+      const msg = await box.locator('[data-rate-error2]').textContent();
+      ok(`${tag} error with the phone number, no thank-you`, /\(628\) 212-9947/.test(msg || '') && !(await box.locator('[data-rate-step="3"]').isVisible()), msg);
+      ok(`${tag} send button usable again`, await box.locator('[data-rate-submit]').isEnabled());
+    }
+    const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    ok(`${tag} no horizontal scroll`, over <= 0, `${over}px too wide`);
+    ok(`${tag} no page errors or CSP blocks`, errs.length === 0, errs.join(' | '));
+  } finally {
+    quoteStatus = 200;
+    await ctx.close().catch(() => {});
+  }
+}
+for (const w of [375, 1440]) {
+  for (const path of ['/', '/contact/']) {
+    await withLimit(`[${w} quote] ${path}`, PAGE_MS, () => quoteFlow(path, w, 'truck', { shots: path === '/' }));
+    await withLimit(`[${w} quote 502] ${path}`, PAGE_MS, () => quoteFlow(path, w, 'truck', { status: 502 }));
+  }
+}
+for (const mode of ['intl', 'dray', 'parcel']) await withLimit(`[1440 quote ${mode}] /`, PAGE_MS, () => quoteFlow('/', 1440, mode));
+await withLimit('[375 quote 429] /', PAGE_MS, () => quoteFlow('/', 375, 'truck', { status: 429 }));
 
 await browser.close();
 server.close();

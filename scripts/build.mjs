@@ -19,6 +19,7 @@
 //   <!-- @mark variant="light" size="36" label="Valence" -->   the V mark
 //   <!-- @img name="heroes/space" ratio="4/5" alt="…" label="photo: …" sizes="…" -->
 //   <!-- @proof -->                        the logo carousel
+//   <!-- @rate -->                         the "Get your rate" quote box (adds Turnstile and rate.js to the page)
 // An @img renders a <picture> when assets/img/<name>-{800,1600}.{jpg,webp} exist,
 // and a sized placeholder otherwise, so a missing photo never breaks the layout.
 
@@ -26,7 +27,9 @@ import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync, rmSync
 import { createHash } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SITE, LEAD_ENDPOINT, CSP_BASE, SECURITY_HEADERS, ASSET_CACHE, GA_ID, GA_TAG_URL, CLARITY_TAG_URL, SCRIPT_HOSTS } from './config.mjs';
+import { SITE, LEAD_ENDPOINT, CSP_BASE, SECURITY_HEADERS, ASSET_CACHE, GA_ID, GA_TAG_URL, CLARITY_TAG_URL, SCRIPT_HOSTS, TURNSTILE_SITE_KEY, TURNSTILE_SCRIPT_URL } from './config.mjs';
+import { QUOTE_ENDPOINT, MODES, EQUIPMENT, INTL_MODES, PORTS, CONTAINERS, MAX } from './quote-fields.mjs';
+import { headersFile } from './headers.mjs';
 import { checkDist, sha256 } from './check.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -207,6 +210,91 @@ function askModal() {
   </dialog>`;
 }
 
+/* "Get your rate" (lane 16). No <form>: assets/js/rate.js posts JSON to QUOTE_ENDPOINT, the
+   Cloudflare Worker in worker/quote.mjs, with a Turnstile token. The lists and length caps come from
+   scripts/quote-fields.mjs, the same file the Worker validates against. Nothing on the page ever
+   shows a price. */
+function rateBox() {
+  const opts = (list, first) => (first ? `<option value="">${esc(first)}</option>` : '') + list.map((v) => `<option>${esc(v)}</option>`).join('');
+  const go = '<button type="button" class="btn btn--green rate__go" data-rate-next>Get your rate</button>';
+  const zip = (key, ph, ac = '') => `<input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="${MAX.zip}"${ac} placeholder="${ph}" data-rate="${key}">`;
+  const tab = (mode, on) => `<button type="button" class="rate__tab" role="tab" aria-selected="${on}" data-mode="${mode}">${esc(MODES[mode])}</button>`;
+  const seg = CONTAINERS.map((c) => `<button type="button" class="rate__segbtn${c === '40 ft' ? ' is-on' : ''}" data-seg="container" data-val="${esc(c)}" aria-pressed="${c === '40 ft'}">${esc(c)}</button>`).join('');
+  return `<section class="rate" id="rate" aria-labelledby="rate-title">
+    <div class="container rate__inner">
+      <div class="rate__head" data-reveal>
+        <h2 id="rate-title" class="h2">Get an instant quote</h2>
+        <p class="lede">Send your lane and get your quote.</p>
+      </div>
+      <div class="rate__box" data-reveal data-rate-box data-rate-endpoint="${esc(QUOTE_ENDPOINT)}" data-rate-sitekey="${esc(TURNSTILE_SITE_KEY)}">
+        <div class="rate__tabs" role="tablist" aria-label="What are you shipping?">
+          ${tab('truck', true)}
+          ${tab('intl', false)}
+          ${tab('dray', false)}
+          ${tab('parcel', false)}
+        </div>
+        <div class="rate__step" data-rate-step="1">
+          <div class="rate__row" data-for="truck">
+            <label class="rate__field"><span>From</span>${zip('from', 'ZIP code', ' autocomplete="postal-code"')}</label>
+            <span class="rate__arrow" aria-hidden="true">→</span>
+            <label class="rate__field"><span>To</span>${zip('to', 'ZIP code')}</label>
+            ${go}
+          </div>
+          <div class="rate__row" data-for="intl" hidden>
+            <label class="rate__field"><span>From</span><input type="text" maxlength="${MAX.place}" placeholder="Port, airport, city or ZIP" data-rate="from"></label>
+            <span class="rate__arrow" aria-hidden="true">→</span>
+            <label class="rate__field"><span>To</span><input type="text" maxlength="${MAX.place}" placeholder="Port, airport, city or ZIP" data-rate="to"></label>
+            ${go}
+          </div>
+          <div class="rate__row rate__row--dray" data-for="dray" hidden>
+            <label class="rate__field"><span>From</span><select data-rate="from">${opts(PORTS, 'Port or ramp')}</select></label>
+            <label class="rate__field"><span>To</span>${zip('to', 'Door ZIP')}</label>
+            <div class="rate__field"><span id="rate-container-label">Container</span><div class="rate__seg" role="group" aria-labelledby="rate-container-label">${seg}</div><input type="hidden" data-rate="container" value="40 ft"></div>
+            ${go}
+          </div>
+          <div class="rate__row rate__row--parcel" data-for="parcel" hidden>
+            <label class="rate__field"><span>From</span><input type="text" maxlength="${MAX.address}" autocomplete="street-address" placeholder="Street address" data-rate="from"></label>
+            <label class="rate__field"><span>To</span><input type="text" maxlength="${MAX.address}" placeholder="Street address" data-rate="to"></label>
+            <label class="rate__field rate__field--sm"><span>Weight</span><input type="text" inputmode="decimal" maxlength="${MAX.weight}" placeholder="lb" data-rate="weight"></label>
+            <label class="rate__field rate__field--sm"><span>Box size</span><input type="text" maxlength="${MAX.box}" placeholder="L × W × H in" data-rate="box"></label>
+            ${go}
+          </div>
+          <p class="rate__fine rate__fine--under" data-fine="truck">No account needed.</p>
+          <p class="rate__fine rate__fine--under" data-fine="intl" hidden>Ocean (FCL and LCL) and air, into or out of the US and Canada.</p>
+          <p class="rate__fine rate__fine--under" data-fine="dray" hidden>Port or ramp to door. Accessorials may apply.</p>
+          <p class="rate__fine rate__fine--under" data-fine="parcel" hidden>Boxes, not pallets. We reply with the best carrier option for the lane and the service you need.</p>
+          <p class="rate__error" data-rate-error role="alert" hidden></p>
+        </div>
+        <div class="rate__step" data-rate-step="2" hidden>
+          <p class="rate__lane"><span data-rate-lane></span> <button type="button" class="rate__edit" data-rate-back>Change</button></p>
+          <div class="rate__grid">
+            <label class="rate__field" data-for="truck"><span>Equipment</span><select data-rate="equipment">${opts(EQUIPMENT, 'Choose')}</select></label>
+            <label class="rate__field" data-for="intl" hidden><span>Mode</span><select data-rate="intlmode">${opts(INTL_MODES, 'Choose')}</select></label>
+            <label class="rate__field" data-for="dray" hidden><span>Container number or booking <em>optional</em></span><input type="text" maxlength="${MAX.containerno}" placeholder="MSCU1234567" data-rate="containerno"></label>
+            <label class="rate__field"><span data-label-date>Pickup date</span><input type="date" data-rate="date"></label>
+            <label class="rate__field" data-for="truck intl dray"><span>Approximate weight (lb)</span><input type="text" inputmode="numeric" maxlength="${MAX.weight}" placeholder="42,000" data-rate="weight2"></label>
+            <label class="rate__field"><span>Commodity <em>optional</em></span><input type="text" maxlength="${MAX.commodity}" placeholder="Canned beverages, palletized" data-rate="commodity"></label>
+            <label class="rate__field"><span>Your name</span><input type="text" maxlength="${MAX.name}" autocomplete="name" data-rate="name"></label>
+            <label class="rate__field"><span>Company</span><input type="text" maxlength="${MAX.company}" autocomplete="organization" data-rate="company"></label>
+            <label class="rate__field"><span>Work email</span><input type="email" maxlength="${MAX.email}" autocomplete="email" data-rate="email"></label>
+            <label class="rate__field"><span>Phone <em>optional</em></span><input type="tel" maxlength="${MAX.phone}" autocomplete="tel" data-rate="phone"></label>
+            <label class="rate__field rate__field--wide"><span>Anything we should know <em>optional</em></span><textarea rows="2" maxlength="${MAX.note}" placeholder="Appointment needed at delivery, liftgate, hazmat, multiple stops…" data-rate="note"></textarea></label>
+            <label class="rate__hp" aria-hidden="true">Leave this empty<input type="text" tabindex="-1" autocomplete="off" data-rate="website"></label>
+          </div>
+          <div class="rate__check" data-rate-turnstile></div>
+          <p class="rate__error" data-rate-error2 role="alert" hidden></p>
+          <div class="rate__actions"><button type="button" class="btn btn--green" data-rate-submit>Get my quote</button><span class="rate__fine">We reply by email. No price is shown on this page.</span></div>
+        </div>
+        <div class="rate__step rate__step--done" data-rate-step="3" hidden tabindex="-1">
+          <h3 class="rate__done">We have your request.</h3>
+          <p class="lede">Your quote is on its way to your inbox. If it can't wait, call <a href="tel:${PHONE_TEL}">${PHONE}</a>.</p>
+        </div>
+        <noscript><p class="rate__fine">The quote box needs JavaScript. Email <a href="mailto:${EMAIL}">${EMAIL}</a> or call <a href="tel:${PHONE_TEL}">${PHONE}</a> with your lane and we'll price it.</p></noscript>
+      </div>
+    </div>
+  </section>`;
+}
+
 function footer(page) {
   const variant = page.footer === 'light' ? 'light' : 'dark';
   return `<footer class="site-footer site-footer--${variant}">
@@ -377,6 +465,7 @@ for (const file of readdirSync(pagesDir).filter((f) => f.endsWith('.html')).sort
   const m = src.match(/^<!--(\{[\s\S]*?\})-->\s*/);
   if (!m) throw new Error(`${file}: missing JSON header comment`);
   const page = JSON.parse(m[1]);
+  let hasRate = false;
   let body = src.slice(m[0].length).replace(/<!--\s*@(\w+)([^>]*?)-->/g, (_, name, rest) => {
     const a = attrs(rest);
     switch (name) {
@@ -387,10 +476,12 @@ for (const file of readdirSync(pagesDir).filter((f) => f.endsWith('.html')).sort
       case 'mark': return mark(a);
       case 'img': return img(a);
       case 'proof': return proof();
+      case 'rate': hasRate = true; return rateBox();
       default: throw new Error(`${file}: unknown directive @${name}`);
     }
   });
-  const scripts = ['/assets/js/site.js', '/assets/js/ask.js', ...(page.scripts || [])].map((s) => `  <script src="${s}" defer></script>`).join('\n');
+  const rateScripts = hasRate ? [TURNSTILE_SCRIPT_URL, '/assets/js/rate.js'] : [];
+  const scripts = ['/assets/js/site.js', '/assets/js/ask.js', ...rateScripts, ...(page.scripts || [])].map((s) => `  <script src="${s}" defer></script>`).join('\n');
   const html = `${head(page, body)}\n<body class="${page.bodyClass || ''}">\n  <a class="skip-link" href="#main">Skip to content</a>\n${body.trim()}\n${askModal()}\n${scripts}\n</body>\n</html>\n`;
   const out = join(DIST, page.out);
   mkdirSync(dirname(out), { recursive: true });
@@ -451,6 +542,8 @@ const serveJson = {
   ],
 };
 writeFileSync(join(ROOT, 'serve.json'), JSON.stringify(serveJson, null, 2) + '\n');
+// The same rules for Cloudflare (lane 16), inside dist/ where its static assets read them.
+writeFileSync(join(DIST, '_headers'), headersFile(serveJson));
 
 // sitemap from the pages that were built
 const listed = built.filter((o) => o !== '404.html').sort((a, b) => (a === 'index.html' ? -1 : b === 'index.html' ? 1 : a.localeCompare(b)));

@@ -1033,3 +1033,56 @@ dialog.ask .ask__inner { padding: 22px 28px 28px; }
 .contact-direct__line a { color: var(--ink); text-decoration: none; } .contact-direct__line a:hover { color: var(--green); }
 .contact-direct__note { margin-top: 18px; font-size: 15px; color: var(--ink-3); }
 @media (max-width: 760px) { .contact-ways { grid-template-columns: 1fr; } .contact-hero { padding-top: 48px; } }
+
+/* ───────── "Get your rate" box ───────── */
+.rate { border-top: 1px solid var(--border); background: var(--surface); }
+.rate__inner { padding-top: 72px; padding-bottom: 72px; }
+.rate__head { max-width: 760px; }
+.rate__head .lede { margin-top: 12px; }
+.rate__box { margin-top: 28px; max-width: 980px; background: var(--paper); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px 24px; box-shadow: 0 1px 2px rgba(18,22,27,.04), 0 16px 40px -24px rgba(18,22,27,.25); }
+.rate [hidden] { display: none !important; }
+.rate__tabs { display: grid; grid-template-columns: 1.55fr 1.35fr .75fr .75fr; gap: 4px; padding: 4px; border-radius: 10px; background: var(--chip); margin-bottom: 18px; }
+.rate__tab { font: 500 14px/1.2 var(--sans); padding: 11px 10px; border-radius: 7px; border: 0; background: transparent; color: var(--ink-2); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background .2s, color .2s; }
+.rate__tab:hover { color: var(--ink); } .rate__tab[aria-selected="true"] { background: var(--ink); color: var(--paper); box-shadow: 0 1px 2px rgba(18,22,27,.2); }
+.rate__row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto; gap: 12px 14px; align-items: end; }
+.rate__row--dray { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto auto; }
+.rate__row--parcel { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.2fr) 90px 150px auto; }
+.rate__row input::placeholder { color: var(--ink-3); font-size: 16px; letter-spacing: 0; }
+.rate__row select { font-size: 16px; }
+.rate__seg { display: flex; gap: 4px; padding: 4px; border-radius: 8px; background: var(--chip); min-height: 48px; box-sizing: border-box; }
+.rate__segbtn { font: 500 14px/1 var(--sans); padding: 0 14px; border-radius: 6px; border: 0; background: transparent; color: var(--ink-2); cursor: pointer; } .rate__segbtn.is-on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(18,22,27,.15); }
+.rate__fine--under { margin: 12px 0 0; }
+.rate__arrow { padding-bottom: 14px; color: var(--ink-3); font-size: 18px; }
+.rate__field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 500; color: var(--ink-2); min-width: 0; }
+.rate__field em { font-style: normal; font-weight: 400; color: var(--ink-3); }
+.rate__field input, .rate__field select, .rate__field textarea { font: 400 17px/1.3 var(--sans); color: var(--ink); background: var(--surface); border: 1px solid var(--border-2); border-radius: 8px; padding: 12px 14px; min-height: 48px; width: 100%; }
+.rate__field input:focus, .rate__field select:focus, .rate__field textarea:focus { outline: 2px solid var(--green); outline-offset: 1px; border-color: var(--green); }
+.rate__row input { font-size: 20px; letter-spacing: .04em; font-variant-numeric: tabular-nums; }
+.rate__go { min-height: 48px; padding: 12px 22px; white-space: nowrap; }
+.rate__error { margin: 12px 0 0; font-size: 14px; color: var(--risk); }
+.rate__lane { margin: 0 0 16px; font: 500 14px/1.4 var(--sans); color: var(--ink-2); }
+.rate__edit { margin-left: 8px; font: 500 13px/1 var(--sans); color: var(--green); background: none; border: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.rate__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 16px; }
+.rate__field--wide { grid-column: 1 / -1; }
+.rate__field textarea { resize: vertical; }
+.rate__actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 20px; }
+.rate__fine { font-size: 13px; color: var(--ink-3); }
+.rate__done { margin: 0 0 8px; font-family: var(--serif); font-weight: 500; font-size: clamp(24px, 2.6vw, 30px); letter-spacing: -.02em; }
+.rate__step--done .lede { margin: 0; }
+@media (max-width: 900px) { .rate__grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px) {
+  .rate__inner { padding-top: 48px; padding-bottom: 48px; }
+  .rate__box { padding: 16px 16px 20px; border-radius: 12px; }
+  .rate__tabs { grid-template-columns: 1fr 1fr; } .rate__tab { white-space: normal; font-size: 13px; }
+  .rate__row, .rate__row--dray, .rate__row--parcel { grid-template-columns: 1fr 1fr; }
+  .rate__arrow { display: none; }
+  .rate__go { grid-column: 1 / -1; }
+  .rate__grid { grid-template-columns: 1fr; }
+}
+
+/* the honeypot: off-screen for people, still in the page for bots; the Turnstile slot shows only if it asks for a click */
+.rate__hp { position: absolute !important; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+.rate__grid { position: relative; }
+.rate__check:not(:empty) { margin-top: 16px; }
+.rate__step--done:focus { outline: none; }
+.rate a[href^="tel:"] { white-space: nowrap; }
