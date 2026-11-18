@@ -1,0 +1,32 @@
+// The site on Cloudflare (lane 16): a Worker with static assets. dist/ is served as is, with the
+// headers in dist/_headers (written by scripts/build.mjs from scripts/config.mjs); only /api/*
+// runs worker/index.mjs. Deploy with the pinned Wrangler:  npx wrangler@4.156.2 deploy
+//
+// Secrets, set by hand with a hidden prompt (npx wrangler@4.156.2 secret put NAME), never here:
+//   SLACK_WEBHOOK_URL        the Slack incoming webhook for #quote-requests
+//   TURNSTILE_SECRET_KEY     the Turnstile widget's secret key
+//   FORMSPREE_QUOTE_FORM_ID  the "Quote requests" Formspree form (emails ops@)
+// Comments in this file stay on their own lines (test/check.test.mjs reads it).
+{
+  "name": "valence-site",
+  "main": "worker/index.mjs",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+  // Per IP, per Cloudflare location: 5 quote requests a minute (the binding allows a 10 or 60 s period).
+  "ratelimits": [
+    {
+      "name": "QUOTE_LIMITER",
+      "namespace_id": "1601",
+      "simple": { "limit": 5, "period": 60 }
+    }
+  ],
+  "observability": { "enabled": true }
+}

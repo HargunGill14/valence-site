@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Static checks on the built site in dist/. Node built-ins only; build.mjs runs them
 // last and fails the build on any problem, so nothing that breaks these rules reaches
-// main or Railway. Run on their own with `node scripts/check.mjs [dir]`.
+// main or the host. Run on their own with `node scripts/check.mjs [dir]`.
 //
 //   1.16  dist/ holds only site files: no .md, package.json, src/, scripts/, docs/,
 //         dotfiles or anything outside the allowed file types.
@@ -11,18 +11,34 @@
 //         has 0 login links (until labs. is live) or 2 (header and footer), never 1 or 3+;
 //         no page holds a form, a password field, an iframe, an embed or a meta refresh.
 //   6.5   a script from another site loads only if it is on THIRD_PARTY_SCRIPTS (today: Google
-//         Analytics with GA_ID and Microsoft Clarity with CLARITY_ID), and the CSP's script-src names no source beyond SCRIPT_HOSTS.
+//         Analytics with GA_ID, Microsoft Clarity with CLARITY_ID and Cloudflare Turnstile), and the
+//         CSP's script-src names no source beyond SCRIPT_HOSTS.
+//   16    dist/_headers (what Cloudflare serves) is exactly headersFile(serve.json), so the live
+//         headers are the ones checked above; no file in dist/ holds a Slack webhook URL or names
+//         a secret; Turnstile loads only on a page that holds the quote box, and every page
+//         that holds it loads it.
 
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, relative, resolve, dirname, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { LOGIN, APP_HOST_PATTERNS, THIRD_PARTY_SCRIPTS, SCRIPT_HOSTS, SITE, CSP_BASE, SECURITY_HEADERS } from './config.mjs';
+import { LOGIN, APP_HOST_PATTERNS, THIRD_PARTY_SCRIPTS, SCRIPT_HOSTS, SITE, CSP_BASE, SECURITY_HEADERS, TURNSTILE_SCRIPT_URL, LEAD_ENDPOINT } from './config.mjs';
+import { headersFile } from './headers.mjs';
 
 const ALLOWED_EXT = new Set(['.html', '.css', '.js', '.svg', '.png', '.jpg', '.jpeg', '.webp', '.gif', '.ico',
   '.mp4', '.webm', '.xml', '.txt', '.webmanifest', '.woff2']);
 const BANNED_NAMES = new Set(['package.json', 'package-lock.json', 'readme.md', 'serve.json']);
-const BANNED_DIRS = new Set(['src', 'scripts', 'docs', 'node_modules', 'test', '.git', '.github']);
+const BANNED_DIRS = new Set(['src', 'scripts', 'docs', 'node_modules', 'test', 'worker', '.git', '.github', '.wrangler']);
+// Files Cloudflare's static assets read as configuration, allowed at the top of dist/ only.
+const HOST_FILES = new Set(['_headers']);
+// Text that must never reach the public folder: a Slack webhook, or the name of a Worker secret
+// (a sign that a config or env file was copied in).
+const SECRET_MARKERS = [/hooks\.slack\.com\/(services|workflows|triggers)\//i, /SLACK_WEBHOOK_URL/, /TURNSTILE_SECRET_KEY/, /FORMSPREE_QUOTE_FORM_ID/];
+// The only Formspree form a public file may name is the contact questionnaire's (LEAD_ENDPOINT).
+// Any other form ID in dist/ is the quote form's secret ID leaking. When the ID is in the
+// environment (FORMSPREE_QUOTE_FORM_ID, read with a hidden prompt), its exact value is scanned for too.
+const FORMSPREE_FORM = /formspree\.io\/f\/([A-Za-z0-9]+)/gi;
+const TEXT_EXT = /\.(html|css|js|svg|xml|txt|webmanifest)$|^_headers$/i;
 const LOGIN_WORDS = /\b(log\s*-?in|sign\s*-?in|logon|customer\s+portal)\b/i;
 const LOGIN_PATH = /\/(login|signin|sign-in|logon|auth)(\/|$|\?)/i;
 
@@ -141,7 +157,7 @@ export function checkHtml(rel, html, scriptSrc, login = LOGIN) {
   return { problems, loginLinks };
 }
 
-export function checkDist(dist, { login = LOGIN, serveJson = join(dist, '..', 'serve.json') } = {}) {
+export function checkDist(dist, { login = LOGIN, serveJson = join(dist, '..', 'serve.json'), formspreeQuoteId = process.env.FORMSPREE_QUOTE_FORM_ID || '' } = {}) {
   const problems = [...checkLoginConstant(login)];
   if (!existsSync(dist)) return [`${dist}: does not exist; run node scripts/build.mjs`];
   const files = walk(dist);
@@ -150,6 +166,7 @@ export function checkDist(dist, { login = LOGIN, serveJson = join(dist, '..', 's
     const parts = rel.split('/');
     const name = parts[parts.length - 1];
     if (parts.some((s) => s.startsWith('.'))) problems.push(`${rel}: dotfile in dist/`);
+    else if (HOST_FILES.has(name) && parts.length === 1) { /* checked below */ }
     else if (parts.slice(0, -1).some((d) => BANNED_DIRS.has(d.toLowerCase()))) problems.push(`${rel}: source folder in dist/`);
     else if (BANNED_NAMES.has(name.toLowerCase()) || /\.(md|mjs|cjs|ts|map|json|lock|env|yml|yaml)$/i.test(name)) problems.push(`${rel}: not a site file`);
     else {
@@ -158,11 +175,35 @@ export function checkDist(dist, { login = LOGIN, serveJson = join(dist, '..', 's
     }
   }
   const scriptSrc = scriptSrcFromServeJson(serveJson, problems);
+  // _headers: what Cloudflare sends must be what serve.json says (and serve.json was just checked).
+  const hf = join(dist, '_headers');
+  if (!existsSync(hf)) problems.push('_headers: missing, so Cloudflare would serve the site without its security headers');
+  else if (existsSync(serveJson)) {
+    let expected = null;
+    try { expected = headersFile(JSON.parse(readFileSync(serveJson, 'utf8'))); } catch { /* serve.json problems are reported above */ }
+    if (expected !== null && readFileSync(hf, 'utf8') !== expected) problems.push('_headers: differs from serve.json; run node scripts/build.mjs (never edit _headers by hand)');
+  }
+  for (const f of files) {
+    const rel = relative(dist, f).split(sep).join('/');
+    if (!TEXT_EXT.test(rel.split('/').pop())) continue;
+    const text = readFileSync(f, 'utf8');
+    for (const re of SECRET_MARKERS) if (re.test(text)) problems.push(`${rel}: holds a secret or a secret's name (${re.source})`);
+    const allowed = LEAD_ENDPOINT ? LEAD_ENDPOINT.split('/f/')[1] : null;
+    for (const m of text.matchAll(FORMSPREE_FORM)) if (m[1] !== allowed) problems.push(`${rel}: names a Formspree form other than the questionnaire's (the quote form ID is a Worker secret)`);
+    const quoteId = formspreeQuoteId;
+    if (quoteId && text.includes(quoteId)) problems.push(`${rel}: holds the value of FORMSPREE_QUOTE_FORM_ID`);
+  }
   let pages = 0;
   for (const f of files.filter((x) => x.endsWith('.html'))) {
     const rel = relative(dist, f).split(sep).join('/');
     pages++;
-    problems.push(...checkHtml(rel, readFileSync(f, 'utf8'), scriptSrc, login).problems);
+    const html = readFileSync(f, 'utf8');
+    problems.push(...checkHtml(rel, html, scriptSrc, login).problems);
+    // Turnstile only where the quote box is, and wherever it is.
+    const hasBox = /\sdata-rate-box\b/.test(html);
+    const turnstile = html.split(`src="${TURNSTILE_SCRIPT_URL}"`).length - 1;
+    if (hasBox && turnstile !== 1) problems.push(`${rel}: has the quote box but loads Turnstile ${turnstile} times (expected once)`);
+    if (!hasBox && turnstile) problems.push(`${rel}: loads Turnstile without the quote box`);
   }
   if (pages === 0) problems.push('dist/ has no pages');
   return problems;

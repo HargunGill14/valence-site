@@ -55,3 +55,27 @@ npm start          # serves dist/ on http://localhost:3000 with the headers in s
 It refuses to start without `serve.json`, so the site never runs without its headers.
 Browser checks (every page, three widths, reduced motion, JavaScript off, CSP errors): see the
 header of `scripts/verify.mjs`.
+
+## Hosting: Cloudflare Worker with static assets
+
+The site runs on Cloudflare as one Worker (`wrangler.jsonc`). `dist/` is served as static assets with
+the headers in `dist/_headers`, which the build writes from the same rules as `serve.json`
+(`scripts/headers.mjs`; `check.mjs` fails if they differ). Only `/api/*` runs code:
+`worker/index.mjs` → `worker/quote.mjs`, the "Get your rate" endpoint at `/api/quote-request`.
+
+The endpoint rate-limits per IP (the `QUOTE_LIMITER` binding), drops the honeypot, verifies the
+Turnstile token server-side, validates every field against `scripts/quote-fields.mjs`, and sends
+each request to Slack #quote-requests and, independently, to ops@ through the "Quote requests"
+Formspree form. It answers `{"ok":true}` if either landed, `{"ok":false}` otherwise.
+
+Secrets are set with a hidden prompt and never committed:
+
+```sh
+npx wrangler@4.156.2 secret put SLACK_WEBHOOK_URL
+npx wrangler@4.156.2 secret put TURNSTILE_SECRET_KEY
+npx wrangler@4.156.2 secret put FORMSPREE_QUOTE_FORM_ID
+```
+
+Deploy: `npm run build`, then `npx wrangler@4.156.2 deploy`. Locally, `npx wrangler@4.156.2 dev`
+runs the Worker and the assets together; put test values in `.dev.vars` (git-ignored). Turnstile's
+test secret `2x0000000000000000000000000000000AA` always fails verification, which is handy for checking the refusals.

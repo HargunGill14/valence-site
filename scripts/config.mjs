@@ -33,17 +33,27 @@ export const GA_TAG_URL = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`
 export const CLARITY_ID = 'z426pshvaq';
 export const CLARITY_TAG_URL = `https://www.clarity.ms/tag/${CLARITY_ID}`;
 
+// Cloudflare Turnstile (lane 16): the bot check on the "Get your rate" box. The site key is
+// public by design; the secret is a Worker secret (TURNSTILE_SECRET_KEY) and never in the repo.
+// Loaded only on pages that hold the box, rendered explicitly by assets/js/rate.js; the widget
+// runs in an iframe from TURNSTILE_ORIGIN, so that origin is the CSP's only frame-src.
+export const TURNSTILE_SITE_KEY = '0x4AAAAAAGHdx_jA0Lixlou7';
+export const TURNSTILE_ORIGIN = 'https://challenges.cloudflare.com';
+export const TURNSTILE_SCRIPT_URL = `${TURNSTILE_ORIGIN}/turnstile/v0/api.js?render=explicit`;
+
 // The only scripts a page may load from another site. check.mjs fails the build on any
 // other external <script src>: an analytics or chat snippet added later needs its own
 // line here, a CSP entry and a reason (plan 6.5).
-export const THIRD_PARTY_SCRIPTS = [GA_TAG_URL, CLARITY_TAG_URL];
-export const SCRIPT_HOSTS = ['https://www.googletagmanager.com', 'https://www.clarity.ms', 'https://scripts.clarity.ms']; // exact hosts, no wildcard
+export const THIRD_PARTY_SCRIPTS = [GA_TAG_URL, CLARITY_TAG_URL, TURNSTILE_SCRIPT_URL];
+export const SCRIPT_HOSTS = ['https://www.googletagmanager.com', 'https://www.clarity.ms', 'https://scripts.clarity.ms', TURNSTILE_ORIGIN]; // exact hosts, no wildcard
 
 // Content-Security-Policy, without script-src: build.mjs adds script-src with a
 // sha256 for each inline head script it writes (plan steps 1.13 and 1.14) and SCRIPT_HOSTS.
 // Where the five-question contact form sends its answers. A Formspree form endpoint
 // (https://formspree.io/f/<id>) whose recipient is ops@. The page posts JSON to it from
-// assets/js/ask.js; the host goes into connect-src below. Empty string: no network at all,
+// assets/js/ask.js; the host goes into connect-src below. The quote Worker (worker/quote.mjs)
+// does NOT use it: quote requests go to a separate "Quote requests" form whose ID is the Worker
+// secret FORMSPREE_QUOTE_FORM_ID, kept out of the repo, dist/ and the page. Empty string: no network at all,
 // the last step opens the visitor's mail app instead (the site collects nothing itself).
 export const LEAD_ENDPOINT = 'https://formspree.io/f/xvkkywjn';
 const LEAD_HOST = LEAD_ENDPOINT ? new URL(LEAD_ENDPOINT).origin : '';
@@ -56,7 +66,7 @@ export const CSP_BASE = [
   "media-src 'self'",
   `connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://*.clarity.ms https://c.bing.com${LEAD_HOST ? ' ' + LEAD_HOST : ''}`,
   "manifest-src 'self'",
-  "frame-src 'none'",
+  `frame-src ${TURNSTILE_ORIGIN}`, // the Turnstile widget, and nothing else
   "worker-src 'none'",
   "object-src 'none'",
   "base-uri 'none'",
