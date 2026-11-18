@@ -5,3 +5,6 @@ node_modules/
 credentials.json
 *.zip
 .DS_Store
+.dev.vars
+.dev.vars.*
+.wrangler/
