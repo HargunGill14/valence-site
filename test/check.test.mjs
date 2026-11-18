@@ -410,6 +410,8 @@ test('home and contact each hold one quote box: no <form>, the Worker endpoint, 
     assert.ok(!/\$\s?\d|USD/i.test(box), `${rel}: no price in the box`);
     assert.ok(!/within the hour|business hours|a person on our desk|prices it|from our team/i.test(box), `${rel}: no reply-time promise, no "a person prices it"`);
     assert.ok(!/chassis, fuel|empty return|real sailings|freight-class quiz/i.test(box), `${rel}: lines Jesse has not approved stay out`);
+    assert.ok(!/our desk|our team|quoting desk|a person/i.test(box), `${rel}: never says a person, our desk or our team prices it`);
+    assert.ok(!/ops@|formspree/i.test(box), `${rel}: every send goes through ${QUOTE_ENDPOINT}, never ops@ or Formspree directly`);
   }
   for (const rel of ['about/index.html', 'privacy.html']) assert.ok(!readFileSync(join(ROOT, 'dist', rel), 'utf8').includes('data-rate-box'));
   const js = readFileSync(join(ROOT, 'dist/assets/js/rate.js'), 'utf8');

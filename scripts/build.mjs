@@ -289,7 +289,7 @@ function rateBox() {
           <h3 class="rate__done">We have your request.</h3>
           <p class="lede">Your quote is on its way to your inbox. If it can't wait, call <a href="tel:${PHONE_TEL}">${PHONE}</a>.</p>
         </div>
-        <noscript><p class="rate__fine">The quote box needs JavaScript. Email <a href="mailto:${EMAIL}">${EMAIL}</a> or call <a href="tel:${PHONE_TEL}">${PHONE}</a> with your lane and we'll price it.</p></noscript>
+        <noscript><p class="rate__fine">The quote box needs JavaScript. Turn it on to get your quote, or call <a href="tel:${PHONE_TEL}">${PHONE}</a>.</p></noscript>
       </div>
     </div>
   </section>`;
