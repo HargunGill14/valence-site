@@ -20,8 +20,12 @@
 // still decides whether it may load) that hands back a fixed token, and /api/quote-request is a local
 // stand-in for the Worker. On / and /contact/ at 375 and 1440 px: the two-step flow ends on the
 // thank-you with the token and the fields posted; a failing endpoint shows the error and the phone
-// number, never the thank-you; on / at 1440 px each of the four tabs sends. VERIFY_SHOTS=<folder>
-// saves screenshots of the box (steps 1, 2 and 3) at both widths.
+// number, never the thank-you; on / at 1440 px each of the international, drayage and parcel tabs
+// sends, and the truck tab hands off to /quote/ with both ZIPs. The quote page (/quote/) at 375 and
+// 1440 px: prefill from the box and from the map, items added and removed, options picked on the
+// page and in the explainer dialog, the send (posted once as kind "quote_page" with the token), a
+// failing endpoint, and a missing weight caught before anything is sent. VERIFY_SHOTS=<folder>
+// saves screenshots of the box (steps 1, 2 and 3) and the quote page at both widths.
 
 import { createServer } from 'node:http';
 import { readFileSync, existsSync, statSync, readdirSync, mkdirSync } from 'node:fs';
@@ -227,8 +231,9 @@ const STEP1 = {
   dray: async (b) => { await b.locator('[data-for="dray"] [data-rate="from"]').selectOption('Port of Oakland'); await b.locator('[data-for="dray"] [data-rate="to"]').fill('94607'); await b.locator('[data-seg="container"][data-val="20 ft"]').click(); },
   parcel: async (b) => { const r = b.locator('[data-for="parcel"]'); await r.locator('[data-rate="from"]').fill('100 Main St, Fresno CA 93725'); await r.locator('[data-rate="to"]').fill('200 Elm St, Denver CO 80216'); await r.locator('[data-rate="weight"]').fill('12.5'); await r.locator('[data-rate="box"]').fill('12 x 10 x 8 in'); },
 };
-async function quoteFlow(path, w, mode, { status = 200, shots = false } = {}) {
-  const tag = `[${w} quote ${mode}${status === 200 ? '' : ' ' + status}] ${path}`;
+// scope: '#rate' is the box at the top (home, /contact/); '#contact' is the closing band's box.
+async function quoteFlow(path, w, mode, { status = 200, shots = false, scope = '#rate' } = {}) {
+  const tag = `[${w} quote ${mode}${status === 200 ? '' : ' ' + status}${scope === '#contact' ? ' closing band' : ''}] ${path}`;
   const ctx = await browser.newContext({ viewport: { width: w, height: w < 500 ? 812 : 900 } });
   await ctx.route(/^https:\/\/challenges\.cloudflare\.com\/turnstile\//, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: TURNSTILE_STUB }));
   await ctx.route(/^https:\/\/(fonts\.(googleapis|gstatic)\.com|www\.googletagmanager\.com|(www|scripts)\.clarity\.ms)\//, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
@@ -239,14 +244,24 @@ async function quoteFlow(path, w, mode, { status = 200, shots = false } = {}) {
     page.on('pageerror', (e) => errs.push(String(e)));
     await page.exposeFunction('__cspViolation', (v) => errs.push(`CSP blocked ${v}`)).catch(() => {});
     await page.addInitScript(() => document.addEventListener('securitypolicyviolation', (e) => window.__cspViolation(`${e.violatedDirective} ${e.blockedURI || ''}`.trim())));
-    await page.goto(BASE + path + '#rate', { waitUntil: 'load' });
-    const box = page.locator('[data-rate-box]');
+    await page.goto(BASE + path + scope, { waitUntil: 'load' });
+    const box = page.locator(`${scope} [data-rate-box]`);
     await box.scrollIntoViewIfNeeded();
     await page.evaluate(() => document.querySelectorAll('[data-reveal]').forEach((e) => e.classList.add('is-in')));
-    const shot = async (n) => { if (shots && SHOTS) await page.locator('#rate').screenshot({ path: join(SHOTS, `quote-${path === '/' ? 'home' : 'contact'}-${w}-step${n}.png`), animations: 'disabled' }); };
+    const shot = async (n) => { if (shots && SHOTS) await page.locator(scope).screenshot({ path: join(SHOTS, `quote-${path === '/' ? 'home' : path.replace(/\//g, '')}${scope === '#contact' ? '-band' : ''}-${w}-step${n}.png`), animations: 'disabled' }); };
     await box.locator(`.rate__tab[data-mode="${mode}"]`).click();
     await STEP1[mode](box);
     await shot(1);
+    if (mode === 'truck') {
+      // The truck tab hands off to the quote page with both ZIPs; nothing is posted from the box.
+      const before = quotePosts.length;
+      await Promise.all([page.waitForURL(/\/quote\/\?from=90058&to=75247$/, { timeout: 10000 }), box.locator('[data-for="truck"] [data-rate-next]').click()]);
+      await page.locator('[data-quote]').waitFor();
+      const got = await page.evaluate(() => [document.querySelector('[data-q="from"]').value, document.querySelector('[data-q="to"]').value, document.querySelector('[data-q-place="from"]').textContent, document.querySelector('[data-q-place="to"]').textContent]);
+      ok(`${tag} hands off to /quote/ with both ZIPs and their states`, got.join('|') === '90058|75247|California|Texas' && quotePosts.length === before, got.join('|'));
+      ok(`${tag} no page errors or CSP blocks`, errs.length === 0, errs.join(' | '));
+      return;
+    }
     await box.locator(`[data-for="${mode}"] [data-rate-next]`).click();
     ok(`${tag} step 2 shows`, await box.locator('[data-rate-step="2"]').isVisible());
     if (mode === 'truck') await box.locator('[data-rate="equipment"]').selectOption('Full truckload · reefer');
@@ -282,12 +297,227 @@ async function quoteFlow(path, w, mode, { status = 200, shots = false } = {}) {
 }
 for (const w of [375, 1440]) {
   for (const path of ['/', '/contact/']) {
-    await withLimit(`[${w} quote] ${path}`, PAGE_MS, () => quoteFlow(path, w, 'truck', { shots: path === '/' }));
-    await withLimit(`[${w} quote 502] ${path}`, PAGE_MS, () => quoteFlow(path, w, 'truck', { status: 502 }));
+    await withLimit(`[${w} quote truck] ${path}`, PAGE_MS, () => quoteFlow(path, w, 'truck'));
+    await withLimit(`[${w} quote dray] ${path}`, PAGE_MS, () => quoteFlow(path, w, 'dray', { shots: path === '/' }));
+    await withLimit(`[${w} quote intl 502] ${path}`, PAGE_MS, () => quoteFlow(path, w, 'intl', { status: 502 }));
   }
 }
-for (const mode of ['intl', 'dray', 'parcel']) await withLimit(`[1440 quote ${mode}] /`, PAGE_MS, () => quoteFlow('/', 1440, mode));
-await withLimit('[375 quote 429] /', PAGE_MS, () => quoteFlow('/', 375, 'truck', { status: 429 }));
+for (const mode of ['intl', 'parcel']) await withLimit(`[1440 quote ${mode}] /`, PAGE_MS, () => quoteFlow('/', 1440, mode));
+await withLimit('[375 quote 429] /', PAGE_MS, () => quoteFlow('/', 375, 'dray', { status: 429 }));
+// the closing band's box: the homepage's second box, and three other pages
+for (const [path, w] of [['/', 1440], ['/about/', 375]]) {
+  await withLimit(`[${w} quote truck closing band] ${path}`, PAGE_MS, () => quoteFlow(path, w, 'truck', { scope: '#contact' }));
+}
+for (const [path, w] of [['/about/', 375], ['/cpg/', 1440], ['/case-studies/rivian/', 375]]) {
+  await withLimit(`[${w} quote dray closing band] ${path}`, PAGE_MS, () => quoteFlow(path, w, 'dray', { scope: '#contact', shots: path === '/about/' }));
+}
+await withLimit('[1440 quote 502 closing band] /cpg/', PAGE_MS, () => quoteFlow('/cpg/', 1440, 'intl', { status: 502, scope: '#contact' }));
+
+// ── the homepage map: pick a lane, and "Quote this lane" (to /quote/) ──
+async function mapFlow(w, mode, { status = 200, shots = false } = {}) {
+  const tag = `[${w} map ${mode}${status === 200 ? '' : ' ' + status}] /`;
+  const ctx = await browser.newContext({ viewport: { width: w, height: w < 500 ? 812 : 900 } });
+  await ctx.route(/^https:\/\/challenges\.cloudflare\.com\/turnstile\//, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: TURNSTILE_STUB }));
+  await ctx.route(/^https:\/\/(fonts\.(googleapis|gstatic)\.com|www\.googletagmanager\.com|(www|scripts)\.clarity\.ms)\//, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+  ctx.setDefaultTimeout(10000);
+  try {
+    const page = await ctx.newPage();
+    const errs = [];
+    page.on('pageerror', (e) => errs.push(String(e)));
+    await page.exposeFunction('__cspViolation', (v) => errs.push(`CSP blocked ${v}`)).catch(() => {});
+    await page.addInitScript(() => document.addEventListener('securitypolicyviolation', (e) => window.__cspViolation(`${e.violatedDirective} ${e.blockedURI || ''}`.trim())));
+    await page.goto(BASE + '/#net', { waitUntil: 'load' });
+    await page.evaluate(() => document.querySelectorAll('[data-reveal]').forEach((e) => e.classList.add('is-in')));
+    const card = page.locator('[data-pick-card]');
+    await page.locator('[data-net]').scrollIntoViewIfNeeded();
+    // a real click on a city dot, then a state (dispatched: a state's centre can sit under a city dot)
+    await page.locator('.net__city[data-city="Los Angeles"] .net__hit').click({ force: true });
+    await page.locator('.net__state[data-state="Texas"]').dispatchEvent('click');
+    ok(`${tag} the form opens with the lane`, await card.locator('[data-pick-form]').isVisible() && /Los Angeles/.test(await card.locator('[data-pick-from]').textContent()) && /Texas \(TX\)/.test(await card.locator('[data-pick-to]').textContent()));
+    await card.locator('[data-pick-mode]').selectOption(mode);
+    if (mode === 'dray') { await card.locator('[data-pick-port]').selectOption('Port of Long Beach'); await card.locator('[data-pick-seg="45 ft"]').click(); }
+    if (mode === 'truck') await card.locator('[data-pick-equipment]').selectOption('Full truckload · reefer');
+    if (mode === 'parcel') { await card.locator('[data-pick-weight]').fill('12.5'); await card.locator('[data-pick-box]').fill('12 x 10 x 8 in'); }
+    if (mode === 'intl') await card.locator('[data-pick-intl]').selectOption('Air');
+    await card.locator('[data-pick-email]').fill('test@verify.example');
+    if (shots && SHOTS) await page.locator('#net').screenshot({ path: join(SHOTS, `map-${w}-form.png`), animations: 'disabled' });
+    quoteStatus = status;
+    const before = quotePosts.length;
+    await card.locator('[data-pick-send]').click();
+    if (status === 200) {
+      await card.locator('[data-pick-done]').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
+      ok(`${tag} "We have your request." shows`, await card.locator('[data-pick-done]').isVisible());
+      const b = quotePosts[before];
+      ok(`${tag} posted once to the Worker as kind map, with the token and the picks`, quotePosts.length === before + 1 && b && b.kind === 'map' && b.token === 'stub-token' && b.mode === mode && b.from === 'city:Los Angeles' && b.to === 'state:Texas' && b.website === '' && b.email === 'test@verify.example'
+        && (mode !== 'dray' || (b.port === 'Port of Long Beach' && b.container === '45 ft')) && (mode !== 'truck' || b.equipment === 'Full truckload · reefer'), JSON.stringify(b));
+      if (shots && SHOTS) await page.locator('#net').screenshot({ path: join(SHOTS, `map-${w}-done.png`), animations: 'disabled' });
+    } else {
+      await card.locator('[data-pick-error]').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
+      const msg = await card.locator('[data-pick-error]').textContent();
+      ok(`${tag} error with the phone number, no "done"`, /\(628\) 212-9947/.test(msg || '') && !(await card.locator('[data-pick-done]').isVisible()), msg);
+      ok(`${tag} send button usable again`, await card.locator('[data-pick-send]').isEnabled());
+    }
+    const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    ok(`${tag} no horizontal scroll`, over <= 0, `${over}px too wide`);
+    ok(`${tag} no page errors or CSP blocks`, errs.length === 0, errs.join(' | '));
+  } finally {
+    quoteStatus = 200;
+    await ctx.close().catch(() => {});
+  }
+}
+for (const w of [375, 1440]) await withLimit(`[${w} map dray] /`, PAGE_MS, () => mapFlow(w, 'dray', { shots: true }));
+for (const mode of ['truck', 'intl', 'parcel', 'unsure']) await withLimit(`[1440 map ${mode}] /`, PAGE_MS, () => mapFlow(1440, mode));
+await withLimit('[375 map 502] /', PAGE_MS, () => mapFlow(375, 'dray', { status: 502 }));
+await withLimit('[1440 map 429] /', PAGE_MS, () => mapFlow(1440, 'truck', { status: 429 }));
+
+async function laneQuote(w) {
+  const tag = `[${w} map quote this lane] /`;
+  const ctx = await browser.newContext({ viewport: { width: w, height: w < 500 ? 812 : 900 } });
+  await ctx.route(/^https:\/\/challenges\.cloudflare\.com\/turnstile\//, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: TURNSTILE_STUB }));
+  await ctx.route(/^https:\/\/(fonts\.(googleapis|gstatic)\.com|www\.googletagmanager\.com|(www|scripts)\.clarity\.ms)\//, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+  ctx.setDefaultTimeout(10000);
+  try {
+    const page = await ctx.newPage();
+    const errs = [];
+    page.on('pageerror', (e) => errs.push(String(e)));
+    await page.goto(BASE + '/#net', { waitUntil: 'load' });
+    const lane = page.locator('[data-net-lane="0"]');
+    const want = { from: await lane.getAttribute('data-from-zip'), to: await lane.getAttribute('data-to-zip'), eq: await lane.getAttribute('data-eq'), mode: await lane.getAttribute('data-mode') };
+    await lane.dispatchEvent('click');
+    await Promise.all([page.waitForURL(/\/quote\/\?/), page.locator('[data-net-quote]').click()]);
+    await page.locator('[data-quote]').waitFor();
+    const eq = want.mode === 'LTL' ? 'LTL' : 'Full truckload · ' + want.eq.toLowerCase();
+    const u = new URL(page.url());
+    const got = { path: u.pathname, from: await page.locator('[data-q="from"]').inputValue(), to: await page.locator('[data-q="to"]').inputValue(), note: await page.locator('[data-q="note"]').inputValue(), qeq: u.searchParams.get('equipment') };
+    ok(`${tag} opens /quote/ with both ZIPs and the lane's equipment`, got.path === '/quote/' && got.from === want.from && got.to === want.to && got.qeq === eq && got.note === eq + '. ', JSON.stringify({ want, got }));
+    ok(`${tag} no page errors`, errs.length === 0, errs.join(' | '));
+  } finally {
+    await ctx.close().catch(() => {});
+  }
+}
+for (const w of [375, 1440]) await withLimit(`[${w} map quote this lane] /`, PAGE_MS, () => laneQuote(w));
+
+// The map's "Add items and options first": the quote page, with the picks, the city ZIP and the equipment.
+async function mapDetails(w) {
+  const tag = `[${w} map add items and options] /`;
+  const ctx = await browser.newContext({ viewport: { width: w, height: w < 500 ? 812 : 900 } });
+  await ctx.route(/^https:\/\/challenges\.cloudflare\.com\/turnstile\//, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: TURNSTILE_STUB }));
+  await ctx.route(/^https:\/\/(fonts\.(googleapis|gstatic)\.com|www\.googletagmanager\.com|(www|scripts)\.clarity\.ms)\//, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+  ctx.setDefaultTimeout(10000);
+  try {
+    const page = await ctx.newPage();
+    const errs = [];
+    page.on('pageerror', (e) => errs.push(String(e)));
+    await page.goto(BASE + '/#net', { waitUntil: 'load' });
+    await page.evaluate(() => document.querySelectorAll('[data-reveal]').forEach((e) => e.classList.add('is-in')));
+    await page.locator('[data-net]').scrollIntoViewIfNeeded();
+    await page.locator('.net__city[data-city="Los Angeles"] .net__hit').click({ force: true });
+    await page.locator('.net__state[data-state="Texas"]').dispatchEvent('click');
+    const card = page.locator('[data-pick-card]');
+    await card.locator('[data-pick-equipment]').selectOption('LTL');
+    await Promise.all([page.waitForURL(/\/quote\/\?/, { timeout: 10000 }), card.locator('[data-pick-details]').click()]);
+    await page.locator('[data-quote]').waitFor();
+    const got = await page.evaluate(() => ({ from: document.querySelector('[data-q="from"]').value, to: document.querySelector('[data-q="to"]').value, note: document.querySelector('[data-q-mapnote]').textContent, shown: !document.querySelector('[data-q-mapnote]').hidden, eq: document.querySelector('[data-q="note"]').value }));
+    ok(`${tag} lands on /quote/ with the city ZIP, the picks and the equipment`, got.from === '90058' && got.to === '' && got.shown && /From the map: Los Angeles → Texas\. Add both ZIP codes above for an exact quote\./.test(got.note) && got.eq === 'LTL. ', JSON.stringify(got));
+    ok(`${tag} no page errors`, errs.length === 0, errs.join(' | '));
+  } finally {
+    await ctx.close().catch(() => {});
+  }
+}
+for (const w of [375, 1440]) await withLimit(`[${w} map add items and options] /`, PAGE_MS, () => mapDetails(w));
+
+// ── the quote page (/quote/) ──
+async function quotePageFlow(w, { status = 200, query = '?from=90058&to=75247', shots = false, missingWeight = false } = {}) {
+  const tag = `[${w} quote page${status === 200 ? '' : ' ' + status}${missingWeight ? ' missing weight' : ''}${query.includes('Place') ? ' from the map' : ''}] /quote/`;
+  const ctx = await browser.newContext({ viewport: { width: w, height: w < 500 ? 812 : 900 } });
+  await ctx.route(/^https:\/\/challenges\.cloudflare\.com\/turnstile\//, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: TURNSTILE_STUB }));
+  await ctx.route(/^https:\/\/(fonts\.(googleapis|gstatic)\.com|www\.googletagmanager\.com|(www|scripts)\.clarity\.ms)\//, (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+  ctx.setDefaultTimeout(10000);
+  try {
+    const page = await ctx.newPage();
+    const errs = [];
+    page.on('pageerror', (e) => errs.push(String(e)));
+    await page.exposeFunction('__cspViolation', (v) => errs.push(`CSP blocked ${v}`)).catch(() => {});
+    await page.addInitScript(() => document.addEventListener('securitypolicyviolation', (e) => window.__cspViolation(`${e.violatedDirective} ${e.blockedURI || ''}`.trim())));
+    await page.goto(BASE + '/quote/' + query, { waitUntil: 'load' });
+    await page.evaluate(() => document.querySelectorAll('[data-reveal]').forEach((e) => e.classList.add('is-in')));
+    const root = page.locator('[data-quote]');
+    const shot = async (n) => { if (shots && SHOTS) await page.screenshot({ path: join(SHOTS, `quote-page-${w}-${n}.png`), fullPage: n !== 'dialog', animations: 'disabled' }); };
+    if (query.includes('Place')) {
+      ok(`${tag} the map note shows the picks`, await root.locator('[data-q-mapnote]').isVisible() && /Los Angeles → Texas/.test(await root.locator('[data-q-mapnote]').textContent()));
+      await root.locator('[data-q="to"]').fill('75247');
+    }
+    ok(`${tag} ZIPs prefilled, with their states`, (await root.locator('[data-q="from"]').inputValue()) === '90058' && (await root.locator('[data-q-place="to"]').textContent()) === 'Texas');
+    await root.locator('[data-q="date"]').fill(tomorrow());
+    // items: one row to start; fill it, add two more, remove the last
+    const rows = root.locator('.qitem');
+    ok(`${tag} one item row to start`, (await rows.count()) === 1);
+    await rows.nth(0).locator('[data-i="qty"]').fill('2');
+    if (!missingWeight) await rows.nth(0).locator('[data-i="lbs"]').fill('1,250');
+    for (const [k, v] of [['l', '48'], ['w', '40'], ['h', '60']]) await rows.nth(0).locator(`[data-i="${k}"]`).fill(v);
+    await root.locator('[data-q-additem]').click();
+    await rows.nth(1).locator('[data-i="type"]').selectOption('Crate');
+    await rows.nth(1).locator('[data-i="lbs"]').fill('300');
+    await root.locator('[data-q-additem]').click();
+    await rows.nth(2).locator('[data-i-remove]').click();
+    if (!missingWeight) ok(`${tag} two rows and the total`, (await rows.count()) === 2 && (await root.locator('[data-q-total]').textContent()) === '3 items · 2,800 lbs total', await root.locator('[data-q-total]').textContent());
+    // options: one on the page, one from the explainer, and "Show all"
+    await root.locator('[data-opt-pick="lift_pu"]').click();
+    ok(`${tag} an option toggles on`, (await root.locator('[data-opt-pick="lift_pu"]').getAttribute('aria-pressed')) === 'true');
+    ok(`${tag} hazmat hidden until "Show all"`, !(await root.locator('[data-opt="hazmat"]').isVisible()));
+    await root.locator('[data-q-more="pickup"]').click();
+    ok(`${tag} "Show all" shows the rest`, await root.locator('[data-opt="hazmat"]').isVisible() && (await root.locator('[data-q-more="pickup"]').getAttribute('aria-expanded')) === 'true');
+    await root.locator('[data-opt-info="appt_dl"]').click();
+    const dlg = page.locator('#qinfo');
+    ok(`${tag} the explainer opens with the option`, await dlg.isVisible() && (await dlg.locator('[data-qinfo-title]').textContent()) === 'Delivery appointment' && (await dlg.locator('[data-qinfo-desc]').textContent()).length > 20 && (await dlg.locator('[data-qinfo-art] svg').count()) === 1);
+    await shot('dialog');
+    await dlg.locator('[data-qinfo-next]').click();
+    ok(`${tag} next goes to the next delivery option`, (await dlg.locator('[data-qinfo-title]').textContent()) === 'Limited access delivery');
+    await dlg.locator('[data-qinfo-prev]').click();
+    await dlg.locator('[data-qinfo-toggle]').click();
+    ok(`${tag} adding from the explainer picks it on the page`, (await root.locator('[data-opt-pick="appt_dl"]').getAttribute('aria-pressed')) === 'true' && /Added/.test(await dlg.locator('[data-qinfo-toggle]').textContent()));
+    const overDlg = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    ok(`${tag} no horizontal scroll with the explainer open`, overDlg <= 0, `${overDlg}px too wide`);
+    await page.keyboard.press('Escape');
+    ok(`${tag} Escape closes the explainer and focus returns to its button`, !(await dlg.isVisible()) && (await page.evaluate(() => document.activeElement && document.activeElement.getAttribute('data-opt-info'))) === 'appt_dl');
+    await root.locator('[data-q="name"]').fill('Test Shipper');
+    await root.locator('[data-q="company"]').fill('Verify Foods');
+    await root.locator('[data-q="email"]').fill('test@verify.example');
+    await shot('filled');
+    quoteStatus = status;
+    const before = quotePosts.length;
+    await root.locator('[data-q-submit]').click();
+    if (missingWeight) {
+      await root.locator('[data-q-error]').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+      ok(`${tag} caught on the page, nothing sent`, /weight in pounds/.test(await root.locator('[data-q-error]').textContent()) && quotePosts.length === before);
+    } else if (status === 200) {
+      await root.locator('[data-qstep="2"]').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
+      ok(`${tag} thank-you shows`, await root.locator('[data-qstep="2"]').isVisible() && /We have your request\./.test(await root.locator('[data-qstep="2"]').textContent()));
+      const b = quotePosts[before];
+      ok(`${tag} posted once as kind quote_page with the token, items and options`, quotePosts.length === before + 1 && b && b.kind === 'quote_page' && b.token === 'stub-token' && b.website === ''
+        && b.from === '90058' && b.to === '75247' && b.items.length === 2 && b.items[0].qty === '2' && b.items[0].lbs === '1,250' && b.items[0].h === '60' && b.items[1].type === 'Crate'
+        && JSON.stringify(b.pickup) === '["lift_pu"]' && JSON.stringify(b.delivery) === '["appt_dl"]' && b.email === 'test@verify.example' && !('total_lbs' in b)
+        && (query.includes('Place') ? b.fromPlace === 'city:Los Angeles' && b.toPlace === 'state:Texas' : !('fromPlace' in b)), JSON.stringify(b));
+      await shot('done');
+    } else {
+      await root.locator('[data-q-error]').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
+      const msg = await root.locator('[data-q-error]').textContent();
+      ok(`${tag} error with the phone number, no thank-you`, /\(628\) 212-9947/.test(msg || '') && !(await root.locator('[data-qstep="2"]').isVisible()), msg);
+      ok(`${tag} send button usable again`, await root.locator('[data-q-submit]').isEnabled() && (await root.locator('[data-q-submit]').textContent()) === 'Get my quote');
+    }
+    const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    ok(`${tag} no horizontal scroll`, over <= 0, `${over}px too wide`);
+    ok(`${tag} no page errors or CSP blocks`, errs.length === 0, errs.join(' | '));
+  } finally {
+    quoteStatus = 200;
+    await ctx.close().catch(() => {});
+  }
+}
+for (const w of [375, 1440]) await withLimit(`[${w} quote page] /quote/`, PAGE_MS, () => quotePageFlow(w, { shots: true }));
+await withLimit('[375 quote page from the map] /quote/', PAGE_MS, () => quotePageFlow(375, { query: '?from=90058&to=&fromPlace=city%3ALos%20Angeles&toPlace=state%3ATexas&equipment=LTL' }));
+await withLimit('[1440 quote page 502] /quote/', PAGE_MS, () => quotePageFlow(1440, { status: 502 }));
+await withLimit('[375 quote page 429] /quote/', PAGE_MS, () => quotePageFlow(375, { status: 429 }));
+await withLimit('[1440 quote page missing weight] /quote/', PAGE_MS, () => quotePageFlow(1440, { missingWeight: true }));
 
 await browser.close();
 server.close();

@@ -1,0 +1,30 @@
+<!--{"out": "quote/index.html", "title": "Get an instant quote | Valence", "description": "Two ZIP codes, what you are shipping, and the pickup and delivery options that apply. Send it once and we email your quote.", "footer": "light", "scripts": ["/assets/js/quote.js"]}-->
+<!-- @header -->
+
+<main id="main">
+  <section class="container qpage" aria-labelledby="page-title">
+    <div class="qpage__head" data-reveal>
+      <p class="eyebrow">Get an instant quote</p>
+      <h1 id="page-title" class="h1 h1--vertical">Tell us the lane and what's on it.</h1>
+      <p class="lede">Every option below is priced into your quote. Tap the <span class="qi qi--inline" aria-hidden="true">i</span> on any of them if you are not sure what it means or whether you need it.</p>
+    </div>
+
+    <!-- @quote -->
+  </section>
+
+  <dialog class="qinfo" id="qinfo" aria-labelledby="qinfo-title">
+    <div class="qinfo__art"><div data-qinfo-art></div><button type="button" class="qinfo__nav qinfo__nav--prev" data-qinfo-prev aria-label="Previous option">‹</button><button type="button" class="qinfo__nav qinfo__nav--next" data-qinfo-next aria-label="Next option">›</button><button type="button" class="qinfo__close" data-qinfo-close aria-label="Close">×</button></div>
+    <div class="qinfo__body">
+      <p class="qinfo__title"><b id="qinfo-title" data-qinfo-title></b><span>Priced into your quote</span></p>
+      <p class="qinfo__desc" data-qinfo-desc></p>
+      <div class="qinfo__cols">
+        <div><p class="qinfo__k qinfo__k--add">Add it if</p><p data-qinfo-add></p></div>
+        <div><p class="qinfo__k qinfo__k--skip">Skip it and</p><p data-qinfo-skip></p></div>
+      </div>
+      <div class="qinfo__actions"><button type="button" class="btn btn--green" data-qinfo-toggle>Add</button><span class="qinfo__fine">Add or remove it any time before you send.</span></div>
+    </div>
+    <div class="qinfo__rail"><span class="qinfo__railk" data-qinfo-kind></span><div class="qinfo__chips" data-qinfo-chips></div></div>
+  </dialog>
+</main>
+
+<!-- @footer -->

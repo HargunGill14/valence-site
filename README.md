@@ -61,10 +61,14 @@ header of `scripts/verify.mjs`.
 The site runs on Cloudflare as one Worker (`wrangler.jsonc`). `dist/` is served as static assets with
 the headers in `dist/_headers`, which the build writes from the same rules as `serve.json`
 (`scripts/headers.mjs`; `check.mjs` fails if they differ). Only `/api/*` runs code:
-`worker/index.mjs` → `worker/quote.mjs`, the "Get your rate" endpoint at `/api/quote-request`.
+`worker/index.mjs` → `worker/quote.mjs`, the quote endpoint at `/api/quote-request`. Two forms post
+to it: the "Get an instant quote" box (`@rate`, and the closing band `@cta` on most pages) and the
+homepage map's pick-a-lane (`@pick`, sent as `kind: "map"`). `dist/_redirects` (moved pages, from
+a page's `"redirect"` field) is applied by Cloudflare as 301s.
 
 The endpoint rate-limits per IP (the `QUOTE_LIMITER` binding), drops the honeypot, verifies the
-Turnstile token server-side, validates every field against `scripts/quote-fields.mjs`, and sends
+Turnstile token server-side, validates every field against `scripts/quote-fields.mjs` (the map's
+places against `scripts/map-places.mjs`, taking each city's ZIP from there), and sends
 each request to Slack #quote-requests and, independently, to ops@ through the "Quote requests"
 Formspree form. It answers `{"ok":true}` if either landed, `{"ok":false}` otherwise.
 
@@ -75,6 +79,16 @@ npx wrangler@4.156.2 secret put SLACK_WEBHOOK_URL
 npx wrangler@4.156.2 secret put TURNSTILE_SECRET_KEY
 npx wrangler@4.156.2 secret put FORMSPREE_QUOTE_FORM_ID
 ```
+
+`FORMSPREE_QUOTE_FORM_ID` takes the form's ID (the part after `/f/`) or its full
+`https://formspree.io/f/…` URL. Each request logs one line, with no personal data:
+`{"event":"quote-request","kind":"box"|"map","mode":…,"slack":"sent"|"http 4xx"|"error …","email":…,"email_codes":[…]}`.
+Watch it with `npx wrangler@4.156.2 tail valence-site --format pretty`. `email` says
+`error FORMSPREE_QUOTE_FORM_ID not set` or `… malformed` when the secret is the problem, and
+`http 4xx` with Formspree's error codes when Formspree refused the post.
+
+`wrangler.jsonc` has no routes or custom domains, so a deploy reaches only the workers.dev address
+(a test keeps it that way). Moving www to the Worker is the launch: see `docs/LAUNCH.md`.
 
 Deploy: `npm run build`, then `npx wrangler@4.156.2 deploy`. Locally, `npx wrangler@4.156.2 dev`
 runs the Worker and the assets together; put test values in `.dev.vars` (git-ignored). Turnstile's

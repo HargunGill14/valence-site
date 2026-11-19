@@ -63,7 +63,7 @@
           /* in view, or already scrolled past in one fast fling: show it and stop watching */
           if (e.isIntersecting || e.boundingClientRect.bottom < 0) { e.target.classList.add('is-in'); io.unobserve(e.target); }
         });
-      }, { rootMargin: '0px 0px -8% 0px', threshold: 0.1 });
+      }, { rootMargin: '0px 0px -8% 0px', threshold: 0.02 });
       each(reveal, function (el) { io.observe(el); });
     }
   }
