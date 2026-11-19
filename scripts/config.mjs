@@ -33,7 +33,7 @@ export const GA_TAG_URL = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`
 export const CLARITY_ID = 'z426pshvaq';
 export const CLARITY_TAG_URL = `https://www.clarity.ms/tag/${CLARITY_ID}`;
 
-// Cloudflare Turnstile (lane 16): the bot check on the "Get your rate" box. The site key is
+// Cloudflare Turnstile (lane 16): the bot check on the "Get an instant quote" box and the map. The site key is
 // public by design; the secret is a Worker secret (TURNSTILE_SECRET_KEY) and never in the repo.
 // Loaded only on pages that hold the box, rendered explicitly by assets/js/rate.js; the widget
 // runs in an iframe from TURNSTILE_ORIGIN, so that origin is the CSP's only frame-src.

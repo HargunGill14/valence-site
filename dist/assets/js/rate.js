@@ -1,7 +1,8 @@
-/* "Get your rate" (lane 16): four tabs (truck, international, drayage, parcel), each with its own
-   first step, then the details, then a thank-you. On send, the box posts JSON with a Cloudflare
-   Turnstile token to its endpoint (/api/quote-request, the Worker in worker/quote.mjs), which checks
-   everything again server-side. The thank-you shows only when the endpoint answers {"ok":true};
+/* "Get an instant quote" (lane 16): four tabs (truck, international, drayage, parcel), each with its own
+   first step, then the details, then a thank-you. The truck tab's first step goes to the quote page
+   (/quote/?from=&to=) instead, for the items and the pickup and delivery options. On send, the box
+   posts JSON with a Cloudflare Turnstile token to its endpoint (/api/quote-request, the Worker in
+   worker/quote.mjs), which checks everything again server-side. The thank-you shows only when the endpoint answers {"ok":true};
    anything else shows an error with the phone number. No <form>, and never a price. */
 (function () {
   'use strict';
@@ -106,6 +107,9 @@
       btn.addEventListener('click', function () {
         var msg = valid1(); if (msg) return fail(err1, msg);
         err1.hidden = true;
+        // The truck tab hands off to the quote page, which asks for the items and the pickup and
+        // delivery options. The other three tabs carry on to step 2 here.
+        if (mode === 'truck') { var r0 = row(); location.href = '/quote/?from=' + encodeURIComponent(f('from', r0)) + '&to=' + encodeURIComponent(f('to', r0)); return; }
         box.querySelector('[data-rate-lane]').textContent = laneText();
         var d = box.querySelector('[data-rate="date"]'); if (d) d.min = today();
         show(2);

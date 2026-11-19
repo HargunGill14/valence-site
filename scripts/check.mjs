@@ -15,8 +15,14 @@
 //         CSP's script-src names no source beyond SCRIPT_HOSTS.
 //   16    dist/_headers (what Cloudflare serves) is exactly headersFile(serve.json), so the live
 //         headers are the ones checked above; no file in dist/ holds a Slack webhook URL or names
-//         a secret; Turnstile loads only on a page that holds the quote box, and every page
-//         that holds it loads it.
+//         a secret; Turnstile loads only on a page that holds a quote form (the box, the map's
+//         pick-a-lane or the quote page), and every such page loads it once; all three post only to
+//         QUOTE_ENDPOINT; the map's places are exactly scripts/map-places.mjs (what the Worker
+//         accepts); the quote page's explainers in quote.js cover exactly the options in
+//         scripts/quote-fields.mjs; _redirects holds only same-site 301s; and no page or script
+//         breaks the quote copy rules (Hargun, Nov 18): nothing says a person, our desk or our team
+//         prices it, and no "within the hour", "business hours", "AI pricing" or the lines Jesse
+//         took out.
 
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -24,13 +30,16 @@ import { join, relative, resolve, dirname, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { LOGIN, APP_HOST_PATTERNS, THIRD_PARTY_SCRIPTS, SCRIPT_HOSTS, SITE, CSP_BASE, SECURITY_HEADERS, TURNSTILE_SCRIPT_URL, LEAD_ENDPOINT } from './config.mjs';
 import { headersFile } from './headers.mjs';
+import { QUOTE_ENDPOINT, QUOTE_OPTIONS } from './quote-fields.mjs';
+import { MAP_CITIES, MAP_STATES } from './map-places.mjs';
 
 const ALLOWED_EXT = new Set(['.html', '.css', '.js', '.svg', '.png', '.jpg', '.jpeg', '.webp', '.gif', '.ico',
   '.mp4', '.webm', '.xml', '.txt', '.webmanifest', '.woff2']);
 const BANNED_NAMES = new Set(['package.json', 'package-lock.json', 'readme.md', 'serve.json']);
 const BANNED_DIRS = new Set(['src', 'scripts', 'docs', 'node_modules', 'test', 'worker', '.git', '.github', '.wrangler']);
 // Files Cloudflare's static assets read as configuration, allowed at the top of dist/ only.
-const HOST_FILES = new Set(['_headers']);
+const HOST_FILES = new Set(['_headers', '_redirects']);
+const REDIRECT_LINE = /^(\/[A-Za-z0-9._~\/-]*) (\/[A-Za-z0-9._~\/-]*) 301$/;
 // Text that must never reach the public folder: a Slack webhook, or the name of a Worker secret
 // (a sign that a config or env file was copied in).
 const SECRET_MARKERS = [/hooks\.slack\.com\/(services|workflows|triggers)\//i, /SLACK_WEBHOOK_URL/, /TURNSTILE_SECRET_KEY/, /FORMSPREE_QUOTE_FORM_ID/];
@@ -38,7 +47,62 @@ const SECRET_MARKERS = [/hooks\.slack\.com\/(services|workflows|triggers)\//i, /
 // Any other form ID in dist/ is the quote form's secret ID leaking. When the ID is in the
 // environment (FORMSPREE_QUOTE_FORM_ID, read with a hidden prompt), its exact value is scanned for too.
 const FORMSPREE_FORM = /formspree\.io\/f\/([A-Za-z0-9]+)/gi;
-const TEXT_EXT = /\.(html|css|js|svg|xml|txt|webmanifest)$|^_headers$/i;
+const TEXT_EXT = /\.(html|css|js|svg|xml|txt|webmanifest)$|^_headers$|^_redirects$/i;
+
+// The quote copy rules (Hargun, Nov 18 14:19; Jesse, Nov 18 14:17), checked on every page's visible
+// text and meta description. Pricing will become agentic, so nothing says who prices a quote.
+export const BANNED_COPY = [
+  // "within the hour" about a quote or a price (a case study's "book a hot shot within the hour" is service, not a quote)
+  [/\b(quotes?|quoted|pric\w*|reply|replies|respond\w*|back to you)\b[^.]{0,60}\bwithin the hour\b|\bwithin the hour\b[^.]{0,40}\b(quotes?|pric\w*)\b/i, '"within the hour" about a quote'],
+  [/business hours/i, '"business hours"'],
+  [/\bAI pricing\b|\bauto-?quote\b/i, 'a line about AI or automatic pricing'],
+  [/\b(a person|someone|a human|our (quoting )?desk|our team|the team|our people)\b[^.]{0,40}\bpric(e|es|ed|ing)\b/i, 'a line saying a person, our desk or our team prices it'],
+  [/\bpric(ed|es)\b[^.]{0,20}\bby (a person|a human|our (quoting )?desk|our team|someone)\b/i, 'a line saying a person, our desk or our team prices it'],
+  [/\bquoting desk\b/i, '"quoting desk"'],
+  [/chassis, fuel and the empty return/i, 'the all-in drayage line (Jesse: out for good)'],
+  [/real sailings and flights/i, '"priced from real sailings and flights" (unconfirmed)'],
+  [/freight-class quiz/i, '"no freight-class quiz" (unconfirmed)'],
+];
+export function checkCopy(rel, html) {
+  const visible = stripTags(html.replace(/<script\b[\s\S]*?<\/script\s*>/gi, ' ').replace(/<style\b[\s\S]*?<\/style\s*>/gi, ' '));
+  const meta = [...html.matchAll(/<meta\b[^>]*>/gi)].map((m) => attr(m[0], 'content') || '').join(' ');
+  const text = visible + ' ' + meta;
+  return BANNED_COPY.filter(([re]) => re.test(text)).map(([, what]) => `${rel}: breaks the quote copy rules: ${what}`);
+}
+
+// The same rules on a script's text, for copy that only exists in JavaScript (the quote page's
+// option explainers, the boxes' messages).
+export function checkScriptCopy(rel, js) {
+  return BANNED_COPY.filter(([re]) => re.test(js)).map(([, what]) => `${rel}: breaks the quote copy rules: ${what}`);
+}
+
+// The quote page: quote.js explains each option by id (COPY), and the page renders the options from
+// QUOTE_OPTIONS, the lists the Worker accepts. Every option needs an explainer and every explainer an option.
+export function checkQuoteExplainers(rel, js) {
+  const body = (js.match(/var COPY = \{([\s\S]*?)\n {2}\};/) || [])[1];
+  if (body === undefined) return [`${rel}: no COPY table of option explainers`];
+  const have = new Set([...body.matchAll(/^\s*(\w+): \{/gm)].map((m) => m[1]));
+  const want = new Set([...Object.keys(QUOTE_OPTIONS.pickup), ...Object.keys(QUOTE_OPTIONS.delivery)]);
+  return [
+    ...[...want].filter((id) => !have.has(id)).map((id) => `${rel}: the option ${id} in scripts/quote-fields.mjs has no explainer`),
+    ...[...have].filter((id) => !want.has(id)).map((id) => `${rel}: explains ${id}, which is not an option in scripts/quote-fields.mjs`),
+  ];
+}
+
+// The map's places: every city dot and state on the built map must be in scripts/map-places.mjs with
+// the same ZIP or abbreviation, and every listed place must be on the map.
+export function checkMapPlaces(rel, html) {
+  const problems = [];
+  const cities = [...html.matchAll(/<g\b[^>]*\sdata-city="([^"]*)"[^>]*>/g)].map((m) => [decode(m[1]), attr(m[0], 'data-zip')]);
+  const states = [...html.matchAll(/<path\b[^>]*\sdata-state="([^"]*)"[^>]*>/g)].map((m) => [decode(m[1]), attr(m[0], 'data-abbr')]);
+  if (!cities.length && !states.length) return problems;
+  for (const [name, zip] of cities) if (MAP_CITIES[name] !== zip) problems.push(`${rel}: map city ${name} (${zip}) is not in scripts/map-places.mjs with that ZIP`);
+  for (const [name, abbr] of states) if (MAP_STATES[name] !== abbr) problems.push(`${rel}: map state ${name} (${abbr}) is not in scripts/map-places.mjs`);
+  const onMapC = new Set(cities.map(([n]) => n)), onMapS = new Set(states.map(([n]) => n));
+  for (const n of Object.keys(MAP_CITIES)) if (!onMapC.has(n)) problems.push(`${rel}: scripts/map-places.mjs lists the city ${n}, which is not on the map`);
+  for (const n of Object.keys(MAP_STATES)) if (!onMapS.has(n)) problems.push(`${rel}: scripts/map-places.mjs lists the state ${n}, which is not on the map`);
+  return problems;
+}
 const LOGIN_WORDS = /\b(log\s*-?in|sign\s*-?in|logon|customer\s+portal)\b/i;
 const LOGIN_PATH = /\/(login|signin|sign-in|logon|auth)(\/|$|\?)/i;
 
@@ -183,6 +247,13 @@ export function checkDist(dist, { login = LOGIN, serveJson = join(dist, '..', 's
     try { expected = headersFile(JSON.parse(readFileSync(serveJson, 'utf8'))); } catch { /* serve.json problems are reported above */ }
     if (expected !== null && readFileSync(hf, 'utf8') !== expected) problems.push('_headers: differs from serve.json; run node scripts/build.mjs (never edit _headers by hand)');
   }
+  // _redirects: same-site 301s only, never to another host.
+  const rf = join(dist, '_redirects');
+  if (existsSync(rf)) {
+    for (const line of readFileSync(rf, 'utf8').split('\n').filter((l) => l.trim())) {
+      if (!REDIRECT_LINE.test(line) || line.includes('//')) problems.push(`_redirects: only "/from /to 301" lines on this site are allowed, found "${line.slice(0, 80)}"`);
+    }
+  }
   for (const f of files) {
     const rel = relative(dist, f).split(sep).join('/');
     if (!TEXT_EXT.test(rel.split('/').pop())) continue;
@@ -192,18 +263,29 @@ export function checkDist(dist, { login = LOGIN, serveJson = join(dist, '..', 's
     for (const m of text.matchAll(FORMSPREE_FORM)) if (m[1] !== allowed) problems.push(`${rel}: names a Formspree form other than the questionnaire's (the quote form ID is a Worker secret)`);
     const quoteId = formspreeQuoteId;
     if (quoteId && text.includes(quoteId)) problems.push(`${rel}: holds the value of FORMSPREE_QUOTE_FORM_ID`);
+    if (/^assets\/js\/[^/]+\.js$/.test(rel)) problems.push(...checkScriptCopy(rel, text));
+    if (rel === 'assets/js/quote.js') problems.push(...checkQuoteExplainers(rel, text));
   }
+
   let pages = 0;
   for (const f of files.filter((x) => x.endsWith('.html'))) {
     const rel = relative(dist, f).split(sep).join('/');
     pages++;
     const html = readFileSync(f, 'utf8');
     problems.push(...checkHtml(rel, html, scriptSrc, login).problems);
-    // Turnstile only where the quote box is, and wherever it is.
-    const hasBox = /\sdata-rate-box\b/.test(html);
+    problems.push(...checkCopy(rel, html));
+    problems.push(...checkMapPlaces(rel, html));
+    // Turnstile only where a quote form is (the box, the map's pick-a-lane or the quote page), and wherever one is.
+    const hasBox = /\s(?:data-rate-box|data-pick-card|data-quote)(?=[\s>])/.test(html);
+    if (/\sdata-quote(?=[\s>])/.test(html) && !html.includes('<script src="/assets/js/quote.js" defer>')) problems.push(`${rel}: holds the quote page form but does not load /assets/js/quote.js`);
     const turnstile = html.split(`src="${TURNSTILE_SCRIPT_URL}"`).length - 1;
-    if (hasBox && turnstile !== 1) problems.push(`${rel}: has the quote box but loads Turnstile ${turnstile} times (expected once)`);
-    if (!hasBox && turnstile) problems.push(`${rel}: loads Turnstile without the quote box`);
+    if (hasBox && turnstile !== 1) problems.push(`${rel}: has a quote form but loads Turnstile ${turnstile} times (expected once)`);
+    if (!hasBox && turnstile) problems.push(`${rel}: loads Turnstile without a quote form`);
+    // Every quote form posts to the Worker endpoint and nowhere else.
+    for (const m of html.matchAll(/<[a-z][^>]*\s(?:data-rate-box|data-pick-card|data-quote)(?=[\s>])[^>]*>/gi)) {
+      const ep = attr(m[0], 'data-rate-endpoint') ?? attr(m[0], 'data-pick-endpoint') ?? attr(m[0], 'data-quote-endpoint');
+      if (ep !== QUOTE_ENDPOINT) problems.push(`${rel}: a quote form posts to ${ep === null ? 'nothing' : ep}, not ${QUOTE_ENDPOINT}`);
+    }
   }
   if (pages === 0) problems.push('dist/ has no pages');
   return problems;

@@ -55,7 +55,8 @@
   <section class="container about-hero" aria-labelledby="page-title" data-reveal>
     <p class="eyebrow">How we work</p>
     <h1 id="page-title" class="h1 h1--vertical">We recommend. You approve. We execute.</h1>
-    <p class="lede">A boutique supply chain partner that runs the work for you and keeps every decision in your hands. Three promises, in every load.</p>
+    <p class="lede">A boutique supply chain partner that runs the work for you and keeps every decision in your hands. Three promises, in every load. A quote by email, and the software to watch every load after that, included.</p>
+    <div class="btn-row"><a class="btn btn--green" href="/#rate">Get an instant quote</a><a class="btn btn--secondary" href="/services/">What we take on</a></div>
   </section>
 
   <section class="section" aria-labelledby="promises-title">
@@ -110,21 +111,85 @@
     <p data-reveal>If we say we'll be on the call, we're on the call.</p>
   </section>
 
-  <section id="contact" class="cta" aria-labelledby="cta-title">
-    <div class="container cta__grid">
-      <div>
-        <h2 id="cta-title" class="cta__title">Tell us what's eating your week.</h2>
-        <p class="cta__lede">Fifteen minutes, no deck. We'll say what we'd take first.</p>
-        <p class="cta__direct"><a href="mailto:ops@valencesupplychain.com?subject=What's%20eating%20our%20week">ops@valencesupplychain.com</a><span aria-hidden="true"> · </span><a href="tel:+16282129947">(628) 212-9947</a></p>
+  <section id="contact" class="rate rate--close" aria-labelledby="cta-title">
+    <div class="container rate__inner">
+      <div class="rate__head" data-reveal>
+        <p class="eyebrow">Get a quote</p>
+        <h2 id="cta-title" class="h2">Get an instant quote</h2>
+        <p class="lede">Send your lane and get your quote. Want to add items, pickup and delivery options? <a href="/quote/">Use the full quote page</a>. Or tell us what's eating your week: <a href="/contact/" data-ask>Get in touch</a> · <a href="mailto:ops@valencesupplychain.com?subject=What's%20eating%20our%20week">ops@valencesupplychain.com</a> · <a href="tel:+16282129947">(628) 212-9947</a></p>
       </div>
-      <div class="cta__action"><a class="btn btn--paper" href="/contact/" data-ask>Get in touch</a></div>
+      <div class="rate__box" data-reveal data-rate-box data-rate-endpoint="/api/quote-request" data-rate-sitekey="0x4AAAAAAGHdx_jA0Lixlou7">
+        <div class="rate__tabs" role="tablist" aria-label="What are you shipping?">
+          <button type="button" class="rate__tab" role="tab" aria-selected="true" data-mode="truck">LTL · FTL · Cargo van · Box truck</button>
+          <button type="button" class="rate__tab" role="tab" aria-selected="false" data-mode="intl">International ocean and air</button>
+          <button type="button" class="rate__tab" role="tab" aria-selected="false" data-mode="dray">Drayage</button>
+          <button type="button" class="rate__tab" role="tab" aria-selected="false" data-mode="parcel">Parcel</button>
+        </div>
+        <div class="rate__step" data-rate-step="1">
+          <div class="rate__row" data-for="truck">
+            <label class="rate__field"><span>From</span><input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="5" autocomplete="postal-code" placeholder="ZIP code" data-rate="from"></label>
+            <span class="rate__arrow" aria-hidden="true">→</span>
+            <label class="rate__field"><span>To</span><input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="ZIP code" data-rate="to"></label>
+            <button type="button" class="btn btn--green rate__go" data-rate-next>Get your rate</button>
+          </div>
+          <div class="rate__row" data-for="intl" hidden>
+            <label class="rate__field"><span>From</span><input type="text" maxlength="120" placeholder="Port, airport, city or ZIP" data-rate="from"></label>
+            <span class="rate__arrow" aria-hidden="true">→</span>
+            <label class="rate__field"><span>To</span><input type="text" maxlength="120" placeholder="Port, airport, city or ZIP" data-rate="to"></label>
+            <button type="button" class="btn btn--green rate__go" data-rate-next>Get your rate</button>
+          </div>
+          <div class="rate__row rate__row--dray" data-for="dray" hidden>
+            <label class="rate__field"><span>From</span><select data-rate="from"><option value="">Port or ramp</option><option>Port of Los Angeles</option><option>Port of Long Beach</option><option>Port of Oakland</option><option>Port of Seattle / Tacoma</option><option>Port of Houston</option><option>Port of Savannah</option><option>Port of New York / New Jersey</option><option>Port of Vancouver</option><option>Rail ramp (tell us which)</option></select></label>
+            <label class="rate__field"><span>To</span><input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="Door ZIP" data-rate="to"></label>
+            <div class="rate__field"><span id="close-container-label">Container</span><div class="rate__seg" role="group" aria-labelledby="close-container-label"><button type="button" class="rate__segbtn" data-seg="container" data-val="20 ft" aria-pressed="false">20 ft</button><button type="button" class="rate__segbtn is-on" data-seg="container" data-val="40 ft" aria-pressed="true">40 ft</button><button type="button" class="rate__segbtn" data-seg="container" data-val="45 ft" aria-pressed="false">45 ft</button></div><input type="hidden" data-rate="container" value="40 ft"></div>
+            <button type="button" class="btn btn--green rate__go" data-rate-next>Get your rate</button>
+          </div>
+          <div class="rate__row rate__row--parcel" data-for="parcel" hidden>
+            <label class="rate__field"><span>From</span><input type="text" maxlength="200" autocomplete="street-address" placeholder="Street address" data-rate="from"></label>
+            <label class="rate__field"><span>To</span><input type="text" maxlength="200" placeholder="Street address" data-rate="to"></label>
+            <label class="rate__field rate__field--sm"><span>Weight</span><input type="text" inputmode="decimal" maxlength="9" placeholder="lb" data-rate="weight"></label>
+            <label class="rate__field rate__field--sm"><span>Box size</span><input type="text" maxlength="40" placeholder="L × W × H in" data-rate="box"></label>
+            <button type="button" class="btn btn--green rate__go" data-rate-next>Get your rate</button>
+          </div>
+          <p class="rate__fine rate__fine--under" data-fine="truck">No account needed.</p>
+          <p class="rate__fine rate__fine--under" data-fine="intl" hidden>Ocean (FCL and LCL) and air, into or out of the US and Canada.</p>
+          <p class="rate__fine rate__fine--under" data-fine="dray" hidden>Port or ramp to door. Accessorials may apply.</p>
+          <p class="rate__fine rate__fine--under" data-fine="parcel" hidden>Boxes, not pallets. We reply with the best carrier option for the lane and the service you need.</p>
+          <p class="rate__error" data-rate-error role="alert" hidden></p>
+        </div>
+        <div class="rate__step" data-rate-step="2" hidden>
+          <p class="rate__lane"><span data-rate-lane></span> <button type="button" class="rate__edit" data-rate-back>Change</button></p>
+          <div class="rate__grid">
+            <label class="rate__field" data-for="truck"><span>Equipment</span><select data-rate="equipment"><option value="">Choose</option><option>Full truckload · dry van</option><option>Full truckload · reefer</option><option>Full truckload · flatbed</option><option>LTL</option><option>Cargo van</option><option>Box truck</option></select></label>
+            <label class="rate__field" data-for="intl" hidden><span>Mode</span><select data-rate="intlmode"><option value="">Choose</option><option>Ocean · full container (FCL)</option><option>Ocean · less than container (LCL)</option><option>Air</option><option>Not sure, advise me</option></select></label>
+            <label class="rate__field" data-for="dray" hidden><span>Container number or booking <em>optional</em></span><input type="text" maxlength="20" placeholder="MSCU1234567" data-rate="containerno"></label>
+            <label class="rate__field"><span data-label-date>Pickup date</span><input type="date" data-rate="date"></label>
+            <label class="rate__field" data-for="truck intl dray"><span>Approximate weight (lb)</span><input type="text" inputmode="numeric" maxlength="9" placeholder="42,000" data-rate="weight2"></label>
+            <label class="rate__field"><span>Commodity <em>optional</em></span><input type="text" maxlength="120" placeholder="Canned beverages, palletized" data-rate="commodity"></label>
+            <label class="rate__field"><span>Your name</span><input type="text" maxlength="100" autocomplete="name" data-rate="name"></label>
+            <label class="rate__field"><span>Company</span><input type="text" maxlength="120" autocomplete="organization" data-rate="company"></label>
+            <label class="rate__field"><span>Work email</span><input type="email" maxlength="254" autocomplete="email" data-rate="email"></label>
+            <label class="rate__field"><span>Phone <em>optional</em></span><input type="tel" maxlength="40" autocomplete="tel" data-rate="phone"></label>
+            <label class="rate__field rate__field--wide"><span>Anything we should know <em>optional</em></span><textarea rows="2" maxlength="1000" placeholder="Appointment needed at delivery, liftgate, hazmat, multiple stops…" data-rate="note"></textarea></label>
+            <label class="rate__hp" aria-hidden="true">Leave this empty<input type="text" tabindex="-1" autocomplete="off" data-rate="website"></label>
+          </div>
+          <div class="rate__check" data-rate-turnstile></div>
+          <p class="rate__error" data-rate-error2 role="alert" hidden></p>
+          <div class="rate__actions"><button type="button" class="btn btn--green" data-rate-submit>Get my quote</button><span class="rate__fine">We reply by email. No price is shown on this page.</span></div>
+        </div>
+        <div class="rate__step rate__step--done" data-rate-step="3" hidden tabindex="-1">
+          <h3 class="rate__done">We have your request.</h3>
+          <p class="lede">Your quote is on its way to your inbox. If it can't wait, call <a href="tel:+16282129947">(628) 212-9947</a>.</p>
+        </div>
+        <noscript><p class="rate__fine">The quote box needs JavaScript. Turn it on to get your quote, or call <a href="tel:+16282129947">(628) 212-9947</a>.</p></noscript>
+      </div>
     </div>
   </section>
 </main>
 
 <footer class="site-footer site-footer--light">
     <div class="container site-footer__grid">
-      <div class="site-footer__col"><span class="site-footer__label">Industries</span><a href="/food-and-beverage/">Food and beverage</a><a href="/space/">Space and aerospace</a><a href="/data-centers-and-construction/">Data centers and construction</a></div>
+      <div class="site-footer__col"><span class="site-footer__label">Industries</span><a href="/cpg/">CPG</a><a href="/space/">Space and aerospace</a><a href="/data-centers-and-construction/">Data centers and construction</a></div>
       <div class="site-footer__col"><span class="site-footer__label">Company</span><a href="/services/">Services</a><a href="/how-we-work/">How we work</a><a href="/case-studies/">Case studies</a><a href="/about/">About</a></div>
       <div class="site-footer__col"><span class="site-footer__label">Contact</span><a href="/contact/">Talk to us</a><a href="mailto:ops@valencesupplychain.com">ops@valencesupplychain.com</a><a href="tel:+16282129947">(628) 212-9947</a></div>
       <div class="site-footer__col"><span class="site-footer__label">Legal</span><a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a><a href="/sms-terms" target="_blank" rel="noopener">SMS Terms</a></div>
@@ -224,5 +289,7 @@
   </dialog>
   <script src="/assets/js/site.js" defer></script>
   <script src="/assets/js/ask.js" defer></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
+  <script src="/assets/js/rate.js" defer></script>
 </body>
 </html>

@@ -15,11 +15,14 @@
 // and may use these directives anywhere in its body:
 //   <!-- @header -->                       sticky site header
 //   <!-- @footer -->                       site footer ("dark" or "light", from the page JSON)
-//   <!-- @cta label="Get in touch" -->   green closing section
+//   <!-- @cta label="Get in touch" -->   closing band: "Get an instant quote" with the quote box, plus the contact links
 //   <!-- @mark variant="light" size="36" label="Valence" -->   the V mark
 //   <!-- @img name="heroes/space" ratio="4/5" alt="…" label="photo: …" sizes="…" -->
 //   <!-- @proof -->                        the logo carousel
-//   <!-- @rate -->                         the "Get your rate" quote box (adds Turnstile and rate.js to the page)
+//   <!-- @rate -->                         the "Get an instant quote" section with the quote box (adds Turnstile and rate.js)
+//   <!-- @rate box="1" -->                 the quote box alone, inside a section the page writes (the homepage)
+//   <!-- @pick -->                         the homepage map's pick-a-lane card (posts to the same endpoint)
+//   <!-- @quote -->                        the quote page's form: lane, date, items, options, contact (adds Turnstile; the page lists quote.js)
 // An @img renders a <picture> when assets/img/<name>-{800,1600}.{jpg,webp} exist,
 // and a sized placeholder otherwise, so a missing photo never breaks the layout.
 
@@ -28,7 +31,7 @@ import { createHash } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SITE, LEAD_ENDPOINT, CSP_BASE, SECURITY_HEADERS, ASSET_CACHE, GA_ID, GA_TAG_URL, CLARITY_TAG_URL, SCRIPT_HOSTS, TURNSTILE_SITE_KEY, TURNSTILE_SCRIPT_URL } from './config.mjs';
-import { QUOTE_ENDPOINT, MODES, EQUIPMENT, INTL_MODES, PORTS, CONTAINERS, MAX } from './quote-fields.mjs';
+import { QUOTE_ENDPOINT, MODES, MAP_MODES, EQUIPMENT, INTL_MODES, PORTS, CONTAINERS, MAX, ITEM_TYPES, ITEM_LIMITS, QUOTE_OPTIONS, QUOTE_OPTIONS_SHOWN } from './quote-fields.mjs';
 import { headersFile } from './headers.mjs';
 import { checkDist, sha256 } from './check.mjs';
 
@@ -98,15 +101,17 @@ function header(page) {
   </header>`;
 }
 
+/* The closing band on every page that has @cta: the quote box, and the other ways to reach us.
+   The links here are for talking to us; quote requests only ever go through the box. */
 function cta({ label = 'Get in touch' } = {}) {
-  return `<section id="contact" class="cta" aria-labelledby="cta-title">
-    <div class="container cta__grid">
-      <div>
-        <h2 id="cta-title" class="cta__title">Tell us what's eating your week.</h2>
-        <p class="cta__lede">Fifteen minutes, no deck. We'll say what we'd take first.</p>
-        <p class="cta__direct"><a href="${MAILTO}">${EMAIL}</a><span aria-hidden="true"> · </span><a href="tel:${PHONE_TEL}">${PHONE}</a></p>
+  return `<section id="contact" class="rate rate--close" aria-labelledby="cta-title">
+    <div class="container rate__inner">
+      <div class="rate__head" data-reveal>
+        <p class="eyebrow">Get a quote</p>
+        <h2 id="cta-title" class="h2">Get an instant quote</h2>
+        <p class="lede">Send your lane and get your quote. Want to add items, pickup and delivery options? <a href="/quote/">Use the full quote page</a>. Or tell us what's eating your week: <a href="/contact/" data-ask>${esc(label)}</a> · <a href="${MAILTO}">${EMAIL}</a> · <a href="tel:${PHONE_TEL}">${PHONE}</a></p>
       </div>
-      <div class="cta__action"><a class="btn btn--paper" href="/contact/" data-ask>${esc(label)}</a></div>
+${rateBox('close')}
     </div>
   </section>`;
 }
@@ -210,23 +215,29 @@ function askModal() {
   </dialog>`;
 }
 
-/* "Get your rate" (lane 16). No <form>: assets/js/rate.js posts JSON to QUOTE_ENDPOINT, the
+/* "Get an instant quote" (lane 16). No <form>: assets/js/rate.js posts JSON to QUOTE_ENDPOINT, the
    Cloudflare Worker in worker/quote.mjs, with a Turnstile token. The lists and length caps come from
    scripts/quote-fields.mjs, the same file the Worker validates against. Nothing on the page ever
-   shows a price. */
-function rateBox() {
-  const opts = (list, first) => (first ? `<option value="">${esc(first)}</option>` : '') + list.map((v) => `<option>${esc(v)}</option>`).join('');
-  const go = '<button type="button" class="btn btn--green rate__go" data-rate-next>Get your rate</button>';
-  const zip = (key, ph, ac = '') => `<input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="${MAX.zip}"${ac} placeholder="${ph}" data-rate="${key}">`;
-  const tab = (mode, on) => `<button type="button" class="rate__tab" role="tab" aria-selected="${on}" data-mode="${mode}">${esc(MODES[mode])}</button>`;
-  const seg = CONTAINERS.map((c) => `<button type="button" class="rate__segbtn${c === '40 ft' ? ' is-on' : ''}" data-seg="container" data-val="${esc(c)}" aria-pressed="${c === '40 ft'}">${esc(c)}</button>`).join('');
+   shows a price. A page can hold more than one box (the homepage: the top and the closing band),
+   so every id in a box carries its prefix. */
+function rateSection() {
   return `<section class="rate" id="rate" aria-labelledby="rate-title">
     <div class="container rate__inner">
       <div class="rate__head" data-reveal>
         <h2 id="rate-title" class="h2">Get an instant quote</h2>
         <p class="lede">Send your lane and get your quote.</p>
       </div>
-      <div class="rate__box" data-reveal data-rate-box data-rate-endpoint="${esc(QUOTE_ENDPOINT)}" data-rate-sitekey="${esc(TURNSTILE_SITE_KEY)}">
+${rateBox('rate')}
+    </div>
+  </section>`;
+}
+function rateBox(prefix) {
+  const opts = (list, first) => (first ? `<option value="">${esc(first)}</option>` : '') + list.map((v) => `<option>${esc(v)}</option>`).join('');
+  const go = '<button type="button" class="btn btn--green rate__go" data-rate-next>Get your rate</button>';
+  const zip = (key, ph, ac = '') => `<input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="${MAX.zip}"${ac} placeholder="${ph}" data-rate="${key}">`;
+  const tab = (mode, on) => `<button type="button" class="rate__tab" role="tab" aria-selected="${on}" data-mode="${mode}">${esc(MODES[mode])}</button>`;
+  const seg = CONTAINERS.map((c) => `<button type="button" class="rate__segbtn${c === '40 ft' ? ' is-on' : ''}" data-seg="container" data-val="${esc(c)}" aria-pressed="${c === '40 ft'}">${esc(c)}</button>`).join('');
+  return `      <div class="rate__box" data-reveal data-rate-box data-rate-endpoint="${esc(QUOTE_ENDPOINT)}" data-rate-sitekey="${esc(TURNSTILE_SITE_KEY)}">
         <div class="rate__tabs" role="tablist" aria-label="What are you shipping?">
           ${tab('truck', true)}
           ${tab('intl', false)}
@@ -249,7 +260,7 @@ function rateBox() {
           <div class="rate__row rate__row--dray" data-for="dray" hidden>
             <label class="rate__field"><span>From</span><select data-rate="from">${opts(PORTS, 'Port or ramp')}</select></label>
             <label class="rate__field"><span>To</span>${zip('to', 'Door ZIP')}</label>
-            <div class="rate__field"><span id="rate-container-label">Container</span><div class="rate__seg" role="group" aria-labelledby="rate-container-label">${seg}</div><input type="hidden" data-rate="container" value="40 ft"></div>
+            <div class="rate__field"><span id="${prefix}-container-label">Container</span><div class="rate__seg" role="group" aria-labelledby="${prefix}-container-label">${seg}</div><input type="hidden" data-rate="container" value="40 ft"></div>
             ${go}
           </div>
           <div class="rate__row rate__row--parcel" data-for="parcel" hidden>
@@ -290,16 +301,139 @@ function rateBox() {
           <p class="lede">Your quote is on its way to your inbox. If it can't wait, call <a href="tel:${PHONE_TEL}">${PHONE}</a>.</p>
         </div>
         <noscript><p class="rate__fine">The quote box needs JavaScript. Turn it on to get your quote, or call <a href="tel:${PHONE_TEL}">${PHONE}</a>.</p></noscript>
+      </div>`;
+}
+
+/* The homepage map's pick-a-lane (lane 16): click a city or a state for FROM, another for TO, pick the
+   mode and give an email. assets/js/net.js posts it to QUOTE_ENDPOINT as kind "map", with a Turnstile
+   token; the Worker accepts only the places in scripts/map-places.mjs and the lists in quote-fields.mjs. */
+function pickCard() {
+  const opts = (list, first) => (first ? `<option value="">${esc(first)}</option>` : '') + list.map((v) => `<option>${esc(v)}</option>`).join('');
+  const modes = Object.entries(MAP_MODES).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join('');
+  const seg = CONTAINERS.map((c) => `<button type="button" class="rate__segbtn${c === '40 ft' ? ' is-on' : ''}" data-pick-seg="${esc(c)}" aria-pressed="${c === '40 ft'}">${esc(c)}</button>`).join('');
+  return `<div class="net__pick" data-pick-card data-pick-endpoint="${esc(QUOTE_ENDPOINT)}" data-pick-sitekey="${esc(TURNSTILE_SITE_KEY)}">
+        <p class="rate__way rate__way--map"><span class="rate__way-n">02</span>Or click it on the map</p>
+        <p class="net__pick-hint" data-pick-hint>Click where it ships from, then where it goes. A city or a whole state.</p>
+        <div class="net__pick-lane" data-pick-lane-text hidden><span><small>From</small><b data-pick-from></b></span><span class="net__pick-arrow">→</span><span><small>To</small><b data-pick-to></b></span></div>
+        <div class="net__pick-form" data-pick-form hidden>
+          <select data-pick-mode aria-label="Mode">${modes}</select>
+          <select data-pick-extra="truck" data-pick-equipment aria-label="Equipment">${opts(EQUIPMENT, 'Equipment (optional)')}</select>
+          <select data-pick-extra="dray" data-pick-port aria-label="Port or ramp" hidden>${opts(PORTS, 'Port or ramp')}</select>
+          <div class="rate__seg rate__seg--pick" data-pick-extra="dray" role="group" aria-label="Container size" hidden>${seg}</div>
+          <select data-pick-extra="intl" data-pick-intl aria-label="Ocean or air" hidden>${opts(INTL_MODES, 'Ocean or air?')}</select>
+          <div class="net__pick-row" data-pick-extra="parcel" hidden><input type="text" inputmode="decimal" maxlength="${MAX.weight}" placeholder="Weight (lb)" aria-label="Weight in pounds" data-pick-weight><input type="text" maxlength="${MAX.box}" placeholder="L × W × H in" aria-label="Box size" data-pick-box></div>
+          <input type="email" autocomplete="email" maxlength="${MAX.email}" placeholder="Work email" aria-label="Work email" data-pick-email>
+          <label class="rate__hp" aria-hidden="true">Leave this empty<input type="text" tabindex="-1" autocomplete="off" data-pick-website></label>
+          <div class="rate__check" data-pick-turnstile></div>
+          <button type="button" class="btn btn--green" data-pick-send>Get my quote</button>
+          <p class="net__pick-fine">We'll email your quote. <button type="button" class="rate__edit" data-pick-details>Add items and options first</button></p>
+          <p class="rate__error" data-pick-error role="alert" hidden></p>
+        </div>
+        <p class="net__pick-done" data-pick-done hidden tabindex="-1"><b>We have your request.</b> Your quote is on its way to your inbox. If it can't wait, call <a href="tel:${PHONE_TEL}">${PHONE}</a>.</p>
+        <button type="button" class="net__pick-reset" data-pick-reset hidden>Start over</button>
+        <noscript><p class="net__pick-fine">The map needs JavaScript. Type your lane in the box above, or call <a href="tel:${PHONE_TEL}">${PHONE}</a>.</p></noscript>
+      </div>`;
+}
+
+/* The quote page's form (/quote/). No <form>: assets/js/quote.js posts JSON to QUOTE_ENDPOINT as kind
+   "quote_page", with a Turnstile token. The item types, the option buttons and every maxlength come
+   from scripts/quote-fields.mjs, the lists the Worker validates against; quote.js adds each option's
+   explainer by id. Nothing on the page ever shows a price. */
+function quoteForm() {
+  const zip = (key, ac = '') => `<input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="${MAX.zip}"${ac} placeholder="ZIP code" data-q="${key}">`;
+  // maxlength fits the cap with its thousands comma (50,000)
+  const num = (key, label, max, ph) => `<label><span class="sr-only">${label}</span><input type="text" inputmode="numeric" maxlength="${max.toLocaleString('en-US').length}" placeholder="${ph}" data-i="${key}"></label>`;
+  const group = (kind) => Object.entries(QUOTE_OPTIONS[kind]).map(([id, title], i) => `<div class="qopt${i >= QUOTE_OPTIONS_SHOWN ? ' qopt--more' : ''}" data-opt="${id}"><button type="button" class="qopt__pick" data-opt-pick="${id}" aria-pressed="false"><span class="qopt__plus" aria-hidden="true"></span>${esc(title)}</button><button type="button" class="qi" data-opt-info="${id}" aria-haspopup="dialog" aria-label="What is ${esc(title)}?">i</button></div>`).join('\n            ');
+  return `<div class="qform" data-quote data-quote-endpoint="${esc(QUOTE_ENDPOINT)}" data-quote-sitekey="${esc(TURNSTILE_SITE_KEY)}">
+      <div class="qform__step" data-qstep="1">
+
+        <div class="qblock">
+          <div class="qlane">
+            <label class="qfield"><span>From</span>${zip('from', ' autocomplete="postal-code"')}<small data-q-place="from"></small></label>
+            <span class="qlane__arrow" aria-hidden="true">→</span>
+            <label class="qfield"><span>To</span>${zip('to')}<small data-q-place="to"></small></label>
+          </div>
+          <p class="qnote" data-q-mapnote hidden></p>
+          <p class="qpromise"><span class="qpromise__dot" aria-hidden="true"></span>Tell us the freight once. Your quote shows the ways it can move on this lane, so you choose on cost and timing.</p>
+        </div>
+
+        <div class="qblock">
+          <label class="qfield qfield--date"><span>Pickup date</span><input type="date" data-q="date"></label>
+        </div>
+
+        <div class="qblock">
+          <p class="qblock__title">Items</p>
+          <div class="qitems" data-q-items data-q-max="${ITEM_LIMITS.items}">
+            <div class="qitems__head" aria-hidden="true"><span>Type</span><span>Qty</span><span>Lbs each</span><span>L</span><span>W</span><span>H</span><span></span></div>
+          </div>
+          <template data-q-itemrow>
+            <div class="qitem">
+              <label><span class="sr-only">Type</span><select data-i="type">${ITEM_TYPES.map((t) => `<option>${esc(t)}</option>`).join('')}</select></label>
+              ${num('qty', 'Quantity', ITEM_LIMITS.qty, '1')}
+              ${num('lbs', 'Pounds each', ITEM_LIMITS.lbs, '500')}
+              ${num('l', 'Length in inches', ITEM_LIMITS.dim, '48')}
+              ${num('w', 'Width in inches', ITEM_LIMITS.dim, '40')}
+              ${num('h', 'Height in inches', ITEM_LIMITS.dim, '48')}
+              <button type="button" class="qitem__x" data-i-remove aria-label="Remove item">×</button>
+            </div>
+          </template>
+          <div class="qitems__foot">
+            <button type="button" class="qlink" data-q-additem>+ Add item</button>
+            <span class="qitems__total" data-q-total aria-live="polite">0 items · 0 lbs total</span>
+          </div>
+          <p class="qnote">Dimensions in inches. If you do not know the exact numbers, close is fine; we confirm before booking. Up to ${ITEM_LIMITS.items} lines.</p>
+        </div>
+
+        <div class="qblock">
+          <p class="qblock__title" id="q-pickup-title">Pickup options</p>
+          <div class="qopts" data-q-opts="pickup" role="group" aria-labelledby="q-pickup-title">
+            ${group('pickup')}
+          </div>
+          <button type="button" class="qmore" data-q-more="pickup" aria-expanded="false">Show all pickup options</button>
+        </div>
+
+        <div class="qblock">
+          <p class="qblock__title" id="q-delivery-title">Delivery options</p>
+          <div class="qopts" data-q-opts="delivery" role="group" aria-labelledby="q-delivery-title">
+            ${group('delivery')}
+          </div>
+          <button type="button" class="qmore" data-q-more="delivery" aria-expanded="false">Show all delivery options</button>
+        </div>
+
+        <div class="qblock">
+          <p class="qblock__title">Where to send the quote</p>
+          <div class="qgrid">
+            <label class="qfield"><span>Your name</span><input type="text" maxlength="${MAX.name}" autocomplete="name" data-q="name"></label>
+            <label class="qfield"><span>Company</span><input type="text" maxlength="${MAX.company}" autocomplete="organization" data-q="company"></label>
+            <label class="qfield"><span>Work email</span><input type="email" maxlength="${MAX.email}" autocomplete="email" data-q="email"></label>
+            <label class="qfield"><span>Phone <em>optional</em></span><input type="tel" maxlength="${MAX.phone}" autocomplete="tel" data-q="phone"></label>
+            <label class="qfield qfield--wide"><span>Commodity and anything we should know <em>optional</em></span><textarea rows="2" maxlength="${MAX.note}" placeholder="Canned beverages, palletized. Receiver needs an appointment." data-q="note"></textarea></label>
+            <label class="rate__hp" aria-hidden="true">Leave this empty<input type="text" tabindex="-1" autocomplete="off" data-q="website"></label>
+          </div>
+        </div>
+
+        <div class="rate__check" data-q-turnstile></div>
+        <p class="rate__error" data-q-error role="alert" hidden></p>
+        <div class="qsubmit">
+          <button type="button" class="btn btn--green qsubmit__btn" data-q-submit>Get my quote</button>
+          <p class="qsubmit__fine">Nothing is booked from this page, and no price is shown here. We'll email your quote.</p>
+        </div>
       </div>
-    </div>
-  </section>`;
+
+      <div class="qform__step qform__done" data-qstep="2" hidden tabindex="-1">
+        <h2 class="h2">We have your request.</h2>
+        <p class="lede">Your quote is on its way to your inbox. If it can't wait, call <a href="tel:${PHONE_TEL}">${PHONE}</a>.</p>
+        <p class="qsummary" data-q-summary></p>
+      </div>
+      <noscript><p class="qsubmit__fine">This page needs JavaScript. Turn it on to send your request, or call <a href="tel:${PHONE_TEL}">${PHONE}</a>.</p></noscript>
+    </div>`;
 }
 
 function footer(page) {
   const variant = page.footer === 'light' ? 'light' : 'dark';
   return `<footer class="site-footer site-footer--${variant}">
     <div class="container site-footer__grid">
-      <div class="site-footer__col"><span class="site-footer__label">Industries</span><a href="/food-and-beverage/">Food and beverage</a><a href="/space/">Space and aerospace</a><a href="/data-centers-and-construction/">Data centers and construction</a></div>
+      <div class="site-footer__col"><span class="site-footer__label">Industries</span><a href="/cpg/">CPG</a><a href="/space/">Space and aerospace</a><a href="/data-centers-and-construction/">Data centers and construction</a></div>
       <div class="site-footer__col"><span class="site-footer__label">Company</span><a href="/services/">Services</a><a href="/how-we-work/">How we work</a><a href="/case-studies/">Case studies</a><a href="/about/">About</a></div>
       <div class="site-footer__col"><span class="site-footer__label">Contact</span><a href="/contact/">Talk to us</a><a href="mailto:${EMAIL}">${EMAIL}</a><a href="tel:${PHONE_TEL}">${PHONE}</a></div>
       <div class="site-footer__col"><span class="site-footer__label">Legal</span><a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a><a href="/sms-terms" target="_blank" rel="noopener">SMS Terms</a></div>
@@ -458,6 +592,7 @@ function head(page, body = '') {
 const pagesDir = join(ROOT, 'src/pages');
 const built = [];
 const pageHashes = {};
+const redirects = [];   // [from, to] for pages that moved
 rmSync(DIST, { recursive: true, force: true });
 mkdirSync(DIST, { recursive: true });
 for (const file of readdirSync(pagesDir).filter((f) => f.endsWith('.html')).sort()) {
@@ -465,22 +600,28 @@ for (const file of readdirSync(pagesDir).filter((f) => f.endsWith('.html')).sort
   const m = src.match(/^<!--(\{[\s\S]*?\})-->\s*/);
   if (!m) throw new Error(`${file}: missing JSON header comment`);
   const page = JSON.parse(m[1]);
-  let hasRate = false;
+  if (page.redirect) {
+    const from = '/' + page.out.replace(/index\.html$/, '');
+    redirects.push([from, page.redirect], [from.replace(/\/$/, ''), page.redirect]);
+  }
+  let hasRate = false, hasQuote = false;
   let body = src.slice(m[0].length).replace(/<!--\s*@(\w+)([^>]*?)-->/g, (_, name, rest) => {
     const a = attrs(rest);
     switch (name) {
       case 'header': return header(page);
       case 'footer': return footer(page);
-      case 'cta': return cta(a);
+      case 'cta': hasRate = true; return cta(a);
       case 'ask': return `<div class="ask ask--inline" id="ask-inline" data-ask-endpoint="${esc(LEAD_ENDPOINT)}">${askBody(true)}</div>`;
       case 'mark': return mark(a);
       case 'img': return img(a);
       case 'proof': return proof();
-      case 'rate': hasRate = true; return rateBox();
+      case 'rate': hasRate = true; return a.box ? rateBox('rate') : rateSection();
+      case 'pick': hasRate = true; return pickCard();
+      case 'quote': hasQuote = true; return quoteForm();
       default: throw new Error(`${file}: unknown directive @${name}`);
     }
   });
-  const rateScripts = hasRate ? [TURNSTILE_SCRIPT_URL, '/assets/js/rate.js'] : [];
+  const rateScripts = [...(hasRate || hasQuote ? [TURNSTILE_SCRIPT_URL] : []), ...(hasRate ? ['/assets/js/rate.js'] : [])];
   const scripts = ['/assets/js/site.js', '/assets/js/ask.js', ...rateScripts, ...(page.scripts || [])].map((s) => `  <script src="${s}" defer></script>`).join('\n');
   const html = `${head(page, body)}\n<body class="${page.bodyClass || ''}">\n  <a class="skip-link" href="#main">Skip to content</a>\n${body.trim()}\n${askModal()}\n${scripts}\n</body>\n</html>\n`;
   const out = join(DIST, page.out);
@@ -544,9 +685,14 @@ const serveJson = {
 writeFileSync(join(ROOT, 'serve.json'), JSON.stringify(serveJson, null, 2) + '\n');
 // The same rules for Cloudflare (lane 16), inside dist/ where its static assets read them.
 writeFileSync(join(DIST, '_headers'), headersFile(serveJson));
+// Cloudflare redirects, read by the Worker's static assets: a page whose JSON names "redirect" is a
+// "moved" page (kept for `npm start`), and Cloudflare answers it with a 301 instead. check.mjs allows
+// only same-site 301s here.
+writeFileSync(join(DIST, '_redirects'), redirects.map(([from, to]) => `${from} ${to} 301`).join('\n') + '\n');
 
 // sitemap from the pages that were built
-const listed = built.filter((o) => o !== '404.html').sort((a, b) => (a === 'index.html' ? -1 : b === 'index.html' ? 1 : a.localeCompare(b)));
+const moved = new Set(redirects.map(([from]) => from.replace(/^\//, '') + (from.endsWith('/') ? 'index.html' : '')));
+const listed = built.filter((o) => o !== '404.html' && !moved.has(o)).sort((a, b) => (a === 'index.html' ? -1 : b === 'index.html' ? 1 : a.localeCompare(b)));
 writeFileSync(join(DIST, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${listed.map((o) => `  <url><loc>${SITE}/${o.replace(/index\.html$/, '').replace(/\.html$/, '')}</loc><lastmod>${lastmod[o].lastmod}</lastmod></url>`).join('\n')}
