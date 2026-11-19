@@ -9,7 +9,8 @@ import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkDist, checkLoginConstant } from '../scripts/check.mjs';
 import { LOGIN, GA_ID, GA_TAG_URL, SCRIPT_HOSTS, CLARITY_ID, CLARITY_TAG_URL, TURNSTILE_ORIGIN, TURNSTILE_SCRIPT_URL, TURNSTILE_SITE_KEY, LEAD_ENDPOINT } from '../scripts/config.mjs';
-import { QUOTE_ENDPOINT } from '../scripts/quote-fields.mjs';
+import { QUOTE_ENDPOINT, MAP_MODES, PORTS, EQUIPMENT, ITEM_TYPES, ITEM_LIMITS, QUOTE_OPTIONS, QUOTE_OPTIONS_SHOWN, MAX } from '../scripts/quote-fields.mjs';
+import { MAP_CITIES, MAP_STATES } from '../scripts/map-places.mjs';
 import { headersFile } from '../scripts/headers.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -383,28 +384,49 @@ test('the quote form ID never reaches dist/: any Formspree form but the question
   assert.ok(LEAD_ENDPOINT.startsWith('https://formspree.io/f/'), 'the questionnaire keeps its own form');
 });
 
-test('Turnstile loads once on each page with the quote box, and on no other page', () => {
+test('Turnstile loads once on each page with a quote form, and on no other page', () => {
   withCopy((dist) => {
     editPage(dist, 'index.html', (h) => h.replace(`<script src="${TURNSTILE_SCRIPT_URL}" defer></script>`, ''));
-    expectProblem(checkDist(dist), /index\.html: has the quote box but loads Turnstile 0 times/);
+    expectProblem(checkDist(dist), /index\.html: has a quote form but loads Turnstile 0 times/);
   });
   withCopy((dist) => {
-    editPage(dist, 'about/index.html', (h) => h.replace('</main>', `<script src="${TURNSTILE_SCRIPT_URL}" defer></script></main>`));
-    expectProblem(checkDist(dist), /about\/index\.html: loads Turnstile without the quote box/);
+    editPage(dist, 'sms-terms.html', (h) => h.replace('</main>', `<script src="${TURNSTILE_SCRIPT_URL}" defer></script></main>`));
+    expectProblem(checkDist(dist), /sms-terms\.html: loads Turnstile without a quote form/);
   });
 });
 
-test('home and contact each hold one quote box: no <form>, the Worker endpoint, the site key, a honeypot, the approved copy, and never a price', () => {
-  for (const rel of ['index.html', 'contact/index.html']) {
+// Every box on a page: from its opening tag to the end of its no-JavaScript line.
+const boxesOf = (html) => html.split(/(?=<div class="rate__box"[^>]*data-rate-box)/).slice(1).map((s) => s.slice(0, s.indexOf('</noscript>') + 11));
+const pickOf = (html) => { const i = html.indexOf('data-pick-card'); return i < 0 ? '' : html.slice(i, html.indexOf('</noscript>', i) + 11); };
+const builtPages = () => readdirSync(join(ROOT, 'dist'), { recursive: true }).map(String).filter((f) => f.endsWith('.html'));
+
+test('the closing band carries the quote box on every page with one; the homepage has two boxes; ids never repeat on a page', () => {
+  const expectBoxes = { 'index.html': 2, 'contact/index.html': 1, 'privacy.html': 0, 'sms-terms.html': 0, 'food-and-beverage/index.html': 0, 'quote/index.html': 0 };
+  for (const rel of builtPages()) {
     const html = readFileSync(join(ROOT, 'dist', rel), 'utf8');
-    assert.equal(html.split(' data-rate-box ').length - 1, 1, `${rel}: one box`);
+    const n = boxesOf(html).length;
+    const band = html.includes('class="rate rate--close"');
+    if (rel in expectBoxes) assert.equal(n, expectBoxes[rel], `${rel}: ${n} boxes`);
+    else assert.equal(n, 1, `${rel}: the closing band's box`);
+    if (band) assert.match(html, /<section id="contact" class="rate rate--close"[\s\S]*?<h2 id="cta-title" class="h2">Get an instant quote<\/h2>[\s\S]*?Send your lane and get your quote\./, `${rel}: closing band copy`);
+    const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]);
+    const dup = ids.filter((id, i) => ids.indexOf(id) !== i);
+    assert.deepEqual(dup, [], `${rel}: repeated ids`);
+  }
+});
+
+test('every box holds no <form>, posts to the Worker with the site key, has a honeypot and the approved copy, and never a price', () => {
+  for (const rel of builtPages()) {
+    const html = readFileSync(join(ROOT, 'dist', rel), 'utf8');
     assert.ok(!/<form\b/i.test(html));
-    assert.ok(html.includes(`data-rate-endpoint="${QUOTE_ENDPOINT}"`), `${rel}: posts to the Worker`);
-    assert.ok(html.includes(`data-rate-sitekey="${TURNSTILE_SITE_KEY}"`));
-    assert.ok(html.includes('data-rate="website"'), `${rel}: honeypot`);
-    const box = html.slice(html.indexOf('id="rate"'), html.indexOf('</section>', html.indexOf('id="rate"')));
+    for (const box of boxesOf(html)) {
+    assert.ok(box.includes(`data-rate-endpoint="${QUOTE_ENDPOINT}"`), `${rel}: posts to the Worker`);
+    assert.ok(box.includes(`data-rate-sitekey="${TURNSTILE_SITE_KEY}"`));
+    assert.ok(box.includes('data-rate="website"'), `${rel}: honeypot`);
+    const head = html.includes('id="rate-title"') ? html.slice(html.indexOf('id="rate-title"') - 20, html.indexOf('</p>', html.indexOf('id="rate-title"'))) : '';
+    if (rel === 'contact/index.html') for (const line of ['>Get an instant quote</h2>', '>Send your lane and get your quote.']) assert.ok(head.includes(line), `${rel}: ${line}`);
     // Hargun's decision, Nov 18 14:19, and Jesse's drayage line, Nov 18 14:17.
-    for (const line of ['>Get an instant quote</h2>', '>Send your lane and get your quote.</p>', 'data-fine="truck">No account needed.</p>',
+    for (const line of ['data-fine="truck">No account needed.</p>',
       '>Port or ramp to door. Accessorials may apply.</p>', '>We have your request.</h3>', '>Your quote is on its way to your inbox. If it can'])
       assert.ok(box.includes(line), `${rel}: ${line}`);
     assert.ok(!/\$\s?\d|USD/i.test(box), `${rel}: no price in the box`);
@@ -412,10 +434,103 @@ test('home and contact each hold one quote box: no <form>, the Worker endpoint, 
     assert.ok(!/chassis, fuel|empty return|real sailings|freight-class quiz/i.test(box), `${rel}: lines Jesse has not approved stay out`);
     assert.ok(!/our desk|our team|quoting desk|a person/i.test(box), `${rel}: never says a person, our desk or our team prices it`);
     assert.ok(!/ops@|formspree/i.test(box), `${rel}: every send goes through ${QUOTE_ENDPOINT}, never ops@ or Formspree directly`);
+    }
   }
-  for (const rel of ['about/index.html', 'privacy.html']) assert.ok(!readFileSync(join(ROOT, 'dist', rel), 'utf8').includes('data-rate-box'));
-  const js = readFileSync(join(ROOT, 'dist/assets/js/rate.js'), 'utf8');
-  assert.ok(!/formspree/i.test(js), 'the browser never posts to Formspree');
+  for (const rel of ['privacy.html', 'sms-terms.html']) assert.ok(!readFileSync(join(ROOT, 'dist', rel), 'utf8').includes('data-rate-box'));
+  for (const f of ['rate.js', 'net.js', 'quote.js']) {
+    const js = readFileSync(join(ROOT, 'dist/assets/js', f), 'utf8');
+    assert.ok(!/formspree|ops@/i.test(js), `${f}: the browser never posts to Formspree or ops@`);
+    assert.ok(js.includes('j.ok === true'), `${f}: "done" only on {"ok":true}`);
+  }
+});
+
+test('the map\'s pick-a-lane posts to the Worker with Turnstile and a honeypot, lists the Worker\'s modes and ports, and follows the copy rules', () => {
+  const html = readFileSync(join(ROOT, 'dist/index.html'), 'utf8');
+  const pick = pickOf(html);
+  assert.ok(pick, 'the homepage has the pick card');
+  assert.ok(pick.includes(`data-pick-endpoint="${QUOTE_ENDPOINT}"`));
+  assert.ok(pick.includes(`data-pick-sitekey="${TURNSTILE_SITE_KEY}"`));
+  assert.ok(pick.includes('data-pick-website') && pick.includes('data-pick-turnstile'));
+  assert.deepEqual([...pick.matchAll(/<option value="(\w+)">/g)].map((m) => m[1]), Object.keys(MAP_MODES));
+  for (const port of PORTS) assert.ok(pick.includes(`<option>${port.replace(/&/g, '&amp;')}</option>`), port);
+  for (const eq of EQUIPMENT) assert.ok(pick.includes(`<option>${eq}</option>`), eq);
+  for (const line of ['>Get my quote</button>', "We'll email your quote.", '<b>We have your request.</b> Your quote is on its way to your inbox.'])
+    assert.ok(pick.includes(line) || pick.includes(line.replace("'", '&#39;')), line);
+  assert.ok(!/our desk|our team|quoting desk|a person|within the hour|business hours|ops@|formspree|\$\s?\d/i.test(pick), 'pick card copy rules');
+  assert.ok(html.includes('<span>Watched by</span><b>Valence</b>'), 'lane card: "Watched by: Valence"');
+  for (const rel of builtPages().filter((r) => r !== 'index.html')) assert.ok(!readFileSync(join(ROOT, 'dist', rel), 'utf8').includes('data-pick-card'), `${rel}: no map`);
+});
+
+test('a quote form that posts anywhere but the Worker fails (the redesign\'s @endpoint bug)', () => {
+  withCopy((dist) => {
+    editPage(dist, 'about/index.html', (h) => h.replace(`data-rate-endpoint="${QUOTE_ENDPOINT}"`, `data-rate-endpoint="${LEAD_ENDPOINT}"`));
+    expectProblem(checkDist(dist), /about\/index\.html: a quote form posts to https:\/\/formspree\.io/);
+  });
+  withCopy((dist) => {
+    editPage(dist, 'index.html', (h) => h.replace(`data-pick-endpoint="${QUOTE_ENDPOINT}"`, 'data-pick-endpoint="/api/other"'));
+    expectProblem(checkDist(dist), /index\.html: a quote form posts to \/api\/other/);
+  });
+});
+
+test('the map\'s places must be exactly scripts/map-places.mjs, which is what the Worker accepts', () => {
+  assert.equal(Object.keys(MAP_CITIES).length, 42);
+  assert.equal(Object.keys(MAP_STATES).length, 49);
+  withCopy((dist) => {
+    editPage(dist, 'index.html', (h) => h.replace('data-city="Dallas" data-zip="75247"', 'data-city="Dallas" data-zip="75201"'));
+    expectProblem(checkDist(dist), /index\.html: map city Dallas \(75201\) is not in scripts\/map-places\.mjs/);
+  });
+  withCopy((dist) => {
+    editPage(dist, 'index.html', (h) => h.replace('data-city="Reno" data-zip="89502"', 'data-town="Reno" data-zip="89502"'));
+    expectProblem(checkDist(dist), /lists the city Reno, which is not on the map/);
+  });
+  withCopy((dist) => {
+    editPage(dist, 'index.html', (h) => h.replace('data-state="Kansas"', 'data-state="Kanzas"'));
+    expectProblem(checkDist(dist), /map state Kanzas/);
+  });
+});
+
+test('the quote copy rules fail the build on any page: each line the redesign had is caught', () => {
+  for (const line of [
+    '<span>A PERSON PRICES EVERY QUOTE, WITHIN THE HOUR</span>',
+    '<p>A person on our quoting desk prices every request and sends it within the hour.</p>',
+    '<h3>Priced by a person, fast because of the system.</h3>',
+    '<p class="how__fine">No AI pricing, no auto-quote. A person signs off on every number.</p>',
+    '<p class="net__pick-fine">A person prices it and replies by email within the hour.</p>',
+    '<p>A quote from a person within the hour, and the software</p>',
+    '<p>Type the lane and a person on our desk prices it.</p>',
+    '<p>Port or ramp to door. Chassis, fuel and the empty return are in the price we send you.</p>',
+    '<p>Priced by a person from real sailings and flights.</p>',
+    '<p>No freight-class quiz.</p>',
+    '<p>We reply during business hours.</p>',
+  ]) {
+    withCopy((dist) => {
+      editPage(dist, 'about/index.html', (h) => h.replace('</main>', line + '</main>'));
+      expectProblem(checkDist(dist), /about\/index\.html: breaks the quote copy rules/);
+    });
+  }
+  withCopy((dist) => {
+    editPage(dist, 'index.html', (h) => h.replace(/<meta name="description" content="[^"]*"/, '<meta name="description" content="A person prices every quote."'));
+    expectProblem(checkDist(dist), /index\.html: breaks the quote copy rules/);
+  });
+});
+
+test('/food-and-beverage/ is a 301 to /cpg/ on Cloudflare, out of the sitemap; _redirects holds only same-site 301s', () => {
+  const r = readFileSync(join(ROOT, 'dist/_redirects'), 'utf8');
+  assert.equal(r, '/food-and-beverage/ /cpg/ 301\n/food-and-beverage /cpg/ 301\n');
+  const sm = readFileSync(join(ROOT, 'dist/sitemap.xml'), 'utf8');
+  assert.ok(!sm.includes('/food-and-beverage') && sm.includes('/cpg/'));
+  assert.ok(readFileSync(join(ROOT, 'dist/index.html'), 'utf8').includes('<a href="/cpg/">CPG</a>'), 'footer links /cpg/');
+  for (const bad of ['/x https://evil.example/ 301', '/x //evil.example/ 301', '/x /y 302', '/x /y 200', '/* /index.html 200']) {
+    withCopy((dist) => {
+      writeFileSync(join(dist, '_redirects'), bad + '\n');
+      expectProblem(checkDist(dist), /_redirects: only/);
+    });
+  }
+  withCopy((dist) => {
+    mkdirSync(join(dist, 'assets/y'), { recursive: true });
+    writeFileSync(join(dist, 'assets/y/_redirects'), '/a /b 301\n');
+    expectProblem(checkDist(dist), /assets\/y\/_redirects: file type/);
+  });
 });
 
 test('the Worker config: assets from dist/, /api/* to the Worker, the per-IP rate-limit binding, and no secrets', () => {
@@ -428,12 +543,117 @@ test('the Worker config: assets from dist/, /api/* to the Worker, the per-IP rat
   const rl = cfg.ratelimits.find((r) => r.name === 'QUOTE_LIMITER');
   assert.ok(rl && [10, 60].includes(rl.simple.period) && rl.simple.limit > 0);
   assert.equal(cfg.vars, undefined, 'no plain-text vars; secrets go through wrangler secret put');
+  // Until launch, a deploy can only reach workers.dev: no route or custom domain may take www (docs/LAUNCH.md step 1 adds it).
+  for (const k of ['route', 'routes', 'custom_domain']) assert.equal(cfg[k], undefined, `wrangler.jsonc has ${k}: the preview would go live`);
+  assert.ok(!/valencesupplychain\.com/.test(raw.split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n')), 'no site hostname in the Worker config');
   assert.ok(!/hooks\.slack\.com\/services|formspree\.io\/f\//.test(raw));
   for (const f of ['.gitignore']) assert.match(readFileSync(join(ROOT, f), 'utf8'), /^\.dev\.vars/m, `${f} keeps local secrets out of git`);
 });
 
-test('the Privacy Policy says what the quote box collects, who sees it, and how long it is kept', () => {
+test('the Privacy Policy says what the quote box, the map and the quote page collect, who sees it, and how long it is kept', () => {
   const html = readFileSync(join(ROOT, 'dist/privacy.html'), 'utf8');
   assert.match(html, /<dt>Quote requests<\/dt>/);
-  for (const w of ['Slack', 'Formspree', 'Cloudflare Turnstile', 'We keep quote requests for as long as we need them to respond and follow up, and delete them on request.']) assert.ok(html.includes(w), w);
+  for (const w of ['Slack', 'Formspree', 'Cloudflare Turnstile', 'We keep quote requests for as long as we need them to respond and follow up, and delete them on request.',
+    '&quot;Get an instant quote&quot; box, the map on our homepage or our quote page', 'the cities or states you pick on the map', 'The map asks only for your work email.',
+    'the items with their quantities, weights and dimensions, the pickup and delivery options you choose']) assert.ok(html.includes(w) || html.includes(w.replace(/&quot;/g, '"')), w);
+  assert.ok(!html.includes('Get your rate'));
+});
+
+// ---- the quote page (/quote/) --------------------------------------------------------------
+
+const quotePage = () => readFileSync(join(ROOT, 'dist/quote/index.html'), 'utf8');
+const quoteFormOf = (html) => { const i = html.indexOf('<div class="qform" data-quote'); return i < 0 ? '' : html.slice(i, html.indexOf('</noscript>', i) + 11); };
+
+test('the quote page posts to the Worker with Turnstile and a honeypot, loads quote.js (not rate.js), and holds no <form>', () => {
+  const html = quotePage(), form = quoteFormOf(html);
+  assert.ok(form, 'the quote page has its form');
+  assert.ok(!/<form\b/i.test(html));
+  assert.ok(form.includes(`data-quote-endpoint="${QUOTE_ENDPOINT}"`));
+  assert.ok(form.includes(`data-quote-sitekey="${TURNSTILE_SITE_KEY}"`));
+  assert.ok(form.includes('data-q="website"') && form.includes('data-q-turnstile'));
+  assert.equal(html.split(`src="${TURNSTILE_SCRIPT_URL}"`).length - 1, 1, 'Turnstile once');
+  assert.ok(html.includes('<script src="/assets/js/quote.js" defer>'));
+  assert.ok(!html.includes('/assets/js/rate.js'), 'no quote box on this page, so no rate.js');
+  assert.ok(!/formspree|ops@/i.test(form), 'the quote form never posts to Formspree or ops@');
+});
+
+test('the quote page renders the item types, the options and the max lengths from scripts/quote-fields.mjs', () => {
+  const form = quoteFormOf(quotePage());
+  const types = [...form.match(/<select data-i="type">([\s\S]*?)<\/select>/)[1].matchAll(/<option>([^<]*)<\/option>/g)].map((m) => m[1]);
+  assert.deepEqual(types, ITEM_TYPES);
+  for (const kind of ['pickup', 'delivery']) {
+    const group = form.slice(form.indexOf(`data-q-opts="${kind}"`), form.indexOf('data-q-more', form.indexOf(`data-q-opts="${kind}"`)));
+    const ids = [...group.matchAll(/data-opt-pick="(\w+)"[^>]*><span class="qopt__plus" aria-hidden="true"><\/span>([^<]*)<\/button>/g)].map((m) => [m[1], m[2]]);
+    assert.deepEqual(ids, Object.entries(QUOTE_OPTIONS[kind]), kind);
+    assert.equal((group.match(/class="qopt qopt--more"/g) || []).length, ids.length - QUOTE_OPTIONS_SHOWN, `${kind}: the first ${QUOTE_OPTIONS_SHOWN} show`);
+  }
+  assert.ok(form.includes(`data-q-max="${ITEM_LIMITS.items}"`));
+  for (const [key, max] of [['name', MAX.name], ['company', MAX.company], ['email', MAX.email], ['phone', MAX.phone], ['note', MAX.note], ['from', MAX.zip], ['to', MAX.zip]])
+    assert.match(form, new RegExp(`maxlength="${max}"[^>]*data-q="${key}"`), key);
+  assert.match(form, /maxlength="6" placeholder="500" data-i="lbs"/, '50,000 fits with its comma');
+});
+
+test('the quote page follows the copy rules: "Get an instant quote", our own lane line, and nothing about who prices it or when', () => {
+  const html = quotePage(), form = quoteFormOf(html);
+  assert.match(html, /<title>Get an instant quote \| Valence<\/title>/);
+  assert.ok(html.includes('<p class="eyebrow">Get an instant quote</p>'));
+  for (const line of ['Tell us the freight once. Your quote shows the ways it can move on this lane, so you choose on cost and timing.',
+    '>We have your request.</h2>', 'Your quote is on its way to your inbox. If it can', 'Nothing is booked from this page, and no price is shown here. We&#39;ll email your quote.',
+    '<span>Priced into your quote</span>', 'Add or remove it any time before you send.', 'data-q-submit>Get my quote</button>'])
+    assert.ok(html.includes(line) || html.includes(line.replace('&#39;', "'")), line);
+  assert.ok(!/every eligible option|53 ft truck|LTL, cargo van, box truck/i.test(html), 'the Warp-like line is gone');
+  assert.ok(!/our desk|our team|quoting desk|a person|within the hour|business hours|\$\s?\d/i.test(html.replace(/<dialog class="ask"[\s\S]*?<\/dialog>/, '').replace(/<footer[\s\S]*<\/footer>/, '')), 'quote page copy rules');
+  assert.ok(!/\$\s?\d|USD/.test(form), 'no price');
+});
+
+test('the closing band links to the quote page; the truck tab, "Quote this lane" and the map\'s "Add items and options first" go there', () => {
+  for (const rel of builtPages()) {
+    const html = readFileSync(join(ROOT, 'dist', rel), 'utf8');
+    if (html.includes('class="rate rate--close"')) assert.ok(html.includes('Want to add items, pickup and delivery options? <a href="/quote/">Use the full quote page</a>.'), rel);
+  }
+  assert.ok(pickOf(readFileSync(join(ROOT, 'dist/index.html'), 'utf8')).includes('data-pick-details>Add items and options first</button>'));
+  const rate = readFileSync(join(ROOT, 'dist/assets/js/rate.js'), 'utf8'), net = readFileSync(join(ROOT, 'dist/assets/js/net.js'), 'utf8');
+  assert.match(rate, /if \(mode === 'truck'\) \{[^}]*location\.href = '\/quote\/\?from=/);
+  assert.match(net, /location\.href = '\/quote\/\?from=[^;]*&fromPlace=[^;]*&toPlace=/);
+  const laneQuote = net.slice(net.indexOf("card.querySelector('[data-net-quote]')"), net.indexOf('/* ----- pick a lane'));
+  assert.match(laneQuote, /location\.href = '\/quote\/\?from=' \+ e\(sel\.getAttribute\('data-from-zip'\)[^;]*'&to=' \+ e\(sel\.getAttribute\('data-to-zip'\)[^;]*'&equipment=' \+ e\(eq\)/, '"Quote this lane" opens /quote/ with both ZIPs and the equipment');
+  assert.ok(!laneQuote.includes('data-rate-box'), '"Quote this lane" no longer fills the box');
+  const quote = readFileSync(join(ROOT, 'dist/assets/js/quote.js'), 'utf8');
+  assert.ok(quote.includes("kind: 'quote_page'"));
+});
+
+test('a quote page that posts anywhere but the Worker, or loses Turnstile or quote.js, fails', () => {
+  withCopy((dist) => {
+    editPage(dist, 'quote/index.html', (h) => h.replace(`data-quote-endpoint="${QUOTE_ENDPOINT}"`, `data-quote-endpoint="${LEAD_ENDPOINT}"`));
+    expectProblem(checkDist(dist), /quote\/index\.html: a quote form posts to https:\/\/formspree\.io/);
+  });
+  withCopy((dist) => {
+    editPage(dist, 'quote/index.html', (h) => h.replace(/ data-quote-endpoint="[^"]*"/, ''));
+    expectProblem(checkDist(dist), /quote\/index\.html: a quote form posts to nothing/);
+  });
+  withCopy((dist) => {
+    editPage(dist, 'quote/index.html', (h) => h.replace(`<script src="${TURNSTILE_SCRIPT_URL}" defer></script>`, ''));
+    expectProblem(checkDist(dist), /quote\/index\.html: has a quote form but loads Turnstile 0 times/);
+  });
+  withCopy((dist) => {
+    editPage(dist, 'quote/index.html', (h) => h.replace('<script src="/assets/js/quote.js" defer></script>', ''));
+    expectProblem(checkDist(dist), /quote\/index\.html: holds the quote page form but does not load \/assets\/js\/quote\.js/);
+  });
+});
+
+test('quote.js must explain exactly the options in scripts/quote-fields.mjs, and follow the copy rules too', () => {
+  withCopy((dist) => {
+    editPage(dist, 'assets/js/quote.js', (js) => js.replace(/^\s*hazmat: \{.*\n/m, ''));
+    expectProblem(checkDist(dist), /assets\/js\/quote\.js: the option hazmat in scripts\/quote-fields\.mjs has no explainer/);
+  });
+  withCopy((dist) => {
+    editPage(dist, 'assets/js/quote.js', (js) => js.replace('  var COPY = {\n', "  var COPY = {\n    freebie: { art: 'house', d: 'x', add: 'x', skip: 'x' },\n"));
+    expectProblem(checkDist(dist), /assets\/js\/quote\.js: explains freebie, which is not an option/);
+  });
+  for (const [line, re] of [['A person on our desk prices it and sends it.', /a person, our desk or our team prices it/], ['Priced by a person into the quote you get back.', /a person, our desk or our team prices it/], ['Your quote within the hour.', /"within the hour" about a quote/], ['Our quoting desk has your request.', /"quoting desk"/]]) {
+    withCopy((dist) => {
+      editPage(dist, 'assets/js/quote.js', (js) => js.replace("var FAIL = \"", `var X = '${line}'; var FAIL = "`));
+      expectProblem(checkDist(dist), new RegExp(`assets/js/quote\\.js: breaks the quote copy rules: .*${re.source}`));
+    });
+  }
 });
